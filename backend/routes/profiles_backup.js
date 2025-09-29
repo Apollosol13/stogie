@@ -5,6 +5,50 @@ import { authenticateToken } from '../middleware/auth.js';
 const router = express.Router();
 
 // Get user profile by ID
+router.get('/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return res.status(404).json({
+          success: false,
+          error: 'Profile not found'
+        });
+      }
+      throw error;
+    }
+
+    // Remove sensitive information if not the user's own profile
+    const publicProfile = {
+      id: data.id,
+      username: data.username,
+      full_name: data.full_name,
+      avatar_url: data.avatar_url,
+      created_at: data.created_at
+    };
+
+    res.json({
+      success: true,
+      profile: publicProfile
+    });
+
+  } catch (error) {
+    console.error('Get profile error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch profile'
+    });
+  }
+});
+
+// Get current user's profile
 router.get('/me', authenticateToken, async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -159,50 +203,6 @@ router.get('/search', async (req, res) => {
 });
 
 // Get profile statistics
-router.get('/:userId', async (req, res) => {
-  try {
-    const { userId } = req.params;
-
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
-
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return res.status(404).json({
-          success: false,
-          error: 'Profile not found'
-        });
-      }
-      throw error;
-    }
-
-    // Remove sensitive information if not the user's own profile
-    const publicProfile = {
-      id: data.id,
-      username: data.username,
-      full_name: data.full_name,
-      avatar_url: data.avatar_url,
-      created_at: data.created_at
-    };
-
-    res.json({
-      success: true,
-      profile: publicProfile
-    });
-
-  } catch (error) {
-    console.error('Get profile error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch profile'
-    });
-  }
-});
-
-// Get current user's profile
 router.get('/:userId/stats', async (req, res) => {
   try {
     const { userId } = req.params;
