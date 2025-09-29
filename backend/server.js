@@ -17,6 +17,10 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+if (!PORT) {
+  console.error("PORT environment variable not set");
+  process.exit(1);
+}
 
 // Initialize Supabase with service role key (server-side only)
 export const supabase = createClient(
