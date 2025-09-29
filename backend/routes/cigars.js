@@ -353,3 +353,111 @@ router.get('/search/advanced', async (req, res) => {
 });
 
 export default router;
+
+// Analyze cigar image with OpenAI Vision
+router.post('/analyze', async (req, res) => {
+  try {
+    const { image } = req.body;
+
+    if (!image) {
+      return res.status(400).json({
+        success: false,
+        error: 'No image provided'
+      });
+    }
+
+    // Import OpenAI (dynamic import for ES modules)
+    const { OpenAI } = await import('openai');
+    
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY
+    });
+
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({
+        success: false,
+        error: 'OpenAI API key not configured'
+      });
+    }
+
+    // Call OpenAI GPT-4 Vision
+    const response = await openai.chat.completions.create({
+      model: "gpt-4-vision-preview",
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: `You are a master tobacconist and cigar expert. Analyze this cigar image and provide comprehensive information. Extract what you can see from the band/packaging, and use your extensive cigar knowledge to provide typical characteristics for this specific cigar.
+
+Please provide detailed information in JSON format with these exact keys:
+
+{
+  "brand": "Brand name (e.g., Padron, Romeo y Julieta, Cohiba)",
+  "line": "Series/Line name (e.g., 1964, Churchill, Esplendidos)",
+  "vitola": "Size name (e.g., Robusto, Churchill, Toro, Torpedo)",
+  "wrapper": "Wrapper type (e.g., Connecticut Shade, Habano, Maduro, Connecticut Broadleaf, Ecuador Sumatra)",
+  "binder": "Typical binder for this cigar (e.g., Nicaragua, Dominican, Ecuador, Connecticut)",
+  "filler": "Typical filler blend (e.g., Nicaragua, Dominican Republic, Honduras, Cuba)",
+  "strength": "Strength level: mild, medium-mild, medium, medium-full, or full",
+  "flavorProfile": ["array", "of", "typical", "flavor", "notes"],
+  "ringGauge": "Ring gauge number (e.g., 50, 52, 54)",
+  "length": "Length in inches (e.g., 5.0, 6.0, 7.0)",
+  "smokingTime": "Typical smoking duration (e.g., 45-60 minutes, 1-1.5 hours)",
+  "priceRange": "Typical price range (e.g., $8-12, $15-25, $30-50)",
+  "origin": "Country of origin (e.g., Nicaragua, Dominican Republic, Cuba, Honduras)",
+  "notes": "Brief tasting notes and characteristics",
+  "smokingExperience": "Description of the typical smoking experience",
+  "description": "Overall description of this cigar"
+}
+
+IMPORTANT: 
+- Use your cigar knowledge to fill in typical characteristics even if not visible in the image
+- For flavor profile, include 4-6 common tasting notes
+- Strength should be based on the specific brand/line combination
+- If you cannot identify the exact cigar, make your best educated guess based on visible elements
+- All fields should have values - use "Unknown" only if absolutely necessary
+- Focus on accuracy based on your cigar knowledge, not just what's visible
+- Return ONLY the JSON object, no additional text`
+            },
+            {
+              type: "image_url",
+              image_url: {
+                url: image
+              }
+            }
+          ]
+        }
+      ],
+      max_tokens: 1000
+    });
+
+    const analysisText = response.choices[0].message.content;
+    
+    // Parse the JSON response
+    let analysis;
+    try {
+      analysis = JSON.parse(analysisText);
+    } catch (parseError) {
+      console.error('Failed to parse OpenAI response:', analysisText);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to parse AI analysis'
+      });
+    }
+
+    res.json({
+      success: true,
+      analysis: analysis
+    });
+
+  } catch (error) {
+    console.error('OpenAI analysis error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to analyze cigar image'
+    });
+  }
+});
+
