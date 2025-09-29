@@ -1,0 +1,179 @@
+import React, { useState, useRef } from "react";
+import { View, Alert } from "react-native";
+import { StatusBar } from "expo-status-bar";
+import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
+
+import useUser from "../../utils/auth/useUser";
+import useLocationManager from "../../hooks/useLocationManager";
+import useMapData from "../../hooks/useMapData";
+
+import SmokingSessionModal from "../../components/map/SmokingSessionModal";
+import VenueSearchModal from "../../components/map/VenueSearchModal";
+import LocationPermissionModal from "../../components/map/LocationPermissionModal";
+import VenueBottomSheet from "../../components/map/VenueBottomSheet";
+import MapHeader from "../../components/map/MapHeader";
+import FilterPills from "../../components/map/FilterPills";
+import RecentActivityCard from "../../components/map/RecentActivityCard";
+import LoadingOverlay from "../../components/map/LoadingOverlay";
+import MapMarkers from "../../components/map/MapMarkers";
+import { colors } from "../../components/map/colors";
+
+export default function MapScreen() {
+  const mapRef = useRef(null);
+  const { data: user } = useUser();
+
+  const {
+    region,
+    setRegion,
+    userLocation,
+    locationPermission,
+    showLocationPermissionModal,
+    centerOnUser,
+    handleLocationPermissionAllow,
+    handleLocationPermissionDecline,
+  } = useLocationManager(mapRef);
+
+  const {
+    loading,
+    recentActivity,
+    activeFilter,
+    setActiveFilter,
+    filteredMarkers,
+    loadMapData,
+  } = useMapData();
+
+  const [selectedVenue, setSelectedVenue] = useState(null);
+  const [showVenueModal, setShowVenueModal] = useState(false);
+  const [showSessionModal, setShowSessionModal] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState(null);
+
+  const handleMapPress = (event) => {
+    if (!user) {
+      Alert.alert(
+        "Authentication Required",
+        "Please sign in to create smoking sessions.",
+      );
+      return;
+    }
+    const { coordinate } = event.nativeEvent;
+    setSelectedLocation(coordinate);
+    setShowSessionModal(true);
+  };
+
+  const handleMarkerPress = (marker) => {
+    setSelectedVenue(marker);
+    setShowVenueModal(true);
+  };
+
+  const handleCreateSession = async (sessionData) => {
+    const response = await fetch("/api/smoking-sessions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(sessionData),
+    });
+
+    if (!response.ok) throw new Error("Failed to create session");
+
+    Alert.alert(
+      "Success!",
+      "Your smoking session has been posted to the map!",
+      [{ text: "OK", onPress: () => loadMapData() }],
+    );
+
+    setShowSessionModal(false);
+    setSelectedLocation(null);
+  };
+
+  const handleVenuesAdded = (newVenues) => {
+    loadMapData();
+    // Removed automatic animation to keep map stationary
+  };
+
+  const handleCheckIn = (coordinate) => {
+    if (user) {
+      setSelectedLocation(coordinate);
+      setShowSessionModal(true);
+      setShowVenueModal(false);
+    }
+  };
+
+  return (
+    <View style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
+      <StatusBar style="light" />
+
+      <MapView
+        ref={mapRef}
+        provider={PROVIDER_GOOGLE}
+        style={{ flex: 1 }}
+        region={region}
+        onPress={handleMapPress}
+        showsUserLocation={locationPermission}
+        showsMyLocationButton={false}
+        mapType="mutedStandard"
+        userInterfaceStyle="dark"
+        scrollEnabled={true}
+        zoomEnabled={true}
+        pitchEnabled={false}
+        rotateEnabled={false}
+      >
+        <MapMarkers
+          markers={filteredMarkers}
+          onMarkerPress={handleMarkerPress}
+        />
+      </MapView>
+
+      <LoadingOverlay isVisible={loading} />
+
+      <MapHeader
+        onSearchPress={() => setShowSearchModal(true)}
+        onCenterPress={centerOnUser}
+        onFilterPress={() => {
+          /* TODO: Implement filter modal */
+        }}
+      />
+
+      <FilterPills
+        activeFilter={activeFilter}
+        onChangeFilter={setActiveFilter}
+        hasRecentActivity={recentActivity.length > 0}
+      />
+
+      <RecentActivityCard recentActivity={recentActivity} />
+
+      <VenueBottomSheet
+        venue={selectedVenue}
+        isVisible={showVenueModal}
+        onClose={() => {
+          setShowVenueModal(false);
+          setSelectedVenue(null);
+        }}
+        onCheckIn={handleCheckIn}
+        user={user}
+      />
+
+      <SmokingSessionModal
+        isVisible={showSessionModal}
+        onClose={() => {
+          setShowSessionModal(false);
+          setSelectedLocation(null);
+        }}
+        location={selectedLocation}
+        onCreateSession={handleCreateSession}
+      />
+
+      <VenueSearchModal
+        isVisible={showSearchModal}
+        onClose={() => setShowSearchModal(false)}
+        userLocation={userLocation}
+        onVenuesAdded={handleVenuesAdded}
+      />
+
+      <LocationPermissionModal
+        isVisible={showLocationPermissionModal}
+        onAllow={handleLocationPermissionAllow}
+        onDecline={handleLocationPermissionDecline}
+      />
+    </View>
+  );
+}

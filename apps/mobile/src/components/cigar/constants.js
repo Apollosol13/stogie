@@ -1,0 +1,17 @@
+export const FLAVOR_NOTES = [
+  "Wood",
+  "Cedar",
+  "Leather",
+  "Chocolate",
+  "Coffee",
+  "Vanilla",
+  "Spice",
+  "Pepper",
+  "Nuts",
+  "Earth",
+  "Cream",
+  "Honey",
+  "Tobacco",
+  "Floral",
+  "Fruit",
+];
