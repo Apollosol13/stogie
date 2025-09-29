@@ -100,7 +100,7 @@ app.use((err, req, res, next) => {
 });
 
 // 404 handler
-app.use('*', (req, res) => {
+app.use((req, res) => {
   res.status(404).json({ 
     success: false, 
     error: `Route ${req.originalUrl} not found` 
