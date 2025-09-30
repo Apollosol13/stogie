@@ -83,11 +83,15 @@ router.post('/signin', async (req, res) => {
     const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
     
     if (!supabaseAnonKey) {
+      console.error('SUPABASE_ANON_KEY not found in environment variables');
       return res.status(500).json({
         success: false,
         error: 'Authentication service not configured'
       });
     }
+
+    console.log('Using Supabase URL:', supabaseUrl);
+    console.log('Anon key available:', !!supabaseAnonKey);
 
     const authClient = createClient(supabaseUrl, supabaseAnonKey);
 
