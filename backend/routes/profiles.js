@@ -89,7 +89,16 @@ router.put('/', async (req, res) => {
       return res.status(401).json({ success: false, error: 'Invalid token' });
     }
 
-    const { full_name, username, bio, location, favorite_cigar } = req.body;
+    const { 
+      full_name, 
+      username, 
+      bio, 
+      location, 
+      favorite_cigar,
+      experience_level,
+      favorite_strength,
+      favorite_wrapper
+    } = req.body;
 
     // Update user profile
     const { data: profile, error: updateError } = await supabase
@@ -100,6 +109,9 @@ router.put('/', async (req, res) => {
         bio,
         location,
         favorite_cigar,
+        experience_level,
+        favorite_strength,
+        favorite_wrapper,
         updated_at: new Date().toISOString()
       })
       .eq('id', user.id)
@@ -154,9 +166,39 @@ router.post('/image', upload.single('image'), async (req, res) => {
       return res.status(400).json({ success: false, error: 'No image file provided' });
     }
 
-    // For now, use a generated avatar based on user info
-    // This ensures the feature works immediately without storage setup
-    const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}&backgroundColor=b6e3f4,c0aede,d1d4f9&radius=50`;
+    let avatarUrl;
+
+    try {
+      // Try to upload to Supabase Storage first
+      const fileName = `${user.id}-${Date.now()}.${req.file.mimetype.split('/')[1]}`;
+      const filePath = `avatars/${fileName}`;
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('profile-images')
+        .upload(filePath, req.file.buffer, {
+          contentType: req.file.mimetype,
+          upsert: true
+        });
+
+      if (uploadError) {
+        console.log('Supabase Storage upload failed, using generated avatar:', uploadError.message);
+        // Fallback to generated avatar
+        const timestamp = Date.now();
+        avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}-${timestamp}&backgroundColor=b6e3f4,c0aede,d1d4f9&radius=50`;
+      } else {
+        // Get public URL for the uploaded image
+        const { data: { publicUrl } } = supabase.storage
+          .from('profile-images')
+          .getPublicUrl(filePath);
+        
+        avatarUrl = publicUrl;
+      }
+    } catch (storageError) {
+      console.log('Storage error, using generated avatar:', storageError.message);
+      // Fallback to generated avatar
+      const timestamp = Date.now();
+      avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}-${timestamp}&backgroundColor=b6e3f4,c0aede,d1d4f9&radius=50`;
+    }
 
     try {
       // Update user profile with new avatar URL
