@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { View, Alert } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
+import { apiRequest } from "../../utils/api";
 
 import useUser from "../../utils/auth/useUser";
 import useLocationManager from "../../hooks/useLocationManager";
@@ -17,6 +18,7 @@ import RecentActivityCard from "../../components/map/RecentActivityCard";
 import LoadingOverlay from "../../components/map/LoadingOverlay";
 import MapMarkers from "../../components/map/MapMarkers";
 import { colors } from "../../components/map/colors";
+import { customMapStyle } from "../../components/map/mapStyle";
 
 export default function MapScreen() {
   const mapRef = useRef(null);
@@ -67,9 +69,8 @@ export default function MapScreen() {
   };
 
   const handleCreateSession = async (sessionData) => {
-    const response = await fetch("/api/smoking-sessions", {
+    const response = await apiRequest("/api/smoking-sessions", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(sessionData),
     });
 
@@ -110,7 +111,7 @@ export default function MapScreen() {
         onPress={handleMapPress}
         showsUserLocation={locationPermission}
         showsMyLocationButton={false}
-        mapType="mutedStandard"
+        customMapStyle={customMapStyle}
         userInterfaceStyle="dark"
         scrollEnabled={true}
         zoomEnabled={true}
