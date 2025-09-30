@@ -11,6 +11,9 @@ import cigarRoutes from './routes/cigars.js';
 import humidorRoutes from './routes/humidor.js';
 import reviewRoutes from './routes/reviews.js';
 import profileRoutes from './routes/profiles.js';
+import shopRoutes from './routes/shops.js';
+import sessionRoutes from './routes/sessions.js';
+import integrationRoutes from './routes/integrations.js';
 
 // Load environment variables
 dotenv.config();
@@ -68,6 +71,9 @@ app.use('/api/cigars', cigarRoutes);
 app.use('/api/humidor', humidorRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/profiles', profileRoutes);
+app.use('/api/shops', shopRoutes);
+app.use('/api/smoking-sessions', sessionRoutes);
+app.use('/integrations', integrationRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
