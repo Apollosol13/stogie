@@ -33,7 +33,8 @@ router.post('/signup', async (req, res) => {
         full_name: fullName,
         username: username 
       },
-      email_confirm: false // Skip email confirmation for now
+      email_confirm: true, // Mark email as confirmed
+      email_confirmed_at: new Date().toISOString() // Set confirmation timestamp
     });
 
     if (authError) {
