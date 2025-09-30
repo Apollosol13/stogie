@@ -77,8 +77,22 @@ router.post('/signin', async (req, res) => {
       });
     }
 
-    // Sign in with Supabase
-    const { data, error } = await supabase.auth.signInWithPassword({
+    // Create a temporary Supabase client for authentication
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+    
+    if (!supabaseAnonKey) {
+      return res.status(500).json({
+        success: false,
+        error: 'Authentication service not configured'
+      });
+    }
+
+    const authClient = createClient(supabaseUrl, supabaseAnonKey);
+
+    // Sign in with Supabase using client-side method
+    const { data, error } = await authClient.auth.signInWithPassword({
       email,
       password
     });
@@ -90,7 +104,7 @@ router.post('/signin', async (req, res) => {
       });
     }
 
-    // Get user profile
+    // Get user profile using service role client
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('*')
