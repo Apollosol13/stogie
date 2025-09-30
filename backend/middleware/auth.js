@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import supabase from '../config/database.js';
+import supabase, { supabaseAuth } from '../config/database.js';
 
 // Middleware to authenticate JWT tokens
 export const authenticateToken = async (req, res, next) => {
@@ -24,8 +24,8 @@ export const authenticateToken = async (req, res, next) => {
       });
     }
 
-    // Verify token with Supabase
-    const { data: { user }, error } = await supabase.auth.getUser(token);
+    // Verify token with Supabase using anon client
+    const { data: { user }, error } = await supabaseAuth.auth.getUser(token);
 
     if (error || !user) {
       return res.status(401).json({

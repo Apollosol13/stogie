@@ -354,8 +354,8 @@ router.get('/search/advanced', async (req, res) => {
 
 export default router;
 
-// Analyze cigar image with OpenAI Vision
-router.post('/analyze', async (req, res) => {
+// Analyze cigar image with OpenAI Vision (requires authentication)
+router.post('/analyze', authenticateToken, async (req, res) => {
   try {
     const { image } = req.body;
 
@@ -380,9 +380,9 @@ router.post('/analyze', async (req, res) => {
       });
     }
 
-    // Call OpenAI GPT-4 Vision
+    // Call OpenAI GPT-4 Vision (updated model name)
     const response = await openai.chat.completions.create({
-      model: "gpt-4-vision-preview",
+      model: "gpt-4o",
       messages: [
         {
           role: "user",
@@ -454,9 +454,24 @@ IMPORTANT:
 
   } catch (error) {
     console.error('OpenAI analysis error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      status: error.status,
+      code: error.code,
+      type: error.type
+    });
+    
+    // Return more specific error information
+    const errorMessage = error.status === 401 
+      ? 'OpenAI API key invalid or expired'
+      : error.status === 429
+      ? 'OpenAI API rate limit exceeded'
+      : error.message || 'Failed to analyze cigar image';
+    
     res.status(500).json({
       success: false,
-      error: 'Failed to analyze cigar image'
+      error: errorMessage,
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
