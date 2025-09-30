@@ -1,5 +1,5 @@
 import express from 'express';
-import supabase from '../config/database.js';
+import supabase, { supabaseAuth } from '../config/database.js';
 import multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -31,8 +31,8 @@ router.get('/', async (req, res) => {
 
     const token = authHeader.substring(7);
     
-    // Verify the JWT token
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    // Verify the JWT token using anon client
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
     
     if (authError || !user) {
       return res.status(401).json({ success: false, error: 'Invalid token' });
@@ -82,8 +82,8 @@ router.put('/', async (req, res) => {
 
     const token = authHeader.substring(7);
     
-    // Verify the JWT token
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    // Verify the JWT token using anon client
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
     
     if (authError || !user) {
       return res.status(401).json({ success: false, error: 'Invalid token' });
@@ -155,8 +155,8 @@ router.post('/image', upload.single('image'), async (req, res) => {
 
     const token = authHeader.substring(7);
     
-    // Verify the JWT token
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    // Verify the JWT token using anon client
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
     
     if (authError || !user) {
       return res.status(401).json({ success: false, error: 'Invalid token' });
@@ -181,7 +181,8 @@ router.post('/image', upload.single('image'), async (req, res) => {
         });
 
       if (uploadError) {
-        console.log('Supabase Storage upload failed, using generated avatar:', uploadError.message);
+        console.log('Supabase Storage upload failed:', uploadError);
+        console.log('Upload error details:', { message: uploadError.message, statusCode: uploadError.statusCode });
         // Fallback to generated avatar
         const timestamp = Date.now();
         avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}-${timestamp}&backgroundColor=b6e3f4,c0aede,d1d4f9&radius=50`;
@@ -191,6 +192,7 @@ router.post('/image', upload.single('image'), async (req, res) => {
           .from('profile-images')
           .getPublicUrl(filePath);
         
+        console.log('Image uploaded successfully:', { filePath, publicUrl });
         avatarUrl = publicUrl;
       }
     } catch (storageError) {
