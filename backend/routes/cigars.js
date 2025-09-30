@@ -352,10 +352,20 @@ router.get('/search/advanced', async (req, res) => {
   }
 });
 
+// Test endpoint to check OpenAI configuration
+router.get('/test-openai', (req, res) => {
+  res.json({
+    success: true,
+    openai_configured: !!process.env.OPENAI_API_KEY,
+    openai_key_length: process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.length : 0,
+    openai_key_prefix: process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.substring(0, 7) + '...' : 'Not set'
+  });
+});
+
 export default router;
 
-// Analyze cigar image with OpenAI Vision (requires authentication)
-router.post('/analyze', authenticateToken, async (req, res) => {
+// Analyze cigar image with OpenAI Vision
+router.post('/analyze', async (req, res) => {
   try {
     const { image } = req.body;
 
