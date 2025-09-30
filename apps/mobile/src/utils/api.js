@@ -18,10 +18,11 @@ export const apiRequest = async (endpoint, options = {}) => {
     const authData = await SecureStore.getItemAsync('stogie-auth-jwt');
     if (authData) {
       const auth = JSON.parse(authData);
-      token = auth.jwt;
+      // Handle both possible token locations
+      token = auth.jwt || auth.session?.access_token || auth.access_token;
     }
   } catch (error) {
-    console.log('No auth token found:', error);
+    console.log('Error getting auth token:', error);
   }
 
   const headers = {
@@ -34,10 +35,23 @@ export const apiRequest = async (endpoint, options = {}) => {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  return fetch(url, {
+  const response = await fetch(url, {
     headers,
     ...options,
   });
+
+  // If we get a 401 and this is an authenticated endpoint, the token might be expired
+  if (response.status === 401 && token) {
+    console.log('Received 401 with token - token might be expired');
+    // Clear the stored auth data
+    try {
+      await SecureStore.deleteItemAsync('stogie-auth-jwt');
+    } catch (error) {
+      console.log('Error clearing expired token:', error);
+    }
+  }
+
+  return response;
 };
 
 /**
