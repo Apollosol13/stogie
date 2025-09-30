@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import * as SecureStore from 'expo-secure-store';
 import { useAuth } from "@/utils/auth/useAuth";
 import useUser from "@/utils/auth/useUser";
+import { apiRequest, API_BASE_URL } from "../utils/api";
 
 export default function useProfile() {
   const { isAuthenticated } = useAuth();
@@ -15,10 +17,10 @@ export default function useProfile() {
 
   const fetchProfile = async () => {
     try {
-      const response = await fetch("/api/profiles");
+      const response = await apiRequest("/api/profiles");
       if (response.ok) {
         const data = await response.json();
-        setProfile(data);
+        setProfile(data.profile);
       } else {
         console.error(
           "Profile fetch failed:",
@@ -35,10 +37,10 @@ export default function useProfile() {
 
   const fetchAnalytics = async () => {
     try {
-      const response = await fetch("/api/analytics");
+      const response = await apiRequest("/api/analytics");
       if (response.ok) {
         const data = await response.json();
-        setAnalytics(data);
+        setAnalytics(data.analytics);
       } else {
         console.error(
           "Analytics fetch failed:",
@@ -67,23 +69,31 @@ export default function useProfile() {
   const handleSaveProfile = async (editForm) => {
     setSaving(true);
     try {
-      const response = await fetch("/api/profiles", {
-        method: "POST",
+      const response = await apiRequest("/api/profiles", {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editForm),
       });
 
-      if (response.ok) {
-        const updatedProfile = await response.json();
-        setProfile(updatedProfile);
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setProfile(data.profile);
         setShowEditModal(false);
         Alert.alert("Success", "Profile updated successfully!");
       } else {
-        Alert.alert("Error", "Failed to update profile. Please try again.");
+        console.error("Profile update error:", data);
+        Alert.alert(
+          "Error",
+          data.error || "Failed to update profile. Please try again.",
+        );
       }
     } catch (error) {
-      console.error("Error saving profile:", error);
-      Alert.alert("Error", "Failed to update profile. Please try again.");
+      console.error("Error updating profile:", error);
+      Alert.alert(
+        "Error",
+        "Network error. Please check your connection and try again.",
+      );
     } finally {
       setSaving(false);
     }
@@ -113,6 +123,23 @@ export default function useProfile() {
       setSaving(true);
 
       try {
+        // Get JWT token for authorization
+        let token = null;
+        try {
+          const authData = await SecureStore.getItemAsync('stogie-auth-jwt');
+          if (authData) {
+            const auth = JSON.parse(authData);
+            token = auth.jwt || auth.session?.access_token || auth.access_token;
+          }
+        } catch (error) {
+          console.log('Error getting auth token:', error);
+        }
+
+        if (!token) {
+          Alert.alert("Error", "Please sign in again to update your profile picture.");
+          return;
+        }
+
         const formData = new FormData();
 
         // Create proper blob for the image
@@ -121,8 +148,12 @@ export default function useProfile() {
 
         formData.append("image", blob, "profile-image.jpg");
 
-        const uploadResponse = await fetch("/api/profiles/image", {
+        const uploadResponse = await fetch(`${API_BASE_URL}/api/profiles/image`, {
           method: "POST",
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            // Don't set Content-Type - let FormData set it automatically
+          },
           body: formData,
         });
 

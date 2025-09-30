@@ -1,7 +1,25 @@
 import express from 'express';
 import supabase from '../config/database.js';
+import multer from 'multer';
+import { v4 as uuidv4 } from 'uuid';
 
 const router = express.Router();
+
+// Configure multer for file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Accept only image files
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'), false);
+    }
+  }
+});
 
 // GET /api/profiles - Get current user's profile
 router.get('/', async (req, res) => {
@@ -116,7 +134,7 @@ router.put('/', async (req, res) => {
 });
 
 // POST /api/profiles/image - Upload profile image
-router.post('/image', async (req, res) => {
+router.post('/image', upload.single('image'), async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -132,13 +150,73 @@ router.post('/image', async (req, res) => {
       return res.status(401).json({ success: false, error: 'Invalid token' });
     }
 
-    // For now, return a placeholder response
-    // In a real implementation, you'd handle file upload to Supabase Storage
-    res.json({
-      success: true,
-      message: 'Profile image upload functionality coming soon',
-      avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`
-    });
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: 'No image file provided' });
+    }
+
+    // Generate unique filename
+    const fileExt = req.file.originalname.split('.').pop();
+    const fileName = `${user.id}/${uuidv4()}.${fileExt}`;
+
+    try {
+      // Upload to Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, req.file.buffer, {
+          contentType: req.file.mimetype,
+          upsert: true
+        });
+
+      if (uploadError) {
+        console.error('Storage upload error:', uploadError);
+        return res.status(500).json({ success: false, error: 'Failed to upload image' });
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      // Update user profile with new avatar URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          avatar_url: publicUrl,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (updateError) {
+        console.error('Profile update error:', updateError);
+        return res.status(500).json({ success: false, error: 'Failed to update profile' });
+      }
+
+      res.json({
+        success: true,
+        message: 'Profile image updated successfully',
+        avatar_url: publicUrl
+      });
+
+    } catch (storageError) {
+      console.error('Storage operation error:', storageError);
+      // Fallback to a generated avatar
+      const fallbackUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`;
+      
+      // Update profile with fallback URL
+      await supabase
+        .from('profiles')
+        .update({
+          avatar_url: fallbackUrl,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      res.json({
+        success: true,
+        message: 'Profile image updated with generated avatar',
+        avatar_url: fallbackUrl
+      });
+    }
 
   } catch (error) {
     console.error('Profile image upload error:', error);
