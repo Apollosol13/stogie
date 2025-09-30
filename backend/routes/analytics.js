@@ -1,5 +1,5 @@
 import express from 'express';
-import supabase from '../config/database.js';
+import supabase, { supabaseAuth } from '../config/database.js';
 
 const router = express.Router();
 
@@ -13,8 +13,8 @@ router.get('/', async (req, res) => {
 
     const token = authHeader.substring(7);
     
-    // Verify the JWT token
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    // Verify the JWT token using anon client
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
     
     if (authError || !user) {
       return res.status(401).json({ success: false, error: 'Invalid token' });
@@ -67,9 +67,42 @@ router.get('/', async (req, res) => {
       { month: 'Jun', reviews: Math.floor(Math.random() * 10), sessions: Math.floor(Math.random() * 15) }
     ];
 
+    // Calculate frequency stats
+    const accountAge = user.created_at ? 
+      Math.max(1, Math.floor((Date.now() - new Date(user.created_at).getTime()) / (1000 * 60 * 60 * 24))) : 1;
+    
+    const cigarsPerDay = totalSmokingSessions / accountAge;
+    const cigarsPerWeek = cigarsPerDay * 7;
+    const cigarsPerMonth = cigarsPerDay * 30;
+
     res.json({
       success: true,
       analytics: {
+        // Session stats (for "Smoked" metric)
+        sessionStats: {
+          total_sessions: totalSmokingSessions
+        },
+        // Review stats (for "Avg Rating" metric)
+        reviewStats: {
+          avg_rating_given: averageRating,
+          total_reviews: totalReviews
+        },
+        // Location stats (for "Countries" metric)
+        locationStats: {
+          countries_visited: 0 // TODO: implement location tracking
+        },
+        // Frequency stats (for cigars per day/week/month)
+        frequencyStats: {
+          cigars_per_day: cigarsPerDay,
+          cigars_per_week: cigarsPerWeek,
+          cigars_per_month: cigarsPerMonth
+        },
+        // User stats (general info)
+        userStats: {
+          account_age_days: accountAge,
+          total_spent: 0 // TODO: implement spending tracking
+        },
+        // Legacy data for existing components
         overview: {
           totalReviews,
           totalCigarsInHumidor,
