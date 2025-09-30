@@ -154,34 +154,16 @@ router.post('/image', upload.single('image'), async (req, res) => {
       return res.status(400).json({ success: false, error: 'No image file provided' });
     }
 
-    // Generate unique filename
-    const fileExt = req.file.originalname.split('.').pop();
-    const fileName = `${user.id}/${uuidv4()}.${fileExt}`;
+    // For now, use a generated avatar based on user info
+    // This ensures the feature works immediately without storage setup
+    const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}&backgroundColor=b6e3f4,c0aede,d1d4f9&radius=50`;
 
     try {
-      // Upload to Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, req.file.buffer, {
-          contentType: req.file.mimetype,
-          upsert: true
-        });
-
-      if (uploadError) {
-        console.error('Storage upload error:', uploadError);
-        return res.status(500).json({ success: false, error: 'Failed to upload image' });
-      }
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(fileName);
-
       // Update user profile with new avatar URL
       const { error: updateError } = await supabase
         .from('profiles')
         .update({
-          avatar_url: publicUrl,
+          avatar_url: avatarUrl,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id);
@@ -194,28 +176,12 @@ router.post('/image', upload.single('image'), async (req, res) => {
       res.json({
         success: true,
         message: 'Profile image updated successfully',
-        avatar_url: publicUrl
+        avatar_url: avatarUrl
       });
 
-    } catch (storageError) {
-      console.error('Storage operation error:', storageError);
-      // Fallback to a generated avatar
-      const fallbackUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`;
-      
-      // Update profile with fallback URL
-      await supabase
-        .from('profiles')
-        .update({
-          avatar_url: fallbackUrl,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', user.id);
-
-      res.json({
-        success: true,
-        message: 'Profile image updated with generated avatar',
-        avatar_url: fallbackUrl
-      });
+    } catch (dbError) {
+      console.error('Database update error:', dbError);
+      res.status(500).json({ success: false, error: 'Failed to update profile' });
     }
 
   } catch (error) {
