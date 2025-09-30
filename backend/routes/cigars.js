@@ -362,8 +362,6 @@ router.get('/test-openai', (req, res) => {
   });
 });
 
-export default router;
-
 // Analyze cigar image with OpenAI Vision
 router.post('/analyze', async (req, res) => {
   try {
@@ -485,4 +483,6 @@ IMPORTANT:
     });
   }
 });
+
+export default router;
 
