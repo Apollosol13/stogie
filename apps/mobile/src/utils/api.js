@@ -16,21 +16,32 @@ export const apiRequest = async (endpoint, options = {}) => {
   let token = null;
   try {
     const authData = await SecureStore.getItemAsync('stogie-auth-jwt');
+    console.log('Raw auth data from SecureStore:', authData ? 'exists' : 'null');
+    
     if (authData) {
       const auth = JSON.parse(authData);
+      console.log('Parsed auth data keys:', Object.keys(auth));
+      
       // Handle the simplified token format
       token = auth.jwt;
+      console.log('Extracted token:', token ? 'exists' : 'null');
       
-      // Check if token is expired
+      // Check if token is expired (only if expires_at exists)
       if (auth.expires_at) {
         const expiresAt = new Date(auth.expires_at * 1000); // Convert to milliseconds
         const now = new Date();
+        console.log('Token expiration check:', { expiresAt, now, expired: now >= expiresAt });
+        
         if (now >= expiresAt) {
           console.log('Token expired, clearing auth data');
           await SecureStore.deleteItemAsync('stogie-auth-jwt');
           token = null;
         }
+      } else {
+        console.log('No expiration time found, using token as-is');
       }
+    } else {
+      console.log('No auth data found in SecureStore');
     }
   } catch (error) {
     console.log('Error getting auth token:', error);
@@ -44,7 +55,13 @@ export const apiRequest = async (endpoint, options = {}) => {
   // Add Authorization header if token exists
   if (token) {
     headers.Authorization = `Bearer ${token}`;
+    console.log('Adding Authorization header with token');
+  } else {
+    console.log('No token available, making unauthenticated request');
   }
+
+  console.log('Making API request to:', url);
+  console.log('Request headers:', headers);
 
   const response = await fetch(url, {
     headers,
