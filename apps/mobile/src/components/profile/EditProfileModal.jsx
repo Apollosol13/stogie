@@ -35,7 +35,7 @@ export default function EditProfileModal({
   useEffect(() => {
     if (profile) {
       setEditForm({
-        display_name: profile.display_name || "",
+        display_name: profile.full_name || profile.display_name || "",
         username: profile.username || "",
         bio: profile.bio || "",
         location: profile.location || "",

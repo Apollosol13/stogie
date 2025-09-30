@@ -15,6 +15,14 @@ export default function ProfileHeader({
   onEdit,
   onSelectImage,
 }) {
+  const getAvatarUrl = () => {
+    if (profile?.avatar_url) return profile.avatar_url;
+    if (user?.image) return user.image;
+    // Generate a unique avatar based on user email or ID
+    const seed = user?.email || user?.id || 'default';
+    return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9&radius=50`;
+  };
+
   return (
     <View
       style={{
@@ -45,12 +53,7 @@ export default function ProfileHeader({
 
       <View style={{ position: "relative", marginBottom: 16 }}>
         <Image
-          source={{
-            uri:
-              profile?.profile_image_url ||
-              user?.image ||
-              "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face",
-          }}
+          source={{ uri: getAvatarUrl() }}
           style={{
             width: 100,
             height: 100,
@@ -85,7 +88,7 @@ export default function ProfileHeader({
           marginBottom: 4,
         }}
       >
-        {profile?.display_name || user?.name || "Welcome!"}
+        {profile?.full_name || profile?.display_name || user?.name || "Welcome!"}
       </Text>
 
       <Text
@@ -142,8 +145,8 @@ export default function ProfileHeader({
           }}
         >
           Joined{" "}
-          {profile?.join_date
-            ? new Date(profile.join_date).toLocaleDateString()
+          {profile?.created_at
+            ? new Date(profile.created_at).toLocaleDateString()
             : "recently"}
         </Text>
       </View>

@@ -72,7 +72,7 @@ export default function useProfile() {
       const response = await apiRequest("/api/profiles", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editForm),
+        body: JSON.stringify({ ...editForm, full_name: editForm.display_name }),
       });
 
       const data = await response.json();
