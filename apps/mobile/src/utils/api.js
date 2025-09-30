@@ -18,8 +18,19 @@ export const apiRequest = async (endpoint, options = {}) => {
     const authData = await SecureStore.getItemAsync('stogie-auth-jwt');
     if (authData) {
       const auth = JSON.parse(authData);
-      // Handle both possible token locations
-      token = auth.jwt || auth.session?.access_token || auth.access_token;
+      // Handle the simplified token format
+      token = auth.jwt;
+      
+      // Check if token is expired
+      if (auth.expires_at) {
+        const expiresAt = new Date(auth.expires_at * 1000); // Convert to milliseconds
+        const now = new Date();
+        if (now >= expiresAt) {
+          console.log('Token expired, clearing auth data');
+          await SecureStore.deleteItemAsync('stogie-auth-jwt');
+          token = null;
+        }
+      }
     }
   } catch (error) {
     console.log('Error getting auth token:', error);

@@ -59,12 +59,18 @@ export default function AuthForm({ mode = 'signin', onSuccess, onModeChange }) {
         Alert.alert('Success', 'Account created successfully! Please sign in.');
         onModeChange?.('signin');
       } else {
-        // Store authentication data
-        setAuth({
-          session: data.session,
-          user: data.user,
+        // Store only the essential data to avoid SecureStore size limit
+        const authData = {
           jwt: data.session?.access_token || data.session,
-        });
+          user: {
+            id: data.user?.id,
+            email: data.user?.email,
+            name: data.user?.fullName
+          },
+          expires_at: data.session?.expires_at
+        };
+        
+        setAuth(authData);
         onSuccess?.();
       }
     } catch (error) {
