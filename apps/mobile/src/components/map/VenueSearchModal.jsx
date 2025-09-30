@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, Modal, Alert, Text, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useVenueSearch } from "../../hooks/useVenueSearch";
+import { apiRequest } from "../../utils/api";
 
 import VenueSearchHeader from "./VenueSearchModal/VenueSearchHeader";
 import SearchModeToggle from "./VenueSearchModal/SearchModeToggle";
@@ -75,7 +76,7 @@ export default function VenueSearchModal({
 
     setSaving(true);
     try {
-      const response = await fetch("/api/shops/search", {
+      const response = await apiRequest("/api/shops/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ venues: selectedVenues }),
@@ -147,27 +148,25 @@ export default function VenueSearchModal({
               handleSearch={handleSearch}
               loading={loading}
             />
-            <Text
-              style={{
-                color: colors.textTertiary,
-                fontSize: 14,
-                marginTop: 8,
-                textAlign: "center",
-              }}
-            >
-              {hasSearched
-                ? `Found ${searchResults.length} venues ${searchMode === "city" && selectedCity ? `in ${selectedCity.structured_formatting?.main_text || cityQuery}` : "nearby"}`
-                : searchMode === "city"
-                  ? "Select a city to search for cigar lounges and tobacco shops"
-                  : "Searching for cigar lounges and tobacco shops near you..."}
-            </Text>
+            {hasSearched && (
+              <Text
+                style={{
+                  color: colors.textTertiary,
+                  fontSize: 14,
+                  marginTop: 8,
+                  textAlign: "center",
+                }}
+              >
+                Found {searchResults.length} venues {searchMode === "city" ? `in ${selectedCity?.structured_formatting?.main_text || cityQuery.split(',')[0]}` : "nearby"}
+              </Text>
+            )}
 
             {/* Debug Section - Remove this later */}
             <TouchableOpacity
               onPress={async () => {
                 try {
                   console.log("Testing API integration...");
-                  const response = await fetch("/api/test-search");
+                  const response = await apiRequest("/api/shops/test-search");
                   const data = await response.json();
                   console.log("Test API Response:", data);
                   Alert.alert(

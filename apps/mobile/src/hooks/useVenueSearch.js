@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Alert } from "react-native";
+import { apiRequest } from "../utils/api";
 
 export function useVenueSearch(userLocation, isVisible) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -34,7 +35,7 @@ export function useVenueSearch(userLocation, isVisible) {
   const searchCities = async (query) => {
     setLoadingCities(true);
     try {
-      const response = await fetch(
+      const response = await apiRequest(
         `/integrations/google-place-autocomplete/autocomplete/json?input=${encodeURIComponent(query)}&radius=50000&types=(cities)`,
       );
       if (response.ok) {
@@ -60,11 +61,11 @@ export function useVenueSearch(userLocation, isVisible) {
 
   const selectCity = async (city) => {
     setSelectedCity(city);
-    setCityQuery(city.description);
+    setCityQuery(city.structured_formatting?.main_text || city.description.split(',')[0]);
     setCitySuggestions([]);
 
     try {
-      const response = await fetch(
+      const response = await apiRequest(
         `/integrations/google-place-autocomplete/details/json?place_id=${city.place_id}&fields=geometry`,
       );
       if (response.ok) {
@@ -108,7 +109,7 @@ export function useVenueSearch(userLocation, isVisible) {
         queryParams.set("latitude", cityLat.toString());
         queryParams.set("longitude", cityLng.toString());
       }
-      const response = await fetch(`/api/shops/search?${queryParams}`);
+      const response = await apiRequest(`/api/shops/search?${queryParams}`);
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.results) {
@@ -150,7 +151,7 @@ export function useVenueSearch(userLocation, isVisible) {
       if (customQuery.trim()) {
         queryParams.set("query", customQuery.trim());
       }
-      const response = await fetch(`/api/shops/search?${queryParams}`);
+      const response = await apiRequest(`/api/shops/search?${queryParams}`);
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.results) {
