@@ -143,7 +143,8 @@ router.get('/search', async (req, res) => {
 
     res.json({
       success: true,
-      venues: uniqueVenues,
+      results: uniqueVenues,
+      venues: uniqueVenues, // Keep both for compatibility
       count: uniqueVenues.length,
       searchTerms: searchTerms,
       location: { latitude: parseFloat(latitude), longitude: parseFloat(longitude) },
