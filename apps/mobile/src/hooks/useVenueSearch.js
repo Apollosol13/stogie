@@ -12,7 +12,8 @@ export function useVenueSearch(userLocation, isVisible) {
   const [searchMode, setSearchMode] = useState(
     userLocation ? "nearby" : "city",
   );
-  const [selectedCity, setSelectedCity] = useState(null);
+  const [selectedCity,
+    setSelectedCity, setSelectedCity] = useState(null);
   const [loadingCities, setLoadingCities] = useState(false);
 
   useEffect(() => {
@@ -208,6 +209,7 @@ export function useVenueSearch(userLocation, isVisible) {
     searchMode,
     setSearchMode,
     selectedCity,
+    setSelectedCity,
     loadingCities,
     selectCity,
     handleSearch,

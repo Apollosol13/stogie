@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Modal, Alert, Text, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { MapPin } from "lucide-react-native";
 import { useVenueSearch } from "../../hooks/useVenueSearch";
 import { apiRequest } from "../../utils/api";
 
@@ -36,6 +37,7 @@ export default function VenueSearchModal({
     searchMode,
     setSearchMode,
     selectedCity,
+    setSelectedCity,
     loadingCities,
     selectCity,
     handleSearch,
@@ -132,7 +134,8 @@ export default function VenueSearchModal({
               userLocation={userLocation}
             />
 
-            {searchMode === "city" && (
+            {/* Only show city search input when in city mode and no city is selected yet */}
+            {searchMode === "city" && !selectedCity && (
               <CitySearch
                 cityQuery={cityQuery}
                 setCityQuery={setCityQuery}
@@ -140,6 +143,61 @@ export default function VenueSearchModal({
                 selectCity={selectCity}
                 loadingCities={loadingCities}
               />
+            )}
+
+            {/* Show selected city with option to change */}
+            {searchMode === "city" && selectedCity && (
+              <View
+                style={{
+                  backgroundColor: colors.surface2,
+                  borderRadius: 12,
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  marginBottom: 16,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+                  <MapPin size={20} color={colors.accentGold} />
+                  <Text
+                    style={{
+                      color: colors.textPrimary,
+                      fontSize: 16,
+                      fontWeight: "600",
+                      marginLeft: 12,
+                      flex: 1,
+                    }}
+                  >
+                    {selectedCity.structured_formatting?.main_text || cityQuery.split(',')[0]}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  onPress={() => {
+                    setSelectedCity(null);
+                    setCityQuery("");
+                    setHasSearched(false);
+                    setSearchResults([]);
+                  }}
+                  style={{
+                    paddingHorizontal: 12,
+                    paddingVertical: 6,
+                    backgroundColor: colors.surface,
+                    borderRadius: 8,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: colors.accentGold,
+                      fontSize: 12,
+                      fontWeight: "600",
+                    }}
+                  >
+                    Change
+                  </Text>
+                </TouchableOpacity>
+              </View>
             )}
 
             <VenueSearch
