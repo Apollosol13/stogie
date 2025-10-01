@@ -27,6 +27,9 @@ export default function useCigarScanner() {
 
   const identifyCigar = async (imageUri) => {
     try {
+      console.log("🚀 STARTING CIGAR IDENTIFICATION");
+      console.log("📱 Device info - iOS app");
+      
       setStep("processing");
       setCapturedImage(imageUri);
 
@@ -67,14 +70,26 @@ export default function useCigarScanner() {
       
       console.log("🌐 Making API request to analyze-v2 endpoint...");
       
-      // Test basic connectivity first
+      // Multiple connectivity tests
+      console.log("🔧 Testing internet connectivity...");
+      
+      // Test 1: Basic internet
       try {
-        console.log("🔧 Testing basic connectivity...");
-        const testResponse = await fetch('https://stogie-production.up.railway.app/health');
-        console.log("✅ Basic connectivity test:", testResponse.status);
-      } catch (testError) {
-        console.error("❌ Basic connectivity failed:", testError.message);
-        throw new Error("Cannot connect to server - check your internet connection");
+        const googleTest = await fetch('https://www.google.com', { method: 'HEAD' });
+        console.log("✅ Internet works:", googleTest.status);
+      } catch (e) {
+        console.error("❌ No internet connection");
+        throw new Error("No internet connection - check WiFi/cellular");
+      }
+      
+      // Test 2: Our backend
+      try {
+        console.log("🔧 Testing backend connectivity...");
+        const backendTest = await fetch('https://stogie-production.up.railway.app/health');
+        console.log("✅ Backend reachable:", backendTest.status);
+      } catch (e) {
+        console.error("❌ Backend unreachable:", e.message);
+        throw new Error("Cannot reach server - try again in a moment");
       }
 
       const analysisResponse = await apiRequest("/api/cigars/analyze-v2", {
