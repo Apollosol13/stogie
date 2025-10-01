@@ -60,10 +60,12 @@ export const apiRequest = async (endpoint, options = {}) => {
     console.log('No token available, making unauthenticated request');
   }
 
-  console.log('Making API request to:', url);
-  console.log('Request headers:', headers);
+  console.log('🌐 Making API request to:', url);
+  console.log('📋 Request headers:', headers);
+  console.log('📦 Request method:', options.method || 'GET');
 
-  const response = await fetch(url, {
+  try {
+    const response = await fetch(url, {
     headers,
     ...options,
   });
@@ -79,7 +81,16 @@ export const apiRequest = async (endpoint, options = {}) => {
     }
   }
 
-  return response;
+    return response;
+  } catch (error) {
+    console.error('❌ Network request failed:', error);
+    console.error('🔍 Error details:', {
+      message: error.message,
+      name: error.name,
+      stack: error.stack?.substring(0, 200)
+    });
+    throw error;
+  }
 };
 
 /**

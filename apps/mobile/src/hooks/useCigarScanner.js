@@ -55,6 +55,7 @@ export default function useCigarScanner() {
       
       console.log("📸 Image data format:", imageData ? imageData.substring(0, 50) + "..." : "null");
       console.log("📏 Image data length:", imageData ? imageData.length : 0);
+      console.log("🌐 Making API request to analyze-v2 endpoint...");
 
       const analysisResponse = await apiRequest("/api/cigars/analyze-v2", {
         method: "POST",
