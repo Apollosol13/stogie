@@ -65,9 +65,11 @@ export const apiRequest = async (endpoint, options = {}) => {
   console.log('📦 Request method:', options.method || 'GET');
 
   try {
-    // Add timeout to prevent hanging requests - longer for iOS image processing
+    // iOS-specific timeout and network handling
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 90000); // 90 second timeout for iOS
+    const isLargeRequest = options.body && options.body.length > 1000000; // 1MB+
+    const timeoutDuration = isLargeRequest ? 120000 : 30000; // 2min for large images, 30s for others
+    const timeoutId = setTimeout(() => controller.abort(), timeoutDuration);
     
     const response = await fetch(url, {
       headers,
@@ -97,11 +99,16 @@ export const apiRequest = async (endpoint, options = {}) => {
       stack: error.stack?.substring(0, 200)
     });
     
-    // Provide more specific error messages
+    // iOS-specific error messages
     if (error.name === 'AbortError') {
-      throw new Error('Request timeout - the server took too long to respond');
+      const timeoutMsg = isLargeRequest 
+        ? 'Image upload timeout - try using a smaller image or better connection'
+        : 'Request timeout - check your internet connection';
+      throw new Error(timeoutMsg);
     } else if (error.message.includes('Network request failed')) {
-      throw new Error('Network connection failed - check your internet connection');
+      throw new Error('Network connection failed - ensure you have a stable internet connection and try again');
+    } else if (error.message.includes('Failed to fetch')) {
+      throw new Error('Connection failed - check if you can access other apps that use internet');
     }
     
     throw error;

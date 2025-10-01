@@ -60,6 +60,11 @@ export default function useCigarScanner() {
       const estimatedSizeMB = imageData ? (imageData.length * 0.75) / (1024 * 1024) : 0;
       console.log("📊 Estimated image size:", estimatedSizeMB.toFixed(2), "MB");
       
+      // iOS optimization: Warn if image is too large
+      if (estimatedSizeMB > 8) {
+        console.warn("⚠️ Large image detected - may cause network issues on iOS");
+      }
+      
       console.log("🌐 Making API request to analyze-v2 endpoint...");
 
       const analysisResponse = await apiRequest("/api/cigars/analyze-v2", {
@@ -246,7 +251,7 @@ export default function useCigarScanner() {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [4, 3],
-        quality: 0.7, // Higher quality for iOS - better for cigar band details
+        quality: 0.6, // Optimized for iOS network reliability while maintaining cigar band readability
         base64: true, // Get base64 data directly
         exif: false, // Remove EXIF data to reduce size
       });
