@@ -378,6 +378,27 @@ router.post('/analyze', async (req, res) => {
       });
     }
 
+    // Validate image format
+    if (!image.startsWith('data:image/')) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid image format. Must be base64 data URL (data:image/...)'
+      });
+    }
+
+    // Check if it's a supported format
+    const supportedFormats = ['jpeg', 'jpg', 'png', 'gif', 'webp'];
+    const formatMatch = image.match(/^data:image\/(\w+);base64,/);
+    if (!formatMatch || !supportedFormats.includes(formatMatch[1].toLowerCase())) {
+      return res.status(400).json({
+        success: false,
+        error: `Unsupported image format. Supported formats: ${supportedFormats.join(', ')}`
+      });
+    }
+
+    console.log('📸 Image format validated:', formatMatch[1]);
+    console.log('📏 Image data length:', image.length);
+
     // Check API key first
     if (!process.env.OPENAI_API_KEY) {
       return res.status(500).json({
@@ -395,6 +416,8 @@ router.post('/analyze', async (req, res) => {
 
     // Call OpenAI GPT-4 Vision (updated model name)
     console.log('🤖 Making OpenAI API call with model: gpt-4o');
+    console.log('🔍 Image URL preview:', image.substring(0, 50) + '...');
+    
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
