@@ -134,30 +134,7 @@ export default function useCigarScanner() {
 
       const analysis = analysisData.analysis;
       console.log("✅ Analysis successful:", analysis);
-      let searchQuery = "";
-      if (analysis.brand) {
-        searchQuery = analysis.brand;
-        if (analysis.line) searchQuery += " " + analysis.line;
-      } else if (analysis.description) {
-        const brandKeywords = [
-          "padron",
-          "romeo",
-          "cohiba",
-          "montecristo",
-          "arturo fuente",
-        ];
-        const foundBrand = brandKeywords.find((brand) =>
-          analysis.description.toLowerCase().includes(brand),
-        );
-        searchQuery = foundBrand || "premium cigar";
-      } else {
-        searchQuery = "cigar";
-      }
-
-      const searchResponse = await fetch(
-        `/api/cigars/search?query=${encodeURIComponent(searchQuery)}`,
-      );
-      const searchData = await searchResponse.json();
+      console.log("🤖 Using AI-first approach - building database from AI results");
 
       const expertMatch = {
         id: "expert-identified",
@@ -209,31 +186,9 @@ export default function useCigarScanner() {
         analysis_notes: analysis.notes || analysis.analysis_notes || "",
       };
 
+      // AI-first approach: Just use the perfect OpenAI identification
       let allMatches = [expertMatch];
-      if (searchResponse.ok && searchData.cigars) {
-        const dbMatches = searchData.cigars.map((cigar, index) => ({
-          id: cigar.id,
-          brand: cigar.brand,
-          line: cigar.line,
-          vitola: cigar.vitola,
-          strength: cigar.strength?.toUpperCase() || "MEDIUM",
-          wrapper: cigar.wrapper,
-          binder: cigar.binder || "Unknown",
-          filler: cigar.filler || "Unknown",
-          ringGauge: cigar.ring_gauge || cigar.ringGauge,
-          length: cigar.length_inches || cigar.length,
-          priceRange: cigar.price_range || "$10-20",
-          origin: cigar.origin_country || "Unknown",
-          notes: cigar.description || "",
-          smokingExperience: "Premium smoking experience",
-          confidence: Math.max(0.5, 0.8 - index * 0.1),
-          image:
-            cigar.image_url ||
-            "https://images.unsplash.com/photo-1571613316887-6f8d5cbf7ef7?w=200&h=150&fit=crop",
-          description: cigar.description,
-        }));
-        allMatches = [...allMatches, ...dbMatches.slice(0, 4)];
-      }
+      console.log("🎯 AI identified cigar perfectly - no database search needed");
 
       // Only proceed if we have valid matches
       if (allMatches && allMatches.length > 0) {
