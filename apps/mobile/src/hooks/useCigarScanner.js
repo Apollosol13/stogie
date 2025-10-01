@@ -89,12 +89,16 @@ export default function useCigarScanner() {
       }
 
       const analysisData = await analysisResponse.json();
+      console.log("📋 Analysis response data:", analysisData);
+      
       if (!analysisData.success || !analysisData.analysis) {
         const errorMsg = analysisData.error || "No analysis results received";
+        console.error("❌ Analysis failed:", errorMsg);
         throw new Error(errorMsg);
       }
 
       const analysis = analysisData.analysis;
+      console.log("✅ Analysis successful:", analysis);
       let searchQuery = "";
       if (analysis.brand) {
         searchQuery = analysis.brand;
@@ -196,10 +200,17 @@ export default function useCigarScanner() {
         allMatches = [...allMatches, ...dbMatches.slice(0, 4)];
       }
 
-      setTimeout(() => {
-        setMatches(allMatches);
-        setStep("results");
-      }, 4000);
+      // Only proceed if we have valid matches
+      if (allMatches && allMatches.length > 0) {
+        console.log("🎯 Found", allMatches.length, "matches, showing results");
+        setTimeout(() => {
+          setMatches(allMatches);
+          setStep("results");
+        }, 4000);
+      } else {
+        console.error("❌ No matches found, something went wrong");
+        throw new Error("No cigar matches found - analysis may have failed");
+      }
     } catch (error) {
       console.error("Error identifying cigar:", error);
       Alert.alert(
