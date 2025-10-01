@@ -365,7 +365,7 @@ router.get('/test-openai', (req, res) => {
 // Analyze cigar image with OpenAI Vision
 router.post('/analyze', async (req, res) => {
   try {
-    console.log('🚀 Cigar analysis request received');
+    console.log('🚀 Cigar analysis request received - NEW VERSION');
     console.log('📝 OpenAI API Key configured:', !!process.env.OPENAI_API_KEY);
     console.log('🔑 API Key length:', process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.length : 0);
     
