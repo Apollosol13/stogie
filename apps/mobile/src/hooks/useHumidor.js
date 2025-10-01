@@ -151,6 +151,12 @@ const useHumidor = () => {
         };
 
         console.log("Adding to humidor with payload:", humidorPayload);
+        
+        // Debug authentication for humidor
+        console.log("🔐 DEBUG: About to add to humidor with authentication");
+        console.log("🔐 DEBUG: User authenticated?", !!user);
+        console.log("🔐 DEBUG: User ID:", user?.id);
+        console.log("🔐 DEBUG: User object:", user);
 
         const response = await apiRequest("/api/humidor", {
           method: "POST",
