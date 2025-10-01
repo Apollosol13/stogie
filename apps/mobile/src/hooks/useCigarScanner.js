@@ -52,7 +52,7 @@ export default function useCigarScanner() {
         });
       }
 
-      const analysisResponse = await apiRequest("/api/cigars/analyze", {
+      const analysisResponse = await apiRequest("/api/cigars/analyze-v2", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ image: imageData }), // Changed from imageUri to image

@@ -373,7 +373,7 @@ router.post('/test-analyze', (req, res) => {
 });
 
 // Analyze cigar image with OpenAI Vision
-router.post('/analyze', async (req, res) => {
+router.post('/analyze-v2', async (req, res) => {
   try {
     console.log('🚀 Cigar analysis request received - NEW VERSION');
     console.log('📝 OpenAI API Key configured:', !!process.env.OPENAI_API_KEY);
