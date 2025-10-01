@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { Animated, Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import * as SecureStore from "expo-secure-store";
 import { useRouter } from "expo-router";
 import useHumidor from "@/hooks/useHumidor";
 import useUser from "@/utils/auth/useUser";
@@ -255,6 +256,27 @@ export default function useCigarScanner() {
 
   const addCigarToHumidor = async (match, isWishlist = false) => {
     try {
+      // Debug authentication state thoroughly
+      console.log("🔐 FULL AUTH DEBUG:");
+      console.log("🔐 User from useUser hook:", user);
+      console.log("🔐 User exists?", !!user);
+      console.log("🔐 User keys:", user ? Object.keys(user) : "no user");
+      
+      // Check SecureStore directly
+      const authData = await SecureStore.getItemAsync('stogie-auth-jwt');
+      console.log("🔐 Raw SecureStore data:", authData ? "exists" : "null");
+      if (authData) {
+        try {
+          const parsed = JSON.parse(authData);
+          console.log("🔐 Parsed auth keys:", Object.keys(parsed));
+          console.log("🔐 Has JWT?", !!parsed.jwt);
+          console.log("🔐 Has user?", !!parsed.user);
+          console.log("🔐 User in storage:", parsed.user);
+        } catch (e) {
+          console.log("🔐 Failed to parse auth data:", e.message);
+        }
+      }
+      
       console.log("Adding cigar to humidor:", {
         cigarId:
           match.id && !match.id.toString().startsWith("expert-identified")
