@@ -65,10 +65,17 @@ export const apiRequest = async (endpoint, options = {}) => {
   console.log('📦 Request method:', options.method || 'GET');
 
   try {
+    // Add timeout to prevent hanging requests
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+    
     const response = await fetch(url, {
-    headers,
-    ...options,
-  });
+      headers,
+      signal: controller.signal,
+      ...options,
+    });
+    
+    clearTimeout(timeoutId);
 
   // If we get a 401 and this is an authenticated endpoint, the token might be expired
   if (response.status === 401 && token) {
@@ -89,6 +96,14 @@ export const apiRequest = async (endpoint, options = {}) => {
       name: error.name,
       stack: error.stack?.substring(0, 200)
     });
+    
+    // Provide more specific error messages
+    if (error.name === 'AbortError') {
+      throw new Error('Request timeout - the server took too long to respond');
+    } else if (error.message.includes('Network request failed')) {
+      throw new Error('Network connection failed - check your internet connection');
+    }
+    
     throw error;
   }
 };

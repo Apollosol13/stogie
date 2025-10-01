@@ -241,7 +241,7 @@ export default function useCigarScanner() {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [4, 3],
-        quality: 0.8,
+        quality: 0.3, // Reduced quality to prevent large files
         base64: true, // Get base64 data directly
       });
 

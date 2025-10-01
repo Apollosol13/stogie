@@ -29,7 +29,7 @@ export default function CameraMode({ identifyCigar, pickImageFromGallery }) {
 
     try {
       const photo = await cameraRef.current.takePictureAsync({
-        quality: 0.8,
+        quality: 0.3, // Reduced quality to prevent large files
         base64: true, // Changed to true to get base64 data
       });
 
