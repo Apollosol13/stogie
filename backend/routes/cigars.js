@@ -375,9 +375,11 @@ router.post('/test-analyze', (req, res) => {
 // Analyze cigar image with OpenAI Vision
 router.post('/analyze-v2', async (req, res) => {
   try {
-    console.log('🚀 Cigar analysis request received - NEW VERSION');
+    console.log('🚀 Cigar analysis request received - DEBUG VERSION');
     console.log('📝 OpenAI API Key configured:', !!process.env.OPENAI_API_KEY);
     console.log('🔑 API Key length:', process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.length : 0);
+    console.log('🔍 All env vars containing OPENAI:', Object.keys(process.env).filter(key => key.includes('OPENAI')));
+    console.log('🔍 API Key preview:', process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.substring(0, 10) + '...' : 'NOT SET');
     
     const { image } = req.body;
 
