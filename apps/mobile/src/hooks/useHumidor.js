@@ -96,39 +96,18 @@ const useHumidor = () => {
         ) {
           console.log("Creating new cigar from AI analysis...");
           // Create the cigar first if it doesn't exist - include all AI analysis data
+          // Fix payload to match backend API expectations
           const createPayload = {
             brand: cigarData.brand,
             line: cigarData.line || "",
             vitola: cigarData.vitola,
-            strength: cigarData.strength?.toLowerCase() || "medium",
+            strength: cigarData.strength?.toUpperCase() || "MEDIUM",  // Backend validates uppercase
             wrapper: cigarData.wrapper || "",
             binder: cigarData.binder || "",
             filler: cigarData.filler || "",
-            ring_gauge: safeParseInt(
-              cigarData.ringGauge || cigarData.ring_gauge,
-            ),
-            length_inches: safeParseFloat(
-              cigarData.length || cigarData.length_inches,
-            ),
-            flavor_profile:
-              cigarData.flavorProfile || cigarData.flavor_profile || [],
-            origin_country: cigarData.origin || cigarData.origin_country || "",
-            price_range: cigarData.priceRange || cigarData.price_range || "",
-            description: cigarData.description || "",
-            image_url: cigarData.image || cigarData.image_url || null,
-            // AI Analysis fields - use the field names the API expects
-            smoking_time_minutes:
-              cigarData.smoking_time_minutes ||
-              (cigarData.smokingTime
-                ? parseInt(cigarData.smokingTime.match(/\d+/)?.[0]) || null
-                : null),
-            smoking_experience:
-              cigarData.smoking_experience || cigarData.smokingExperience || "",
-            ai_confidence:
-              cigarData.ai_confidence || cigarData.confidence || null,
-            analysis_notes: cigarData.analysis_notes || cigarData.notes || "",
-            is_ai_identified:
-              cigarData.is_ai_identified || cigarData.isAiIdentified || false,
+            country: cigarData.origin || "",  // Backend expects 'country'
+            imageUrl: cigarData.image || cigarData.image_url || null,  // Backend expects 'imageUrl'
+            description: cigarData.description || cigarData.notes || "",
           };
 
           console.log("Creating cigar with payload:", createPayload);
@@ -156,14 +135,14 @@ const useHumidor = () => {
 
         console.log("Adding to humidor with cigar ID:", finalCigarId);
 
-        // Add to humidor
+        // Add to humidor - fix API payload to match backend expectations
         const humidorPayload = {
-          cigar_id: finalCigarId,
+          cigarId: finalCigarId,  // Backend expects camelCase
+          status: isWishlist ? 'wishlist' : 'owned',  // Backend expects status string
           quantity,
-          is_wishlist: isWishlist,
-          personal_notes: notes,
-          purchase_price: purchasePrice,
-          purchase_date: new Date().toISOString().split("T")[0],
+          notes: notes,  // Backend expects 'notes' not 'personal_notes'
+          pricePaid: purchasePrice,  // Backend expects camelCase
+          acquiredDate: new Date().toISOString().split("T")[0],  // Backend expects camelCase
         };
 
         console.log("Adding to humidor with payload:", humidorPayload);
