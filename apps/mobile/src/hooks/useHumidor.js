@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "../utils/api";
 
 const useHumidor = () => {
   const queryClient = useQueryClient();
@@ -13,7 +14,7 @@ const useHumidor = () => {
   } = useQuery({
     queryKey: ["humidor"],
     queryFn: async () => {
-      const response = await fetch("/api/humidor?includeWishlist=true");
+      const response = await apiRequest("/api/humidor?includeWishlist=true");
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -132,7 +133,7 @@ const useHumidor = () => {
 
           console.log("Creating cigar with payload:", createPayload);
 
-          const createResponse = await fetch("/api/cigars", {
+          const createResponse = await apiRequest("/api/cigars", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(createPayload),
@@ -167,7 +168,7 @@ const useHumidor = () => {
 
         console.log("Adding to humidor with payload:", humidorPayload);
 
-        const response = await fetch("/api/humidor", {
+        const response = await apiRequest("/api/humidor", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(humidorPayload),

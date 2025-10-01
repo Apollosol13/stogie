@@ -10,7 +10,7 @@ import {
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ErrorBoundaryWrapper } from '../../__create/SharedErrorBoundary';
+// Removed Create.xyz ErrorBoundaryWrapper import
 
 interface ParentSitemap {
   expoPages?: Array<{
@@ -430,10 +430,6 @@ const styles = StyleSheet.create({
   },
 });
 
-export default () => {
-  return (
-    <ErrorBoundaryWrapper>
-      <NotFoundScreen />
-    </ErrorBoundaryWrapper>
-  );
-};
+export default function NotFound() {
+  return <NotFoundScreen />;
+}

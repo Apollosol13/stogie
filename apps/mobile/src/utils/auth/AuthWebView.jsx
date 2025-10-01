@@ -78,10 +78,7 @@ export const AuthWebView = ({ mode, proxyURL, baseURL }) => {
         uri: currentURI,
       }}
       headers={{
-        'x-createxyz-project-group-id': process.env.EXPO_PUBLIC_PROJECT_GROUP_ID,
-        host: process.env.EXPO_PUBLIC_HOST,
-        'x-forwarded-host': process.env.EXPO_PUBLIC_HOST,
-        'x-createxyz-host': process.env.EXPO_PUBLIC_HOST,
+        // Removed Create.xyz headers - using standard auth
       }}
       onShouldStartLoadWithRequest={(request) => {
         if (request.url === `${baseURL}${callbackUrl}`) {

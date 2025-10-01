@@ -1,40 +1,36 @@
-import { usePathname, useRouter } from 'expo-router';
 import { App } from 'expo-router/build/qualified-entry';
-import React, { memo, useEffect, useState } from 'react';
-import { ErrorBoundaryWrapper } from './__create/SharedErrorBoundary';
-import './src/__create/polyfills';
+import React, { memo } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Toaster } from 'sonner-native';
 import { AlertModal } from './polyfills/web/alerts.web';
 import './global.css';
 
-const GlobalErrorReporter = () => {
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
+// Simple Error Boundary Component
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('Error caught by boundary:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return null; // You can customize this error UI
     }
-    const errorHandler = (event: ErrorEvent) => {
-      if (typeof event.preventDefault === 'function') event.preventDefault();
-      console.error(event.error);
-    };
-    // unhandled promises happen all the time, so we just log them
-    const unhandledRejectionHandler = (event: PromiseRejectionEvent) => {
-      if (typeof event.preventDefault === 'function') event.preventDefault();
-      console.error('Unhandled promise rejection:', event.reason);
-    };
-    window.addEventListener('error', errorHandler);
-    window.addEventListener('unhandledrejection', unhandledRejectionHandler);
-    return () => {
-      window.removeEventListener('error', errorHandler);
-      window.removeEventListener('unhandledrejection', unhandledRejectionHandler);
-    };
-  }, []);
-  return null;
-};
+    return this.props.children;
+  }
+}
 
 const Wrapper = memo(() => {
   return (
-    <ErrorBoundaryWrapper>
+    <ErrorBoundary>
       <SafeAreaProvider
         initialMetrics={{
           insets: { top: 64, bottom: 34, left: 0, right: 0 },
@@ -47,63 +43,13 @@ const Wrapper = memo(() => {
         }}
       >
         <App />
-        <GlobalErrorReporter />
         <Toaster />
       </SafeAreaProvider>
-    </ErrorBoundaryWrapper>
+    </ErrorBoundary>
   );
 });
-const healthyResponse = {
-  type: 'sandbox:mobile:healthcheck:response',
-  healthy: true,
-};
 
-const useHandshakeParent = () => {
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data.type === 'sandbox:mobile:healthcheck') {
-        window.parent.postMessage(healthyResponse, '*');
-      }
-    };
-    window.addEventListener('message', handleMessage);
-    // Immediately respond to the parent window with a healthy response in
-    // case we missed the healthcheck message
-    window.parent.postMessage(healthyResponse, '*');
-    return () => {
-      window.removeEventListener('message', handleMessage);
-    };
-  }, []);
-};
-
-const CreateApp = () => {
-  const router = useRouter();
-  const pathname = usePathname();
-  useHandshakeParent();
-
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data.type === 'sandbox:navigation' && event.data.pathname !== pathname) {
-        router.push(event.data.pathname);
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
-    window.parent.postMessage({ type: 'sandbox:mobile:ready' }, '*');
-    return () => {
-      window.removeEventListener('message', handleMessage);
-    };
-  }, [router, pathname]);
-
-  useEffect(() => {
-    window.parent.postMessage(
-      {
-        type: 'sandbox:mobile:navigation',
-        pathname,
-      },
-      '*'
-    );
-  }, [pathname]);
-
+const StogieCigarApp = () => {
   return (
     <>
       <Wrapper />
@@ -112,4 +58,4 @@ const CreateApp = () => {
   );
 };
 
-export default CreateApp;
+export default StogieCigarApp;

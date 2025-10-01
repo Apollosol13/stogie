@@ -10,9 +10,10 @@ export default function useMapData() {
   const loadMapData = useCallback(async () => {
     try {
       setLoading(true);
+      const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://stogie-production.up.railway.app';
       const [shopsResponse, sessionsResponse] = await Promise.all([
-        fetch("/api/shops"),
-        fetch("/api/smoking-sessions"),
+        fetch(`${API_BASE_URL}/api/shops`),
+        fetch(`${API_BASE_URL}/api/smoking-sessions`),
       ]);
 
       if (shopsResponse.ok) {

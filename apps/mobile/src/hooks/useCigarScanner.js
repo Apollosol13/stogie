@@ -4,6 +4,7 @@ import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import useHumidor from "@/hooks/useHumidor";
 import useUser from "@/utils/auth/useUser";
+import { apiRequest } from "../utils/api";
 
 export default function useCigarScanner() {
   const router = useRouter();
@@ -51,7 +52,7 @@ export default function useCigarScanner() {
         });
       }
 
-      const analysisResponse = await fetch("/api/cigars/analyze", {
+      const analysisResponse = await apiRequest("/api/cigars/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ image: imageData }), // Changed from imageUri to image

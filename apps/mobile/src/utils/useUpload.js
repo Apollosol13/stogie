@@ -16,13 +16,13 @@ function useUpload() {
           const formData = new FormData();
           formData.append("file", asset.file);
 
-          response = await fetch("/_create/api/upload/", {
+          response = await fetch("/api/upload/", {
             method: "POST",
             body: formData,
           });
         } else {
           // Fallback to presigned Uploadcare upload
-          const presignRes = await fetch("/_create/api/upload/presign/", {
+          const presignRes = await fetch("/api/upload/presign/", {
             method: "POST",
           });
           const { secureSignature, secureExpire } = await presignRes.json();
@@ -33,10 +33,10 @@ function useUpload() {
             secureSignature,
             secureExpire
           });
-          return { url: `${process.env.EXPO_PUBLIC_BASE_CREATE_USER_CONTENT_URL}/${result.uuid}/`, mimeType: result.mimeType || null };
+          return { url: `${process.env.EXPO_PUBLIC_API_URL}/uploads/${result.uuid}/`, mimeType: result.mimeType || null };
         }
       } else if ("url" in input) {
-        response = await fetch("/_create/api/upload/", {
+        response = await fetch("/api/upload/", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
@@ -44,7 +44,7 @@ function useUpload() {
           body: JSON.stringify({ url: input.url })
         });
       } else if ("base64" in input) {
-        response = await fetch("/_create/api/upload/", {
+        response = await fetch("/api/upload/", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
@@ -52,7 +52,7 @@ function useUpload() {
           body: JSON.stringify({ base64: input.base64 })
         });
       } else {
-        response = await fetch("/_create/api/upload/", {
+        response = await fetch("/api/upload/", {
           method: "POST",
           headers: {
             "Content-Type": "application/octet-stream"

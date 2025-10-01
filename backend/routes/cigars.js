@@ -365,12 +365,24 @@ router.get('/test-openai', (req, res) => {
 // Analyze cigar image with OpenAI Vision
 router.post('/analyze', async (req, res) => {
   try {
+    console.log('🚀 Cigar analysis request received');
+    console.log('📝 OpenAI API Key configured:', !!process.env.OPENAI_API_KEY);
+    console.log('🔑 API Key length:', process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.length : 0);
+    
     const { image } = req.body;
 
     if (!image) {
       return res.status(400).json({
         success: false,
         error: 'No image provided'
+      });
+    }
+
+    // Check API key first
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({
+        success: false,
+        error: 'OpenAI API key not configured'
       });
     }
 
@@ -381,14 +393,8 @@ router.post('/analyze', async (req, res) => {
       apiKey: process.env.OPENAI_API_KEY
     });
 
-    if (!process.env.OPENAI_API_KEY) {
-      return res.status(500).json({
-        success: false,
-        error: 'OpenAI API key not configured'
-      });
-    }
-
     // Call OpenAI GPT-4 Vision (updated model name)
+    console.log('🤖 Making OpenAI API call with model: gpt-4o');
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [

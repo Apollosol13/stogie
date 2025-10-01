@@ -1,5 +1,5 @@
 import { useAuth } from "@/utils/auth/useAuth";
-import { AuthModal } from "@/utils/auth/useAuthModal";
+import AuthModal from "@/components/auth/AuthModal";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";

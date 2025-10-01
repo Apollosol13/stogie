@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Alert } from "react-native";
+import { apiRequest } from "../utils/api";
 
 const getInitialFormState = (review) => ({
   rating: review?.rating || 0,
@@ -72,7 +73,7 @@ export function useReviewForm(userReview, cigarId, user, onSuccess) {
 
       console.log("Submitting review payload:", payload);
 
-      const response = await fetch("/api/reviews", {
+      const response = await apiRequest("/api/reviews", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

@@ -1,8 +1,10 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { colors } from "@/constants/colors";
+import { useAuthModal } from "@/utils/auth/store";
 
-export default function AuthPrompt({ onSignIn }) {
+export default function AuthPrompt() {
+  const { open } = useAuthModal();
   return (
     <View
       style={{
@@ -37,7 +39,7 @@ export default function AuthPrompt({ onSignIn }) {
         other enthusiasts.
       </Text>
       <TouchableOpacity
-        onPress={onSignIn}
+        onPress={() => open({ mode: 'signin' })}
         style={{
           backgroundColor: colors.accentGold,
           paddingHorizontal: 32,
