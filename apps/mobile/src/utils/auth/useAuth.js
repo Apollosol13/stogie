@@ -25,7 +25,9 @@ export const useAuth = () => {
     });
   }, []);
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    initiate();
+  }, [initiate]);
 
   const signIn = useCallback(() => {
     open({ mode: 'signin' });
