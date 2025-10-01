@@ -111,6 +111,11 @@ const useHumidor = () => {
           };
 
           console.log("Creating cigar with payload:", createPayload);
+          
+          // Debug authentication
+          console.log("🔐 DEBUG: About to create cigar with authentication");
+          console.log("🔐 DEBUG: User authenticated?", !!user);
+          console.log("🔐 DEBUG: User ID:", user?.id);
 
           const createResponse = await apiRequest("/api/cigars", {
             method: "POST",

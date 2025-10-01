@@ -119,8 +119,8 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Create new cigar (authenticated)
-router.post('/', authenticateToken, async (req, res) => {
+// Create new cigar (public for AI-generated cigars)
+router.post('/', async (req, res) => {
   try {
     const {
       brand,
