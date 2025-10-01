@@ -477,7 +477,9 @@ IMPORTANT:
 - If you cannot identify the exact cigar, make your best educated guess based on visible elements
 - All fields should have values - use "Unknown" only if absolutely necessary
 - Focus on accuracy based on your cigar knowledge, not just what's visible
-- Return ONLY the JSON object, no additional text`
+- Return ONLY the JSON object, no additional text
+- Do not include any explanations, markdown formatting, or extra content
+- Start your response with { and end with }`
             },
             {
               type: "image_url",
@@ -493,17 +495,38 @@ IMPORTANT:
     });
 
     const analysisText = response.choices[0].message.content;
+    console.log('🤖 Raw OpenAI response:', analysisText);
     
-    // Parse the JSON response
+    // Parse the JSON response - try to extract JSON from the response
     let analysis;
     try {
+      // First try direct parsing
       analysis = JSON.parse(analysisText);
     } catch (parseError) {
-      console.error('Failed to parse OpenAI response:', analysisText);
-      return res.status(500).json({
-        success: false,
-        error: 'Failed to parse AI analysis'
-      });
+      console.log('🔧 Direct JSON parse failed, trying to extract JSON...');
+      
+      // Try to extract JSON from the response (sometimes OpenAI adds extra text)
+      const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        try {
+          analysis = JSON.parse(jsonMatch[0]);
+          console.log('✅ Successfully extracted JSON from response');
+        } catch (extractError) {
+          console.error('❌ Failed to parse extracted JSON:', jsonMatch[0]);
+          return res.status(500).json({
+            success: false,
+            error: 'Failed to parse AI analysis - invalid JSON format',
+            details: process.env.NODE_ENV === 'development' ? analysisText.substring(0, 200) + '...' : undefined
+          });
+        }
+      } else {
+        console.error('❌ No JSON found in OpenAI response:', analysisText);
+        return res.status(500).json({
+          success: false,
+          error: 'Failed to parse AI analysis - no JSON found',
+          details: process.env.NODE_ENV === 'development' ? analysisText.substring(0, 200) + '...' : undefined
+        });
+      }
     }
 
     res.json({
