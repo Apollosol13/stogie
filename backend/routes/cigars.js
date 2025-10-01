@@ -398,6 +398,17 @@ router.post('/analyze', async (req, res) => {
 
     console.log('📸 Image format validated:', formatMatch[1]);
     console.log('📏 Image data length:', image.length);
+    
+    // Check image size (OpenAI has a 20MB limit, but let's be conservative)
+    const imageSizeInMB = (image.length * 0.75) / (1024 * 1024); // Base64 is ~33% larger than binary
+    console.log('📊 Estimated image size:', imageSizeInMB.toFixed(2), 'MB');
+    
+    if (imageSizeInMB > 10) {
+      return res.status(400).json({
+        success: false,
+        error: `Image too large (${imageSizeInMB.toFixed(1)}MB). Please use a smaller image (max 10MB).`
+      });
+    }
 
     // Check API key first
     if (!process.env.OPENAI_API_KEY) {
@@ -461,7 +472,8 @@ IMPORTANT:
             {
               type: "image_url",
               image_url: {
-                url: image
+                url: image,
+                detail: "high"
               }
             }
           ]
