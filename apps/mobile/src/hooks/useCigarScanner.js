@@ -55,6 +55,11 @@ export default function useCigarScanner() {
       
       console.log("📸 Image data format:", imageData ? imageData.substring(0, 50) + "..." : "null");
       console.log("📏 Image data length:", imageData ? imageData.length : 0);
+      
+      // Calculate estimated file size (base64 is ~33% larger than binary)
+      const estimatedSizeMB = imageData ? (imageData.length * 0.75) / (1024 * 1024) : 0;
+      console.log("📊 Estimated image size:", estimatedSizeMB.toFixed(2), "MB");
+      
       console.log("🌐 Making API request to analyze-v2 endpoint...");
 
       const analysisResponse = await apiRequest("/api/cigars/analyze-v2", {
@@ -241,8 +246,9 @@ export default function useCigarScanner() {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [4, 3],
-        quality: 0.3, // Reduced quality to prevent large files
+        quality: 0.7, // Higher quality for iOS - better for cigar band details
         base64: true, // Get base64 data directly
+        exif: false, // Remove EXIF data to reduce size
       });
 
       if (!result.canceled && result.assets && result.assets[0]) {

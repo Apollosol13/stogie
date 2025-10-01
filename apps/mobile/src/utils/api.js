@@ -65,9 +65,9 @@ export const apiRequest = async (endpoint, options = {}) => {
   console.log('📦 Request method:', options.method || 'GET');
 
   try {
-    // Add timeout to prevent hanging requests
+    // Add timeout to prevent hanging requests - longer for iOS image processing
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 90000); // 90 second timeout for iOS
     
     const response = await fetch(url, {
       headers,

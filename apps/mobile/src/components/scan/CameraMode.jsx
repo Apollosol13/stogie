@@ -29,8 +29,9 @@ export default function CameraMode({ identifyCigar, pickImageFromGallery }) {
 
     try {
       const photo = await cameraRef.current.takePictureAsync({
-        quality: 0.3, // Reduced quality to prevent large files
-        base64: true, // Changed to true to get base64 data
+        quality: 0.7, // Higher quality for iOS - better for cigar band details
+        base64: true, // Get base64 data directly
+        exif: false, // Remove EXIF data to reduce size
       });
 
       if (photo && photo.uri) {
