@@ -362,6 +362,16 @@ router.get('/test-openai', (req, res) => {
   });
 });
 
+// Simple test endpoint for debugging
+router.post('/test-analyze', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Test analyze endpoint working',
+    timestamp: new Date().toISOString(),
+    body: req.body
+  });
+});
+
 // Analyze cigar image with OpenAI Vision
 router.post('/analyze', async (req, res) => {
   try {
