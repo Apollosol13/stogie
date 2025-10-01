@@ -66,6 +66,16 @@ export default function useCigarScanner() {
       }
       
       console.log("🌐 Making API request to analyze-v2 endpoint...");
+      
+      // Test basic connectivity first
+      try {
+        console.log("🔧 Testing basic connectivity...");
+        const testResponse = await fetch('https://stogie-production.up.railway.app/health');
+        console.log("✅ Basic connectivity test:", testResponse.status);
+      } catch (testError) {
+        console.error("❌ Basic connectivity failed:", testError.message);
+        throw new Error("Cannot connect to server - check your internet connection");
+      }
 
       const analysisResponse = await apiRequest("/api/cigars/analyze-v2", {
         method: "POST",

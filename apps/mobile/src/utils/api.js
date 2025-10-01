@@ -12,6 +12,11 @@ export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://stogie-p
 export const apiRequest = async (endpoint, options = {}) => {
   const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
   
+  // Debug logging for network issues
+  console.log('🔧 DEBUG - API_BASE_URL:', API_BASE_URL);
+  console.log('🔧 DEBUG - Full URL:', url);
+  console.log('🔧 DEBUG - Endpoint:', endpoint);
+  
   // Get JWT token from SecureStore
   let token = null;
   try {
