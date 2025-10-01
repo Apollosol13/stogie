@@ -40,6 +40,7 @@ export default function useCigarScanner() {
       // Convert image to base64 if it's a local URI
       let imageData = imageUri;
       if (imageUri && !imageUri.startsWith("data:image/")) {
+        console.log("📱 Converting local URI to base64:", imageUri.substring(0, 50) + "...");
         // If it's a local URI, we need to read it as base64
         const response = await fetch(imageUri);
         const blob = await response.blob();
@@ -51,6 +52,9 @@ export default function useCigarScanner() {
           reader.readAsDataURL(blob);
         });
       }
+      
+      console.log("📸 Image data format:", imageData ? imageData.substring(0, 50) + "..." : "null");
+      console.log("📏 Image data length:", imageData ? imageData.length : 0);
 
       const analysisResponse = await apiRequest("/api/cigars/analyze-v2", {
         method: "POST",
@@ -59,12 +63,34 @@ export default function useCigarScanner() {
       });
 
       if (!analysisResponse.ok) {
-        throw new Error(`Analysis failed: ${analysisResponse.status}`);
+        // Get detailed error message from server
+        let errorMessage = `Analysis failed: ${analysisResponse.status}`;
+        try {
+          const errorData = await analysisResponse.json();
+          if (errorData.error) {
+            errorMessage = `${errorMessage} - ${errorData.error}`;
+          }
+          if (errorData.details) {
+            errorMessage = `${errorMessage} (${errorData.details})`;
+          }
+        } catch (e) {
+          // If we can't parse the error response, use the text
+          try {
+            const errorText = await analysisResponse.text();
+            if (errorText) {
+              errorMessage = `${errorMessage} - ${errorText}`;
+            }
+          } catch (e2) {
+            // Use the basic error message
+          }
+        }
+        throw new Error(errorMessage);
       }
 
       const analysisData = await analysisResponse.json();
       if (!analysisData.success || !analysisData.analysis) {
-        throw new Error("No analysis results received");
+        const errorMsg = analysisData.error || "No analysis results received";
+        throw new Error(errorMsg);
       }
 
       const analysis = analysisData.analysis;
