@@ -15,14 +15,14 @@ const supabase = createClient(
   }
 );
 
-// Anon client for JWT verification
+// Anon client for JWT verification - respects Supabase dashboard settings
 export const supabaseAuth = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_ANON_KEY,
   {
     auth: {
-      autoRefreshToken: false,
-      persistSession: false
+      autoRefreshToken: true,   // Allow tokens to refresh per dashboard settings
+      persistSession: true      // Persist sessions per dashboard settings (never expire)
     }
   }
 );
