@@ -25,14 +25,26 @@ export const authenticateToken = async (req, res, next) => {
     }
 
     // Verify token with Supabase using anon client
+    console.log('🔐 AUTH MIDDLEWARE: Verifying token...');
+    console.log('🔐 AUTH MIDDLEWARE: Token preview:', token.substring(0, 30) + '...');
+    
     const { data: { user }, error } = await supabaseAuth.auth.getUser(token);
+    
+    console.log('🔐 AUTH MIDDLEWARE: Supabase response:', { user: !!user, error: error?.message });
+    
+    if (error) {
+      console.log('🔐 AUTH MIDDLEWARE: Supabase error details:', error);
+    }
 
     if (error || !user) {
+      console.log('🔐 AUTH MIDDLEWARE: Token verification failed');
       return res.status(401).json({
         success: false,
         error: 'Invalid or expired token'
       });
     }
+    
+    console.log('🔐 AUTH MIDDLEWARE: Token verified successfully for user:', user.id);
 
     // Attach user to request
     req.user = user;
