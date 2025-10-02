@@ -68,6 +68,16 @@ const useHumidor = () => {
     return isNaN(parsed) ? null : parsed;
   };
 
+  // Helper function to normalize strength values to backend requirements
+  const normalizeStrength = (strength) => {
+    if (!strength) return "MEDIUM";
+    
+    const str = strength.toLowerCase();
+    if (str.includes('mild') || str.includes('light') || str.includes('weak')) return "MILD";
+    if (str.includes('full') || str.includes('strong') || str.includes('bold')) return "FULL";
+    return "MEDIUM"; // Default for medium, moderate, etc.
+  };
+
   // Add cigar to humidor
   const addToHumidorMutation = useMutation({
     mutationFn: async ({
@@ -103,7 +113,7 @@ const useHumidor = () => {
             brand: cigarData.brand,
             line: cigarData.line || "",
             vitola: cigarData.vitola,
-            strength: cigarData.strength?.toUpperCase() || "MEDIUM",  // Backend validates uppercase
+            strength: normalizeStrength(cigarData.strength),  // Normalize to MILD, MEDIUM, or FULL
             wrapper: cigarData.wrapper || "",
             binder: cigarData.binder || "",
             filler: cigarData.filler || "",
