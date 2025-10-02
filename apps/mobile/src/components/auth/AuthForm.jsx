@@ -59,16 +59,28 @@ export default function AuthForm({ mode = 'signin', onSuccess, onModeChange }) {
         Alert.alert('Success', 'Account created successfully! Please sign in.');
         onModeChange?.('signin');
       } else {
+        // Debug what backend actually returns
+        console.log('🔐 Backend signin response:', data);
+        console.log('🔐 Session object:', data.session);
+        console.log('🔐 Access token:', data.session?.access_token);
+        console.log('🔐 User object:', data.user);
+        
         // Store only the essential data to avoid SecureStore size limit
         const authData = {
-          jwt: data.session?.access_token || data.session,
+          jwt: data.session?.access_token,  // Remove fallback - we want to see if this fails
           user: {
             id: data.user?.id,
             email: data.user?.email,
-            name: data.user?.fullName
+            name: data.user?.fullName || data.user?.name,
+            username: data.user?.username,
+            avatarUrl: data.user?.avatarUrl
           },
           expires_at: data.session?.expires_at
         };
+        
+        console.log('🔐 Storing auth data:', authData);
+        console.log('🔐 JWT token exists?', !!authData.jwt);
+        console.log('🔐 JWT token preview:', authData.jwt?.substring(0, 20) + '...');
         
         setAuth(authData);
         onSuccess?.();
