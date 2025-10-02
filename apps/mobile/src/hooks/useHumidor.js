@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "../utils/api";
+import { useUser } from "../utils/auth/useUser";
 
 const useHumidor = () => {
   const queryClient = useQueryClient();
+  const { user } = useUser();
 
   // Fetch humidor entries
   const {
