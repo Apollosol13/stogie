@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import * as SecureStore from 'expo-secure-store';
 import { apiRequest } from "../utils/api";
 import { useUser } from "../utils/auth/useUser";
 
@@ -169,6 +170,20 @@ const useHumidor = () => {
         console.log("🔐 DEBUG: User authenticated?", !!user);
         console.log("🔐 DEBUG: User ID:", user?.id);
         console.log("🔐 DEBUG: User object:", user);
+
+        // Debug token before API call
+        console.log("🔐 HUMIDOR: About to make API call to /api/humidor");
+        const testAuth = await SecureStore.getItemAsync('stogie-auth-jwt');
+        console.log("🔐 HUMIDOR: SecureStore auth data exists?", !!testAuth);
+        if (testAuth) {
+          try {
+            const parsed = JSON.parse(testAuth);
+            console.log("🔐 HUMIDOR: JWT exists in storage?", !!parsed.jwt);
+            console.log("🔐 HUMIDOR: JWT preview:", parsed.jwt?.substring(0, 30) + '...');
+          } catch (e) {
+            console.log("🔐 HUMIDOR: Failed to parse auth data:", e.message);
+          }
+        }
 
         const response = await apiRequest("/api/humidor", {
           method: "POST",
