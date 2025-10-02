@@ -18,10 +18,12 @@ export const apiRequest = async (endpoint, options = {}) => {
   console.log('🔧 DEBUG - Endpoint:', endpoint);
   
   // Get JWT token from SecureStore
+  console.log('🚀 API: Starting token retrieval for:', endpoint);
   let token = null;
   try {
     const authData = await SecureStore.getItemAsync('stogie-auth-jwt');
-    console.log('Raw auth data from SecureStore:', authData ? 'exists' : 'null');
+    console.log('🚀 API: Raw auth data from SecureStore:', authData ? 'exists' : 'null');
+    console.log('🚀 API: Auth data length:', authData ? authData.length : 0);
     
     if (authData) {
       const auth = JSON.parse(authData);
@@ -29,7 +31,9 @@ export const apiRequest = async (endpoint, options = {}) => {
       
       // Handle the simplified token format
       token = auth.jwt;
-      console.log('Extracted token:', token ? 'exists' : 'null');
+      console.log('🚀 API: Extracted token:', token ? 'exists' : 'null');
+      console.log('🚀 API: Token preview:', token ? token.substring(0, 30) + '...' : 'null');
+      console.log('🚀 API: Token type:', typeof token);
       
       // Check if token is expired (only if expires_at exists)
       if (auth.expires_at) {
