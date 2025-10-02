@@ -88,15 +88,11 @@ export const apiRequest = async (endpoint, options = {}) => {
     
     clearTimeout(timeoutId);
 
-  // If we get a 401 and this is an authenticated endpoint, the token might be expired
+  // If we get a 401 and this is an authenticated endpoint, log it but don't clear token
+  // (The 401 might be due to backend issues, not expired token)
   if (response.status === 401 && token) {
-    console.log('Received 401 with token - token might be expired');
-    // Clear the stored auth data
-    try {
-      await SecureStore.deleteItemAsync('stogie-auth-jwt');
-    } catch (error) {
-      console.log('Error clearing expired token:', error);
-    }
+    console.log('Received 401 with token - backend authentication issue');
+    console.log('Token is still valid, not clearing from storage');
   }
 
     return response;
