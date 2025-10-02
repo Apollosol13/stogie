@@ -4,7 +4,83 @@ import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Get user's humidor entries
+// Get current user's humidor entries (no userId needed - uses JWT)
+router.get('/', authenticateToken, async (req, res) => {
+  try {
+    const { status } = req.query;
+    const userId = req.user.id; // Get userId from JWT token
+
+    let query = supabase
+      .from('humidor_entries')
+      .select(`
+        *,
+        cigars (
+          id,
+          brand,
+          line,
+          vitola,
+          strength,
+          wrapper,
+          binder,
+          filler,
+          ring_gauge,
+          length_inches,
+          origin_country,
+          flavor_profile,
+          description,
+          image_url,
+          average_rating,
+          price_range,
+          smoking_time_minutes,
+          smoking_experience,
+          ai_confidence,
+          analysis_notes,
+          is_ai_identified
+        )
+      `)
+      .eq('user_id', userId);
+
+    if (status) {
+      query = query.eq('status', status);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to fetch humidor entries'
+      });
+    }
+
+    // Calculate stats
+    const stats = {
+      totalEntries: data.length,
+      ownedCount: data.filter(entry => entry.status === 'owned').length,
+      wishlistCount: data.filter(entry => entry.status === 'wishlist').length,
+      smokedCount: data.filter(entry => entry.status === 'smoked').length,
+      totalValue: data
+        .filter(entry => entry.status === 'owned' && entry.purchase_price)
+        .reduce((sum, entry) => sum + (parseFloat(entry.purchase_price) * entry.quantity), 0)
+    };
+
+    res.json({
+      success: true,
+      entries: data,
+      stats
+    });
+
+  } catch (error) {
+    console.error('Error fetching humidor entries:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch humidor entries'
+    });
+  }
+});
+
+// Get user's humidor entries by userId (for admin/public access)
 router.get('/:userId', authenticateToken, async (req, res) => {
   try {
     const { userId } = req.params;
