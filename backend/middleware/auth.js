@@ -4,9 +4,14 @@ import supabase, { supabaseAuth } from '../config/database.js';
 // Middleware to authenticate JWT tokens
 export const authenticateToken = async (req, res, next) => {
   try {
+    console.log('🔐 AUTH MIDDLEWARE: All headers:', JSON.stringify(req.headers, null, 2));
+    console.log('🔐 AUTH MIDDLEWARE: Authorization header:', req.headers.authorization);
+    console.log('🔐 AUTH MIDDLEWARE: Authorization header type:', typeof req.headers.authorization);
+    
     const authHeader = req.headers.authorization;
     
     if (!authHeader) {
+      console.log('🔐 AUTH MIDDLEWARE: No authorization header found!');
       return res.status(401).json({
         success: false,
         error: 'Authorization header required'
