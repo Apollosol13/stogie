@@ -80,12 +80,21 @@ export function useCigarData(id) {
     }
   };
 
+  // Fetch once when id changes. Avoid coupling to user to prevent double fetch + flicker
   useEffect(() => {
     if (id) {
       fetchCigarDetails();
       fetchReviews();
     }
-  }, [id, user]);
+  }, [id]);
+
+  // Recompute userReview locally if user changes, without refetching
+  useEffect(() => {
+    if (user && reviews?.length) {
+      const myReview = reviews.find((r) => r.user_id === user.id);
+      setUserReview(myReview || null);
+    }
+  }, [user, reviews]);
 
   return { cigar, reviews, userReview, loading, fetchCigarDetails, fetchReviews };
 }

@@ -24,10 +24,8 @@ const useHumidor = () => {
       const data = await response.json();
 
       // Transform data for the UI
-      const owned = data.entries.filter(
-        (entry) => !entry.is_wishlist && entry.quantity > 0,
-      );
-      const wishlist = data.entries.filter((entry) => entry.is_wishlist);
+      const owned = data.entries.filter((entry) => entry.status === 'owned');
+      const wishlist = data.entries.filter((entry) => entry.status === 'wishlist');
 
       return {
         owned: owned.map(transformEntry),
@@ -148,7 +146,7 @@ const useHumidor = () => {
 
           const newCigar = await createResponse.json();
           console.log("Cigar created successfully:", newCigar);
-          finalCigarId = newCigar.id;
+          finalCigarId = newCigar.cigar?.id || newCigar.id;
         }
 
         console.log("Adding to humidor with cigar ID:", finalCigarId);
@@ -218,10 +216,10 @@ const useHumidor = () => {
   // Update humidor entry
   const updateEntryMutation = useMutation({
     mutationFn: async ({ id, updates }) => {
-      const response = await fetch("/api/humidor", {
+      const response = await apiRequest(`/api/humidor/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, ...updates }),
+        body: JSON.stringify(updates),
       });
 
       if (!response.ok) {
@@ -238,7 +236,7 @@ const useHumidor = () => {
   // Delete humidor entry
   const deleteEntryMutation = useMutation({
     mutationFn: async (entryId) => {
-      const response = await fetch(`/api/humidor?id=${entryId}`, {
+      const response = await apiRequest(`/api/humidor/${entryId}`, {
         method: "DELETE",
       });
 
@@ -281,44 +279,40 @@ const useHumidor = () => {
 // Transform database entry to UI format
 const transformEntry = (entry) => {
   return {
-    id: entry.id, // humidor entry ID
-    cigar_id: entry.cigar_id, // reference to the cigar in cigars table
-    brand: entry.brand,
-    line: entry.line || "",
-    vitola: entry.vitola,
-    strength: entry.strength?.toUpperCase() || "MEDIUM",
-    wrapper: entry.wrapper || "Unknown",
-    binder: entry.binder || "Unknown",
-    filler: entry.filler || "Unknown",
+    id: entry.id,
+    cigar_id: entry.cigar_id,
+    brand: entry.cigars?.brand || entry.brand,
+    line: entry.cigars?.line || entry.line || "",
+    vitola: entry.cigars?.vitola || entry.vitola,
+    strength: (entry.cigars?.strength || entry.strength || "MEDIUM").toUpperCase(),
+    wrapper: entry.cigars?.wrapper || entry.wrapper || "Unknown",
+    binder: entry.cigars?.binder || entry.binder || "Unknown",
+    filler: entry.cigars?.filler || entry.filler || "Unknown",
     quantity: entry.quantity || 1,
-    acquiredDate: entry.purchase_date,
-    notes: entry.personal_notes || "",
-    image:
-      entry.image_url ||
+    acquiredDate: entry.acquired_date || entry.purchase_date,
+    notes: entry.notes || entry.personal_notes || "",
+    image: entry.cigars?.image_url || entry.image_url ||
       "https://images.unsplash.com/photo-1571613316887-6f8d5cbf7ef7?w=200&h=150&fit=crop",
-    pricePaid: parseFloat(entry.purchase_price) || 0,
-    agingMonths: entry.age_years ? entry.age_years * 12 : 0,
-    ringGauge: entry.ring_gauge || "Unknown",
-    length: entry.length_inches || "Unknown",
-    condition: entry.condition || "excellent",
-    storageLocation: entry.storage_location || "",
-    isWishlist: entry.is_wishlist || false,
+    pricePaid: parseFloat(entry.price_paid ?? entry.purchase_price ?? 0) || 0,
+    ringGauge: entry.cigars?.ring_gauge || entry.ring_gauge || "Unknown",
+    length: entry.cigars?.length_inches || entry.length_inches || "Unknown",
+    isWishlist: entry.status === 'wishlist' || entry.is_wishlist || false,
     // Include cigar specs for direct access
-    flavorProfile: entry.flavor_profile || [],
-    averageRating: entry.average_rating || 0,
-    priceRange: entry.price_range || "",
-    origin: entry.origin_country || "Unknown",
-    description: entry.description || "",
+    flavorProfile: entry.cigars?.flavor_profile || entry.flavor_profile || [],
+    averageRating: entry.cigars?.average_rating || entry.average_rating || 0,
+    priceRange: entry.cigars?.price_range || entry.price_range || "",
+    origin: entry.cigars?.origin_country || entry.origin_country || "Unknown",
+    description: entry.cigars?.description || entry.description || "",
     // AI Analysis fields
-    smokingTimeMinutes: entry.smoking_time_minutes || null,
-    smokingTime: entry.smoking_time_minutes
-      ? `${entry.smoking_time_minutes} minutes`
+    smokingTimeMinutes: entry.cigars?.smoking_time_minutes || entry.smoking_time_minutes || null,
+    smokingTime: (entry.cigars?.smoking_time_minutes || entry.smoking_time_minutes)
+      ? `${entry.cigars?.smoking_time_minutes || entry.smoking_time_minutes} minutes`
       : "45-60 minutes",
-    smokingExperience: entry.smoking_experience || "",
-    aiConfidence: entry.ai_confidence || null,
-    confidence: entry.ai_confidence || null,
-    analysisNotes: entry.analysis_notes || "",
-    isAiIdentified: entry.is_ai_identified || false,
+    smokingExperience: entry.cigars?.smoking_experience || entry.smoking_experience || "",
+    aiConfidence: entry.cigars?.ai_confidence || entry.ai_confidence || null,
+    confidence: entry.cigars?.ai_confidence || entry.ai_confidence || null,
+    analysisNotes: entry.cigars?.analysis_notes || entry.analysis_notes || "",
+    isAiIdentified: entry.cigars?.is_ai_identified || entry.is_ai_identified || false,
   };
 };
 

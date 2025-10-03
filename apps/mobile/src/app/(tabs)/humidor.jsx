@@ -582,11 +582,19 @@ export default function HumidorScreen() {
         <FlatList
           data={filteredData}
           numColumns={2}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item) => String(item.id)}
           renderItem={({ item }) => <HumidorCard item={item} viewMode="grid" />}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }}
           columnWrapperStyle={{ justifyContent: "space-between" }}
           ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+          initialNumToRender={10}
+          windowSize={5}
+          removeClippedSubviews
+          getItemLayout={(data, index) => ({
+            length: 128,
+            offset: 128 * index,
+            index,
+          })}
         />
       );
     }

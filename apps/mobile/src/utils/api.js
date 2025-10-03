@@ -81,9 +81,9 @@ export const apiRequest = async (endpoint, options = {}) => {
     const timeoutId = setTimeout(() => controller.abort(), timeoutDuration);
     
     const response = await fetch(url, {
-      headers,
-      signal: controller.signal,
       ...options,
+      signal: controller.signal,
+      headers,
     });
     
     clearTimeout(timeoutId);
