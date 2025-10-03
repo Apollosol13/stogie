@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Alert } from "react-native";
 import useUser from "@/utils/auth/useUser";
+import { apiRequest } from "../utils/api";
 
 export function useCigarData(id) {
   const { data: user } = useUser();
@@ -12,10 +13,10 @@ export function useCigarData(id) {
   const fetchCigarDetails = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/cigars?id=${id}`);
+      const response = await apiRequest(`/api/cigars?id=${id}`);
       const data = await response.json();
 
-      if (data.success && data.cigars && data.cigars.length > 0) {
+      if (response.ok && data.success && data.cigars && data.cigars.length > 0) {
         setCigar(data.cigars[0]);
       } else {
         console.warn(`Cigar with ID ${id} not found in cigars table`);
@@ -65,10 +66,10 @@ export function useCigarData(id) {
 
   const fetchReviews = async () => {
     try {
-      const response = await fetch(`/api/reviews?cigarId=${id}`);
+      const response = await apiRequest(`/api/reviews?cigarId=${id}`);
       const data = await response.json();
 
-      if (data.success) {
+      if (response.ok && data.success) {
         const fetchedReviews = data.reviews || [];
         setReviews(fetchedReviews);
         const myReview = fetchedReviews.find((r) => r.user_id === user?.id);
