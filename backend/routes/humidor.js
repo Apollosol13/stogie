@@ -222,9 +222,13 @@ router.post('/', authenticateToken, async (req, res) => {
       quantity: status === 'owned' ? quantity : 1,
       price_paid: pricePaid || null,
       acquired_date: acquiredDate || null,
-      notes: notes?.trim() || null,
-      rating: status === 'smoked' ? rating : null
+      notes: notes?.trim() || null
     };
+
+    // Only include rating when table supports it (status smoked and rating provided)
+    if (status === 'smoked' && typeof rating === 'number') {
+      entryData.rating = rating;
+    }
 
     const { data, error } = await supabase
       .from('humidor_entries')
