@@ -89,38 +89,39 @@ router.put('/', async (req, res) => {
       return res.status(401).json({ success: false, error: 'Invalid token' });
     }
 
-    const { 
-      full_name, 
-      username, 
-      bio, 
-      location, 
+    const {
+      full_name,
+      username,
+      bio,
+      location,
       favorite_cigar,
       experience_level,
       favorite_strength,
       favorite_wrapper
     } = req.body;
 
+    // Build updates object only with provided values to avoid overwriting with undefined
+    const updates = { updated_at: new Date().toISOString() };
+    if (typeof full_name !== 'undefined' && full_name !== '') updates.full_name = full_name;
+    if (typeof username !== 'undefined' && username !== '') updates.username = username;
+    if (typeof bio !== 'undefined') updates.bio = bio;
+    if (typeof location !== 'undefined') updates.location = location;
+    if (typeof favorite_cigar !== 'undefined') updates.favorite_cigar = favorite_cigar;
+    if (typeof experience_level !== 'undefined') updates.experience_level = experience_level;
+    if (typeof favorite_strength !== 'undefined') updates.favorite_strength = favorite_strength;
+    if (typeof favorite_wrapper !== 'undefined') updates.favorite_wrapper = favorite_wrapper;
+
     // Update user profile
     const { data: profile, error: updateError } = await supabase
       .from('profiles')
-      .update({
-        full_name,
-        username,
-        bio,
-        location,
-        favorite_cigar,
-        experience_level,
-        favorite_strength,
-        favorite_wrapper,
-        updated_at: new Date().toISOString()
-      })
+      .update(updates)
       .eq('id', user.id)
       .select()
       .single();
 
     if (updateError) {
       console.error('Profile update error:', updateError);
-      return res.status(400).json({ success: false, error: 'Failed to update profile' });
+      return res.status(400).json({ success: false, error: 'Failed to update profile', details: updateError.message || updateError });
     }
 
     res.json({
