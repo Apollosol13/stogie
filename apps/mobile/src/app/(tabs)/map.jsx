@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { View, Alert } from "react-native";
+import { View, Alert, TouchableOpacity, Text } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
 import { apiRequest } from "../../utils/api";
@@ -169,6 +169,51 @@ export default function MapScreen() {
         onAllow={handleLocationPermissionAllow}
         onDecline={handleLocationPermissionDecline}
       />
+
+      {/* Bottom CTA - Smoking Session */}
+      <View
+        style={{
+          position: "absolute",
+          left: 20,
+          right: 20,
+          bottom: 28,
+          alignItems: "center",
+        }}
+      >
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={() => {
+            if (!user) {
+              Alert.alert("Authentication Required", "Please sign in to log a smoking session.");
+              return;
+            }
+            setShowSessionModal(true);
+          }}
+          style={{
+            backgroundColor: colors.accentGold,
+            paddingVertical: 14,
+            paddingHorizontal: 24,
+            borderRadius: 28,
+            width: "100%",
+            shadowColor: "#000",
+            shadowOpacity: 0.3,
+            shadowRadius: 10,
+            shadowOffset: { width: 0, height: 6 },
+          }}
+        >
+          <Text
+            style={{
+              textAlign: "center",
+              color: colors.bgPrimary,
+              fontSize: 18,
+              fontWeight: "800",
+              letterSpacing: 0.3,
+            }}
+          >
+            Smoking Session
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
