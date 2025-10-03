@@ -17,7 +17,10 @@ export default function useProfile() {
 
   const fetchProfile = async () => {
     try {
-      const response = await apiRequest("/api/profiles");
+      const response = await apiRequest("/api/profiles", {
+        // Bust any caches along proxies just in case
+        headers: { "Cache-Control": "no-cache" },
+      });
       if (response.ok) {
         const data = await response.json();
         setProfile(data.profile);
@@ -160,8 +163,9 @@ export default function useProfile() {
         const data = await uploadResponse.json();
 
         if (uploadResponse.ok && data.success) {
-          // Refresh the profile to get updated data
-          await fetchProfile();
+        // Refresh the profile to get updated data (add cache-busting query)
+        await apiRequest(`/api/profiles?ts=${Date.now()}`);
+        await fetchProfile();
           Alert.alert("Success", "Profile picture updated successfully!");
         } else {
           console.error("Upload error:", data);

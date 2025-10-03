@@ -50,6 +50,9 @@ router.get('/', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Profile not found' });
     }
 
+    // Prevent caching so clients always get the latest avatar/profile
+    res.set('Cache-Control', 'no-store');
+
     res.json({
       success: true,
       profile: {
