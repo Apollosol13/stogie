@@ -74,7 +74,7 @@ export default function HomeScreen() {
               fontWeight: "700",
             }}
           >
-            Aficionado
+            Stogie
           </Text>
 
           <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -253,7 +253,7 @@ export default function HomeScreen() {
             fontWeight: "700",
           }}
         >
-          Aficionado
+          Stogie
         </Text>
 
         <TouchableOpacity>
