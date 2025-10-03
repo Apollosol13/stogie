@@ -13,7 +13,6 @@ import VenueSearchModal from "../../components/map/VenueSearchModal";
 import LocationPermissionModal from "../../components/map/LocationPermissionModal";
 import VenueBottomSheet from "../../components/map/VenueBottomSheet";
 import MapHeader from "../../components/map/MapHeader";
-import FilterPills from "../../components/map/FilterPills";
 import RecentActivityCard from "../../components/map/RecentActivityCard";
 import LoadingOverlay from "../../components/map/LoadingOverlay";
 import MapMarkers from "../../components/map/MapMarkers";
@@ -134,11 +133,6 @@ export default function MapScreen() {
         }}
       />
 
-      <FilterPills
-        activeFilter={activeFilter}
-        onChangeFilter={setActiveFilter}
-        hasRecentActivity={recentActivity.length > 0}
-      />
 
       <RecentActivityCard recentActivity={recentActivity} />
 
