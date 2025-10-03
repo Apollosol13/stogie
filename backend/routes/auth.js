@@ -44,16 +44,38 @@ router.post('/signup', async (req, res) => {
       });
     }
 
-    // The profile will be created automatically by the database trigger
-    
+    // Immediately sign in using anon client to return a session/JWT
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+
+    if (!supabaseAnonKey) {
+      return res.status(500).json({ success: false, error: 'Authentication service not configured' });
+    }
+
+    const authClient = createClient(supabaseUrl, supabaseAnonKey);
+    const { data, error } = await authClient.auth.signInWithPassword({ email, password });
+    if (error) {
+      return res.status(500).json({ success: false, error: 'Auto sign-in failed' });
+    }
+
+    // Load profile (optional)
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', data.user.id)
+      .single();
+
+    // Return session + user just like /signin
     res.status(201).json({
       success: true,
-      message: 'User created successfully',
+      session: data.session,
       user: {
-        id: authData.user.id,
-        email: authData.user.email,
-        fullName: authData.user.user_metadata.full_name,
-        username: authData.user.user_metadata.username
+        id: data.user.id,
+        email: data.user.email,
+        fullName: profile?.full_name,
+        username: profile?.username,
+        avatarUrl: profile?.avatar_url
       }
     });
 

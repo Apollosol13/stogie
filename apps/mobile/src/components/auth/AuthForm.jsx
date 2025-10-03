@@ -56,8 +56,22 @@ export default function AuthForm({ mode = 'signin', onSuccess, onModeChange }) {
       }
 
       if (mode === 'signup') {
-        Alert.alert('Success', 'Account created successfully! Please sign in.');
-        onModeChange?.('signin');
+        // Backend now returns { session, user } on signup
+        console.log('🔐 Backend signup response:', data);
+        const authData = {
+          jwt: data.session?.access_token,
+          user: {
+            id: data.user?.id,
+            email: data.user?.email,
+            name: data.user?.fullName || data.user?.name,
+            username: data.user?.username,
+            avatarUrl: data.user?.avatarUrl
+          },
+          expires_at: data.session?.expires_at
+        };
+        console.log('🔐 Storing auth data (signup):', authData);
+        setAuth(authData);
+        onSuccess?.();
       } else {
         // Debug what backend actually returns
         console.log('🔐 Backend signin response:', data);
@@ -81,7 +95,6 @@ export default function AuthForm({ mode = 'signin', onSuccess, onModeChange }) {
         console.log('🔐 Storing auth data:', authData);
         console.log('🔐 JWT token exists?', !!authData.jwt);
         console.log('🔐 JWT token preview:', authData.jwt?.substring(0, 20) + '...');
-        
         setAuth(authData);
         onSuccess?.();
       }
