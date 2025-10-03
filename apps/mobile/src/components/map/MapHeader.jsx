@@ -40,7 +40,7 @@ const MapHeader = ({ onSearchPress, onCenterPress, onFilterPress }) => {
             width: 44,
             height: 44,
             borderRadius: 22,
-            backgroundColor: colors.surface,
+            backgroundColor: colors.accentGold,
             justifyContent: "center",
             alignItems: "center",
             shadowColor: "#000",
@@ -50,7 +50,7 @@ const MapHeader = ({ onSearchPress, onCenterPress, onFilterPress }) => {
             elevation: 4,
           }}
         >
-          <Search size={22} color={colors.textSecondary} />
+          <Search size={22} color={colors.bgPrimary} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -59,7 +59,7 @@ const MapHeader = ({ onSearchPress, onCenterPress, onFilterPress }) => {
             width: 44,
             height: 44,
             borderRadius: 22,
-            backgroundColor: colors.surface,
+            backgroundColor: colors.accentGold,
             justifyContent: "center",
             alignItems: "center",
             shadowColor: "#000",
@@ -69,7 +69,7 @@ const MapHeader = ({ onSearchPress, onCenterPress, onFilterPress }) => {
             elevation: 4,
           }}
         >
-          <Target size={22} color={colors.textSecondary} />
+          <Target size={22} color={colors.bgPrimary} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -78,7 +78,7 @@ const MapHeader = ({ onSearchPress, onCenterPress, onFilterPress }) => {
             width: 44,
             height: 44,
             borderRadius: 22,
-            backgroundColor: colors.surface,
+            backgroundColor: colors.accentGold,
             justifyContent: "center",
             alignItems: "center",
             shadowColor: "#000",
@@ -88,7 +88,7 @@ const MapHeader = ({ onSearchPress, onCenterPress, onFilterPress }) => {
             elevation: 4,
           }}
         >
-          <Filter size={22} color={colors.textSecondary} />
+          <Filter size={22} color={colors.bgPrimary} />
         </TouchableOpacity>
       </View>
     </View>
