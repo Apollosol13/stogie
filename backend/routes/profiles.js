@@ -92,9 +92,6 @@ router.put('/', async (req, res) => {
     const {
       full_name,
       username,
-      bio,
-      location,
-      favorite_cigar,
       experience_level,
       favorite_strength,
       favorite_wrapper
@@ -104,9 +101,7 @@ router.put('/', async (req, res) => {
     const updates = { updated_at: new Date().toISOString() };
     if (typeof full_name !== 'undefined' && full_name !== '') updates.full_name = full_name;
     if (typeof username !== 'undefined' && username !== '') updates.username = username;
-    if (typeof bio !== 'undefined') updates.bio = bio;
-    if (typeof location !== 'undefined') updates.location = location;
-    if (typeof favorite_cigar !== 'undefined') updates.favorite_cigar = favorite_cigar;
+    // Only allow fields that exist in current schema
     if (typeof experience_level !== 'undefined') updates.experience_level = experience_level;
     if (typeof favorite_strength !== 'undefined') updates.favorite_strength = favorite_strength;
     if (typeof favorite_wrapper !== 'undefined') updates.favorite_wrapper = favorite_wrapper;
