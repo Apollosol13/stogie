@@ -133,55 +133,6 @@ export default function MapScreen() {
         }}
       />
 
-      {/* Top segmented filters */}
-      <View
-        style={{
-          position: "absolute",
-          top: 92,
-          alignSelf: "center",
-          backgroundColor: colors.surface,
-          borderRadius: 28,
-          padding: 6,
-          flexDirection: "row",
-          gap: 6,
-          shadowColor: "#000",
-          shadowOpacity: 0.3,
-          shadowRadius: 8,
-          shadowOffset: { width: 0, height: 4 },
-        }}
-      >
-        {[
-          { key: "all", label: "All" },
-          { key: "lounges", label: "Lounges" },
-          { key: "shops", label: "Shops" },
-          { key: "sessions", label: "Sessions" },
-        ].map((tab) => (
-          <TouchableOpacity
-            key={tab.key}
-            onPress={() => setActiveFilter(tab.key)}
-            style={{
-              paddingHorizontal: 16,
-              height: 40,
-              borderRadius: 20,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor:
-                activeFilter === tab.key ? colors.accentGold : "transparent",
-            }}
-          >
-            <Text
-              style={{
-                color:
-                  activeFilter === tab.key ? colors.bgPrimary : colors.textSecondary,
-                fontWeight: "700",
-              }}
-            >
-              {tab.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
 
       <RecentActivityCard recentActivity={recentActivity} />
 
