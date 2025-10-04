@@ -121,6 +121,7 @@ export default function AuthForm({ mode = 'signin', onSuccess, onModeChange }) {
             <TextInput
               style={styles.input}
               placeholder="Full Name"
+              placeholderTextColor="#FFFFFF"
               value={fullName}
               onChangeText={setFullName}
               autoCapitalize="words"
@@ -128,6 +129,7 @@ export default function AuthForm({ mode = 'signin', onSuccess, onModeChange }) {
             <TextInput
               style={styles.input}
               placeholder="Username"
+              placeholderTextColor="#FFFFFF"
               value={username}
               onChangeText={setUsername}
               autoCapitalize="none"
@@ -138,6 +140,7 @@ export default function AuthForm({ mode = 'signin', onSuccess, onModeChange }) {
         <TextInput
           style={styles.input}
           placeholder="Email"
+          placeholderTextColor="#FFFFFF"
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
@@ -148,6 +151,7 @@ export default function AuthForm({ mode = 'signin', onSuccess, onModeChange }) {
         <TextInput
           style={styles.input}
           placeholder="Password"
+          placeholderTextColor="#FFFFFF"
           value={password}
           onChangeText={setPassword}
           secureTextEntry
@@ -189,7 +193,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: '#000',
   },
   form: {
     width: '100%',
@@ -201,16 +205,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 30,
-    color: '#333',
+    color: '#fff',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#B0B0B0',
     borderRadius: 8,
     padding: 15,
     marginBottom: 15,
     fontSize: 16,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#B0B0B0',
+    color: '#fff',
   },
   button: {
     backgroundColor: '#D4B896',
@@ -232,7 +237,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   switchText: {
-    color: '#000',
+    color: '#fff',
     fontSize: 16,
   },
 });
