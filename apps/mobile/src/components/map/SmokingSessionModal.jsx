@@ -142,8 +142,9 @@ const SmokingSessionModal = ({
     ],
   };
 
-  // Local sticker asset
-  const cigarKingImage = require('../../../assets/images/stickers/cigar-king.png');
+  // Local sticker asset (placeholder until your PNG is added)
+  // Place your file at apps/mobile/assets/images/stickers/cigar-king.png and we can update this path
+  const cigarKingImage = require('../../../assets/images/icon.png');
 
   return (
     <Modal
