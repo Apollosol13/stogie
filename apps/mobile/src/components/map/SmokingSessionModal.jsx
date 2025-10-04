@@ -166,7 +166,7 @@ const SmokingSessionModal = ({
               backgroundColor: colors.surface,
               borderTopLeftRadius: 24,
               borderTopRightRadius: 24,
-              maxHeight: '90%',
+              height: '85%',
               paddingBottom: insets.bottom,
             },
             animatedStyle,
@@ -226,7 +226,7 @@ const SmokingSessionModal = ({
           </View>
 
           <ScrollView 
-            style={{ flex: 1 }} 
+            style={{ flexGrow: 1 }} 
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
