@@ -55,6 +55,7 @@ const SmokingSessionModal = ({
   const [moodBefore, setMoodBefore] = useState('');
   const [occasion, setOccasion] = useState('');
   const [weather, setWeather] = useState('');
+  const [selectedSticker, setSelectedSticker] = useState(null);
   const [creating, setCreating] = useState(false);
 
   const slideAnim = useRef(new Animated.Value(0)).current;
@@ -68,6 +69,7 @@ const SmokingSessionModal = ({
     setMoodBefore('');
     setOccasion('');
     setWeather('');
+    setSelectedSticker(null);
   };
 
   const handleClose = () => {
@@ -100,6 +102,7 @@ const SmokingSessionModal = ({
         notes: notes.trim() || null,
         moodBefore: moodBefore.trim() || null,
         occasion: occasion.trim() || null,
+        sticker: selectedSticker || null,
         photos: []
       };
 
@@ -227,6 +230,37 @@ const SmokingSessionModal = ({
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
+            {/* Sticker Picker */}
+            <View style={{ paddingHorizontal: 20, marginBottom: 16 }}>
+              <Text style={{ color: colors.textPrimary, fontSize: 16, fontWeight: '600', marginBottom: 8 }}>
+                Pick a sticker
+              </Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {[
+                  { key: 'classic', label: '🚬' },
+                  { key: 'maduro', label: '🥃' },
+                  { key: 'ash', label: '🧱' },
+                  { key: 'flame', label: '🔥' },
+                  { key: 'cheers', label: '🍻' },
+                ].map((s) => (
+                  <TouchableOpacity
+                    key={s.key}
+                    onPress={() => setSelectedSticker(s.key)}
+                    style={{
+                      backgroundColor: selectedSticker === s.key ? colors.accentGold : colors.surface2,
+                      borderRadius: 12,
+                      paddingVertical: 10,
+                      paddingHorizontal: 14,
+                      marginRight: 8,
+                    }}
+                  >
+                    <Text style={{ fontSize: 22, color: selectedSticker === s.key ? colors.bgPrimary : colors.textPrimary }}>
+                      {s.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
             {/* Cigar Selection */}
             <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
