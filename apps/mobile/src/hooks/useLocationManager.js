@@ -48,15 +48,17 @@ export default function useLocationManager(mapRef) {
         const { latitude, longitude } = location.coords;
         setUserLocation({ latitude, longitude });
 
-        // Only animate to user location when explicitly requested via centerOnUser
+        // Always center map region to user's location when we have it
+        const newRegion = {
+          latitude,
+          longitude,
+          latitudeDelta: 0.0922,
+          longitudeDelta: 0.0421,
+        };
+        setRegion(newRegion);
+
+        // Only animate camera when explicitly requested
         if (animate) {
-          const newRegion = {
-            latitude,
-            longitude,
-            latitudeDelta: 0.0922,
-            longitudeDelta: 0.0421,
-          };
-          setRegion(newRegion);
           mapRef.current?.animateToRegion(newRegion, 1000);
         }
 
