@@ -62,6 +62,8 @@ export default function MapScreen() {
   };
 
   const handleMarkerPress = (marker) => {
+    // Only open venue sheet for shops/lounges; not for user smoking sessions
+    if (marker.type === "session") return;
     setSelectedVenue(marker);
     setShowVenueModal(true);
   };
