@@ -45,7 +45,7 @@ const SmokingSessionModal = ({
   onCreateSession 
 }) => {
   const insets = useSafeAreaInsets();
-  const { humidor, loading: humidorLoading } = useHumidor();
+  const { humidorData, loading: humidorLoading } = useHumidor();
   
   const [selectedCigar, setSelectedCigar] = useState(null);
   const [locationName, setLocationName] = useState('');
@@ -92,7 +92,7 @@ const SmokingSessionModal = ({
 
     try {
       const sessionData = {
-        cigarId: selectedCigar.cigarId || selectedCigar.id,
+        cigarId: selectedCigar.cigar_id,
         location: locationName.trim(),
         latitude: location?.latitude,
         longitude: location?.longitude,
@@ -116,9 +116,7 @@ const SmokingSessionModal = ({
     }
   };
 
-  const availableCigars = humidor?.filter(entry => 
-    !entry.isWishlist && entry.quantity > 0
-  ) || [];
+  const availableCigars = humidorData?.owned?.filter(entry => entry.quantity > 0) || [];
 
   React.useEffect(() => {
     if (isVisible) {
