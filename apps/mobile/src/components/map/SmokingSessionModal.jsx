@@ -8,8 +8,7 @@ import {
   TextInput,
   Alert,
   Animated,
-  ActivityIndicator,
-  Image
+  ActivityIndicator
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -142,8 +141,7 @@ const SmokingSessionModal = ({
     ],
   };
 
-  // Local sticker asset
-  const cigarKingImage = require('../../../assets/images/stickers/cigar-king.png');
+  // Sticker set (emoji only)
 
   return (
     <Modal
@@ -239,7 +237,7 @@ const SmokingSessionModal = ({
               </Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {[
-                  { key: 'classic', image: cigarKingImage },
+                  { key: 'classic', label: '🚬' },
                   { key: 'maduro', label: '🥃' },
                   { key: 'ash', label: '🧱' },
                   { key: 'flame', label: '🔥' },
@@ -256,13 +254,9 @@ const SmokingSessionModal = ({
                       marginRight: 8,
                     }}
                   >
-                    {s.image ? (
-                      <Image source={s.image} style={{ width: 40, height: 40 }} resizeMode="contain" />
-                    ) : (
-                      <Text style={{ fontSize: 22, color: selectedSticker === s.key ? colors.bgPrimary : colors.textPrimary }}>
-                        {s.label}
-                      </Text>
-                    )}
+                    <Text style={{ fontSize: 22, color: selectedSticker === s.key ? colors.bgPrimary : colors.textPrimary }}>
+                      {s.label}
+                    </Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
