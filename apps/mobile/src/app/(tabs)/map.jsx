@@ -186,6 +186,9 @@ export default function MapScreen() {
               Alert.alert("Authentication Required", "Please sign in to log a smoking session.");
               return;
             }
+            if (userLocation) {
+              setSelectedLocation(userLocation);
+            }
             setShowSessionModal(true);
           }}
           style={{

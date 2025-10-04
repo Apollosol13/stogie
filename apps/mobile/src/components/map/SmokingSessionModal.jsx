@@ -408,8 +408,8 @@ const SmokingSessionModal = ({
                 <MapView
                   style={{ flex: 1 }}
                   initialRegion={{
-                    latitude: pinLocation?.latitude || location?.latitude || 37.78825,
-                    longitude: pinLocation?.longitude || location?.longitude || -122.4324,
+                    latitude: pinLocation?.latitude || location?.latitude || 0,
+                    longitude: pinLocation?.longitude || location?.longitude || 0,
                     latitudeDelta: 0.01,
                     longitudeDelta: 0.01,
                   }}
