@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
   },
   button: {
-    backgroundColor: '#8B4513',
+    backgroundColor: '#D4B896',
     borderRadius: 8,
     padding: 15,
     alignItems: 'center',
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   switchText: {
-    color: '#8B4513',
+    color: '#000',
     fontSize: 16,
   },
 });
