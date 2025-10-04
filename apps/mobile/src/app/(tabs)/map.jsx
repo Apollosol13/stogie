@@ -13,7 +13,6 @@ import VenueSearchModal from "../../components/map/VenueSearchModal";
 import LocationPermissionModal from "../../components/map/LocationPermissionModal";
 import VenueBottomSheet from "../../components/map/VenueBottomSheet";
 import MapHeader from "../../components/map/MapHeader";
-import RecentActivityCard from "../../components/map/RecentActivityCard";
 import LoadingOverlay from "../../components/map/LoadingOverlay";
 import MapMarkers from "../../components/map/MapMarkers";
 import { colors } from "../../components/map/colors";
@@ -134,7 +133,7 @@ export default function MapScreen() {
       />
 
 
-      <RecentActivityCard recentActivity={recentActivity} />
+      {/* RecentActivityCard removed per feedback */}
 
       <VenueBottomSheet
         venue={selectedVenue}
