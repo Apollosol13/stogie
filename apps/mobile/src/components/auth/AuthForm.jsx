@@ -209,12 +209,12 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#B0B0B0',
+    borderColor: '#FFFFFF',
     borderRadius: 8,
     padding: 15,
     marginBottom: 15,
     fontSize: 16,
-    backgroundColor: '#B0B0B0',
+    backgroundColor: '#000000',
     color: '#fff',
   },
   button: {
