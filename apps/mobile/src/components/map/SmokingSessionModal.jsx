@@ -142,9 +142,8 @@ const SmokingSessionModal = ({
     ],
   };
 
-  // Local sticker asset (placeholder until your PNG is added)
-  // Place your file at apps/mobile/assets/images/stickers/cigar-king.png and we can update this path
-  const cigarKingImage = require('../../../assets/images/icon.png');
+  // Local sticker asset
+  const cigarKingImage = require('../../../assets/images/stickers/cigar-king.png');
 
   return (
     <Modal
@@ -258,7 +257,7 @@ const SmokingSessionModal = ({
                     }}
                   >
                     {s.image ? (
-                      <Image source={s.image} style={{ width: 28, height: 28 }} resizeMode="contain" />
+                      <Image source={s.image} style={{ width: 40, height: 40 }} resizeMode="contain" />
                     ) : (
                       <Text style={{ fontSize: 22, color: selectedSticker === s.key ? colors.bgPrimary : colors.textPrimary }}>
                         {s.label}
