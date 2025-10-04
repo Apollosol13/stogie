@@ -92,18 +92,10 @@ const SmokingSessionModal = ({
 
     try {
       const sessionData = {
-        cigarId: selectedCigar.cigar_id,
-        location: locationName.trim(),
+        cigar_id: selectedCigar.cigar_id,
+        location_name: locationName.trim(),
         latitude: location?.latitude,
         longitude: location?.longitude,
-        weather: weather.trim() || null,
-        companions: companions.trim() ? companions.split(',').map(c => c.trim()) : [],
-        pairing: pairing.trim() || null,
-        notes: notes.trim() || null,
-        moodBefore: moodBefore.trim() || null,
-        occasion: occasion.trim() || null,
-        sticker: selectedSticker || null,
-        photos: []
       };
 
       await onCreateSession(sessionData);
