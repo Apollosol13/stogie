@@ -99,6 +99,7 @@ const SmokingSessionModal = ({
         location_name: locationName.trim(),
         latitude: pinLocation?.latitude ?? location?.latitude,
         longitude: pinLocation?.longitude ?? location?.longitude,
+        sticker: selectedSticker || null,
       };
 
       await onCreateSession(sessionData);
@@ -235,6 +236,7 @@ const SmokingSessionModal = ({
               </Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {[
+                  { key: 'marker_green', label: '📍' },
                   { key: 'classic', label: '🚬' },
                   { key: 'maduro', label: '🥃' },
                   { key: 'ash', label: '🧱' },
