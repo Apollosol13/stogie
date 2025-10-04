@@ -16,7 +16,7 @@ export default function ProfileHeader({
   onSelectImage,
 }) {
   const getAvatarUrl = () => {
-    if (profile?.avatar_url) return profile.avatar_url;
+    if (profile?.avatar_url) return `${profile.avatar_url}?v=${encodeURIComponent(profile?.updated_at || Date.now())}`;
     if (user?.image) return user.image;
     // Generate a unique avatar based on user email or ID
     const seed = user?.email || user?.id || 'default';
