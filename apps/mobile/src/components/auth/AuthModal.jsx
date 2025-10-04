@@ -56,8 +56,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#222',
     backgroundColor: '#000',
   },
   closeButton: {
