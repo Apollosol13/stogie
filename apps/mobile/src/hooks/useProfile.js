@@ -75,13 +75,22 @@ export default function useProfile() {
       const response = await apiRequest("/api/profiles", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...editForm, full_name: editForm.display_name }),
+        body: JSON.stringify({
+          full_name: editForm.display_name,
+          username: editForm.username,
+          bio: editForm.bio,
+          location: editForm.location,
+          experience_level: editForm.experience_level,
+          favorite_strength: editForm.favorite_strength,
+          favorite_wrapper: editForm.favorite_wrapper,
+        }),
       });
 
       const data = await response.json();
 
       if (response.ok && data.success) {
-        setProfile(data.profile);
+        // Immediately refresh profile to ensure UI shows latest bio/location
+        await fetchProfile();
         setShowEditModal(false);
         Alert.alert("Success", "Profile updated successfully!");
       } else {
