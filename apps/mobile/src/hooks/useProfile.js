@@ -144,12 +144,11 @@ export default function useProfile() {
         }
 
         const formData = new FormData();
-
-        // Create proper blob for the image
-        const response = await fetch(imageUri);
-        const blob = await response.blob();
-
-        formData.append("image", blob, "profile-image.jpg");
+        // Prefer React Native file object over Blob for iOS camera roll URIs
+        const asset = result.assets[0];
+        const fileName = asset.fileName || 'profile-image.jpg';
+        const mimeType = asset.mimeType || 'image/jpeg';
+        formData.append('image', { uri: imageUri, name: fileName, type: mimeType });
 
         const uploadResponse = await fetch(`${API_BASE_URL}/api/profiles/image`, {
           method: "POST",
