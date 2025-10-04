@@ -17,6 +17,7 @@ const LoadingOverlay = ({ isVisible }) => {
         justifyContent: "center",
         alignItems: "center",
         zIndex: 10,
+        pointerEvents: "none",
       }}
     >
       <ActivityIndicator size="large" color={colors.accentGold} />
