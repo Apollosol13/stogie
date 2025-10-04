@@ -10,6 +10,7 @@ import {
   Animated,
   ActivityIndicator
 } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -57,6 +58,7 @@ const SmokingSessionModal = ({
   const [weather, setWeather] = useState('');
   const [selectedSticker, setSelectedSticker] = useState(null);
   const [creating, setCreating] = useState(false);
+  const [pinLocation, setPinLocation] = useState(null);
 
   const slideAnim = useRef(new Animated.Value(0)).current;
 
@@ -70,6 +72,7 @@ const SmokingSessionModal = ({
     setOccasion('');
     setWeather('');
     setSelectedSticker(null);
+    setPinLocation(null);
   };
 
   const handleClose = () => {
@@ -94,8 +97,8 @@ const SmokingSessionModal = ({
       const sessionData = {
         cigar_id: selectedCigar.cigar_id,
         location_name: locationName.trim(),
-        latitude: location?.latitude,
-        longitude: location?.longitude,
+        latitude: pinLocation?.latitude ?? location?.latitude,
+        longitude: pinLocation?.longitude ?? location?.longitude,
       };
 
       await onCreateSession(sessionData);
@@ -112,6 +115,9 @@ const SmokingSessionModal = ({
 
   React.useEffect(() => {
     if (isVisible) {
+      if (location?.latitude && location?.longitude) {
+        setPinLocation({ latitude: location.latitude, longitude: location.longitude });
+      }
       Animated.timing(slideAnim, {
         toValue: 1,
         duration: 300,
@@ -393,6 +399,31 @@ const SmokingSessionModal = ({
                   borderRadius: 12,
                 }}
               />
+            </View>
+
+            {/* Tiny map to fine-tune drop location */}
+            <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
+              <Text style={{ color: colors.textSecondary, marginBottom: 8 }}>Adjust pin location</Text>
+              <View style={{ height: 160, borderRadius: 12, overflow: 'hidden' }}>
+                <MapView
+                  style={{ flex: 1 }}
+                  initialRegion={{
+                    latitude: pinLocation?.latitude || location?.latitude || 37.78825,
+                    longitude: pinLocation?.longitude || location?.longitude || -122.4324,
+                    latitudeDelta: 0.01,
+                    longitudeDelta: 0.01,
+                  }}
+                  onPress={(e) => setPinLocation(e.nativeEvent.coordinate)}
+                  userInterfaceStyle="dark"
+                  customMapStyle={[]}
+                  scrollEnabled
+                  zoomEnabled
+                >
+                  {(pinLocation || location) && (
+                    <Marker coordinate={pinLocation || location} />
+                  )}
+                </MapView>
+              </View>
             </View>
 
             
