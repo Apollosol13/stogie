@@ -53,6 +53,7 @@ export default function ProfileHeader({
 
       <View style={{ position: "relative", marginBottom: 16 }}>
         <Image
+          key={getAvatarUrl()}
           source={{ uri: getAvatarUrl() }}
           style={{
             width: 100,
