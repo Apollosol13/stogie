@@ -27,13 +27,13 @@ export default function AuthModal() {
     <Modal
       visible={isOpen}
       animationType="slide"
-      presentationStyle="pageSheet"
+      presentationStyle="fullScreen"
       onRequestClose={close}
     >
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={close} style={styles.closeButton}>
-            <Ionicons name="close" size={24} color="#333" />
+            <Ionicons name="close" size={24} color="#fff" />
           </TouchableOpacity>
         </View>
         
@@ -50,14 +50,15 @@ export default function AuthModal() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#000',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#222',
+    backgroundColor: '#000',
   },
   closeButton: {
     padding: 8,
