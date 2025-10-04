@@ -108,19 +108,37 @@ export default function useLocationManager(mapRef) {
   };
 
   const centerOnUser = () => {
+    const requestAndCenter = async () => {
+      try {
+        // If already granted, just fetch and center
+        const current = await Location.getForegroundPermissionsAsync();
+        if (current.status === 'granted') {
+          setLocationPermission(true);
+          await getUserLocation(true);
+          return;
+        }
+
+        // Otherwise, request OS prompt immediately
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status === 'granted') {
+          setLocationPermission(true);
+          await getUserLocation(true);
+        } else {
+          setLocationPermission(false);
+          setShowLocationPermissionModal(true);
+        }
+      } catch (e) {
+        Alert.alert(
+          'Location Permission Required',
+          'Please enable location services in your settings to use this feature.'
+        );
+      }
+    };
+
     if (userLocation) {
       getUserLocation(true);
     } else {
-      checkLocationPermission().then((hasPermission) => {
-        if (hasPermission) {
-          getUserLocation(true);
-        } else {
-          Alert.alert(
-            "Location Permission Required",
-            "Please enable location services in your settings to use this feature.",
-          );
-        }
-      });
+      requestAndCenter();
     }
   };
 
