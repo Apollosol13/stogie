@@ -73,10 +73,10 @@ export default function useMapData() {
             latitude: session.latitude,
             longitude: session.longitude,
           },
-          title: `${session.userName} - ${
-            session.cigar?.brand || "Unknown"
-          } ${session.cigar?.line || ""}`,
-          description: session.location || "Smoking Session",
+          title: `${session.profiles?.username || "User"} - ${
+            session.cigars?.brand || "Unknown"
+          } ${session.cigars?.line || ""}`,
+          description: session.location_name || "Smoking Session",
           data: session,
         })),
       );
