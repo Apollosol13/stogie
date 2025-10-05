@@ -538,15 +538,17 @@ const SmokingSessionModal = ({
         </Animated.View>
       </View>
 
-      {/* Pin Adjustment Modal - Full Screen */}
-      <PinAdjustmentModal
-        isVisible={showPinAdjustment}
-        onClose={() => setShowPinAdjustment(false)}
-        initialLocation={pinLocation}
-        onConfirm={(newLocation) => {
-          setPinLocation(newLocation);
-        }}
-      />
+      {/* Pin Adjustment Modal - Full Screen - Only mount when needed */}
+      {showPinAdjustment && (
+        <PinAdjustmentModal
+          isVisible={showPinAdjustment}
+          onClose={() => setShowPinAdjustment(false)}
+          initialLocation={pinLocation}
+          onConfirm={(newLocation) => {
+            setPinLocation(newLocation);
+          }}
+        />
+      )}
     </Modal>
   );
 };
