@@ -11,7 +11,7 @@ const MapMarkers = ({ markers, onMarkerPress }) => {
       case "shop":
         return colors.accentBlue;
       case "session":
-        return colors.accentGreen;
+        return colors.accentGold; // Changed from green to gold
       default:
         return colors.textSecondary;
     }

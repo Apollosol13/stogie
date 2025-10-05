@@ -238,7 +238,7 @@ const SmokingSessionModal = ({
               </Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {[
-                  { key: 'marker_green', icon: <MapPin size={22} color={colors.accentGreen} /> },
+                  { key: 'marker_green', icon: <MapPin size={22} color={colors.accentGold} /> },
                   { key: 'maduro', label: '🥃' },
                   { key: 'ash', label: '🧱' },
                   { key: 'flame', label: '🔥' },
