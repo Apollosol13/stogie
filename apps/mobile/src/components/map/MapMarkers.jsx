@@ -23,7 +23,7 @@ const MapMarkers = ({ markers, onMarkerPress }) => {
         <Marker
           key={marker.id}
           coordinate={marker.coordinate}
-          pinColor={marker.data?.sticker === 'marker_green' ? colors.accentGreen : getMarkerColor(marker.type)}
+          pinColor={getMarkerColor(marker.type)}
           onPress={() => onMarkerPress(marker)}
         >
           <Callout tooltip>

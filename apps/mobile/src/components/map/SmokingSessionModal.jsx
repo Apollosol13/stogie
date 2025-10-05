@@ -236,8 +236,7 @@ const SmokingSessionModal = ({
               </Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {[
-                  { key: 'marker_green', label: 'pin' },
-                  { key: 'classic', label: 'svg' },
+                  { key: 'marker_green', icon: <MapPin size={22} color={colors.accentGreen} /> },
                   { key: 'maduro', label: '🥃' },
                   { key: 'ash', label: '🧱' },
                   { key: 'flame', label: '🔥' },
@@ -254,10 +253,10 @@ const SmokingSessionModal = ({
                       marginRight: 8,
                     }}
                   >
-                    {s.key === 'marker_green' ? (
-                      <MapPin size={22} color={selectedSticker === s.key ? colors.bgPrimary : colors.accentGreen} />
-                    ) : s.key === 'classic' ? (
-                      <SvgXml xml={CIGAR_SVG} width={28} height={22} />
+                    {s.icon ? (
+                      <View style={{ opacity: selectedSticker === s.key ? 1 : 0.6 }}>
+                        {s.icon}
+                      </View>
                     ) : (
                       <Text style={{ fontSize: 22, color: selectedSticker === s.key ? colors.bgPrimary : colors.textPrimary }}>
                         {s.label}
