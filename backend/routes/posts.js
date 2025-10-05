@@ -233,7 +233,6 @@ router.post('/:id/comments', async (req, res) => {
   }
 });
 
-export default router;
 
 // DELETE /api/posts/:id - Delete post
 router.delete('/:id', async (req, res) => {
