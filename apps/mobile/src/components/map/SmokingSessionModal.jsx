@@ -10,7 +10,6 @@ import {
   Animated,
   ActivityIndicator
 } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -410,35 +409,7 @@ const SmokingSessionModal = ({
               />
             </View>
 
-            {/* Tiny map to fine-tune drop location */}
-            <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
-              <Text style={{ color: colors.textSecondary, marginBottom: 8 }}>Adjust pin location</Text>
-              <View style={{ height: 160, borderRadius: 12, overflow: 'hidden' }}>
-                { (pinLocation?.latitude && pinLocation?.longitude) || (location?.latitude && location?.longitude) ? (
-                  <MapView
-                    key={(pinLocation?.latitude || location?.latitude) + ',' + (pinLocation?.longitude || location?.longitude)}
-                    style={{ flex: 1 }}
-                    initialRegion={{
-                      latitude: pinLocation?.latitude || location?.latitude,
-                      longitude: pinLocation?.longitude || location?.longitude,
-                      latitudeDelta: 0.01,
-                      longitudeDelta: 0.01,
-                    }}
-                    onPress={(e) => setPinLocation(e.nativeEvent.coordinate)}
-                    userInterfaceStyle="dark"
-                    customMapStyle={[]}
-                    scrollEnabled
-                    zoomEnabled
-                  >
-                    <Marker coordinate={pinLocation || location} />
-                  </MapView>
-                ) : (
-                  <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface2 }}>
-                    <Text style={{ color: colors.textTertiary }}>Tap the map to choose a spot</Text>
-                  </View>
-                ) }
-              </View>
-            </View>
+            {/* Removed inline mini map to prevent nested MapView issues. */}
 
             
 
