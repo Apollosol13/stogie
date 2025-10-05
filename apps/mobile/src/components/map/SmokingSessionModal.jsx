@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import {
   X,
   MapPin,
@@ -25,7 +24,6 @@ import {
   Check
 } from 'lucide-react-native';
 import useHumidor from '@/hooks/useHumidor';
-import { customMapStyle } from './mapStyle';
 
 const colors = {
   bgPrimary: '#0F0F0F',
@@ -410,7 +408,7 @@ const SmokingSessionModal = ({
               />
             </View>
 
-            {/* Mini Map - Adjust Pin Location */}
+            {/* Location Preview - Static Map */}
             {pinLocation?.latitude && pinLocation?.longitude && (
               <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
@@ -423,57 +421,43 @@ const SmokingSessionModal = ({
                       marginLeft: 8,
                     }}
                   >
-                    Adjust Pin Location
+                    Location Preview
                   </Text>
                 </View>
                 <View
                   style={{
-                    height: 200,
+                    height: 140,
                     borderRadius: 12,
                     overflow: 'hidden',
                     backgroundColor: colors.surface2,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: 20,
                   }}
                 >
-                  <MapView
-                    provider={PROVIDER_GOOGLE}
-                    style={{ flex: 1 }}
-                    initialRegion={{
-                      latitude: pinLocation.latitude,
-                      longitude: pinLocation.longitude,
-                      latitudeDelta: 0.01,
-                      longitudeDelta: 0.01,
-                    }}
-                    customMapStyle={customMapStyle}
-                    userInterfaceStyle="dark"
-                    scrollEnabled={true}
-                    zoomEnabled={true}
-                    pitchEnabled={false}
-                    rotateEnabled={false}
-                    onPress={(e) => {
-                      const { coordinate } = e.nativeEvent;
-                      setPinLocation(coordinate);
+                  <MapPin size={40} color={colors.accentGold} />
+                  <Text
+                    style={{
+                      color: colors.textPrimary,
+                      fontSize: 16,
+                      fontWeight: '600',
+                      marginTop: 12,
+                      textAlign: 'center',
                     }}
                   >
-                    <Marker
-                      coordinate={pinLocation}
-                      pinColor={colors.accentGold}
-                      draggable
-                      onDragEnd={(e) => {
-                        setPinLocation(e.nativeEvent.coordinate);
-                      }}
-                    />
-                  </MapView>
+                    {pinLocation.latitude.toFixed(4)}, {pinLocation.longitude.toFixed(4)}
+                  </Text>
+                  <Text
+                    style={{
+                      color: colors.textSecondary,
+                      fontSize: 12,
+                      marginTop: 4,
+                      textAlign: 'center',
+                    }}
+                  >
+                    Your smoking session will be pinned here
+                  </Text>
                 </View>
-                <Text
-                  style={{
-                    color: colors.textSecondary,
-                    fontSize: 12,
-                    marginTop: 8,
-                    textAlign: 'center',
-                  }}
-                >
-                  Tap or drag the pin to adjust your exact location
-                </Text>
               </View>
             )}
 
