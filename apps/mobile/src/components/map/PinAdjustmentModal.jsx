@@ -19,18 +19,10 @@ const PinAdjustmentModal = ({ isVisible, onClose, initialLocation, onConfirm }) 
   const insets = useSafeAreaInsets();
   const mapRef = useRef(null);
   const [pinLocation, setPinLocation] = useState(initialLocation);
-  const [region, setRegion] = useState(null);
-  const isUserInteracting = useRef(false);
 
   useEffect(() => {
     if (isVisible && initialLocation) {
       setPinLocation(initialLocation);
-      setRegion({
-        latitude: initialLocation.latitude,
-        longitude: initialLocation.longitude,
-        latitudeDelta: 0.005,
-        longitudeDelta: 0.005,
-      });
     }
   }, [isVisible, initialLocation]);
 
@@ -69,33 +61,29 @@ const PinAdjustmentModal = ({ isVisible, onClose, initialLocation, onConfirm }) 
         </View>
 
         {/* Full Screen Map */}
-        {region && (
+        {initialLocation && (
           <MapView
             ref={mapRef}
             provider={PROVIDER_GOOGLE}
             style={styles.map}
-            region={region}
+            initialRegion={{
+              latitude: initialLocation.latitude,
+              longitude: initialLocation.longitude,
+              latitudeDelta: 0.005,
+              longitudeDelta: 0.005,
+            }}
             customMapStyle={customMapStyle}
             userInterfaceStyle="dark"
             showsUserLocation={true}
             showsMyLocationButton={false}
             scrollEnabled={true}
             zoomEnabled={true}
-            onTouchStart={() => {
-              isUserInteracting.current = true;
-            }}
-            onTouchEnd={() => {
-              isUserInteracting.current = false;
-            }}
             onRegionChangeComplete={(newRegion) => {
-              // Only update pin if user is actively dragging
-              if (isUserInteracting.current) {
-                setPinLocation({
-                  latitude: newRegion.latitude,
-                  longitude: newRegion.longitude,
-                });
-              }
-              setRegion(newRegion);
+              // Update pin to center of map as user pans
+              setPinLocation({
+                latitude: newRegion.latitude,
+                longitude: newRegion.longitude,
+              });
             }}
           >
             {/* Pin stays fixed at center of map */}
