@@ -16,7 +16,6 @@ export default function useFeed() {
       if (!res.ok) throw new Error('Failed to load feed');
       const data = await res.json();
       console.log('[useFeed] Posts received:', data.posts?.length || 0);
-      console.log('[useFeed] First post:', data.posts?.[0]);
       setPosts(data.posts || []);
     } catch (e) {
       console.error('[useFeed] Error:', e);
@@ -26,10 +25,32 @@ export default function useFeed() {
     }
   }, []);
 
+  // Optimistic like toggle
+  const toggleLike = React.useCallback((postId) => {
+    setPosts(prevPosts => 
+      prevPosts.map(post => {
+        if (post.id === postId) {
+          const wasLiked = post.liked_by_me;
+          return {
+            ...post,
+            liked_by_me: !wasLiked,
+            like_count: wasLiked ? post.like_count - 1 : post.like_count + 1,
+          };
+        }
+        return post;
+      })
+    );
+  }, []);
+
+  // Remove a post (for delete)
+  const removePost = React.useCallback((postId) => {
+    setPosts(prevPosts => prevPosts.filter(p => p.id !== postId));
+  }, []);
+
   React.useEffect(() => {
     console.log('[useFeed] Initial load on mount');
     load();
   }, [load]);
 
-  return { posts, loading, error, load };
+  return { posts, loading, error, load, toggleLike, removePost };
 }

@@ -37,7 +37,7 @@ export default function HomeScreen() {
   const { isAuthenticated, isReady, signIn } = useAuth();
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState("Following");
-  const { posts, loading, load } = useFeed();
+  const { posts, loading, load, toggleLike, removePost } = useFeed();
   const [showNewPost, setShowNewPost] = useState(false);
   const [deletingPostId, setDeletingPostId] = useState(null);
 
@@ -62,7 +62,7 @@ export default function HomeScreen() {
                 method: "DELETE",
               });
               if (!res.ok) throw new Error("Failed to delete post");
-              await load();
+              removePost(postId);
             } catch (e) {
               Alert.alert("Error", e.message || "Failed to delete post");
             } finally {
@@ -75,12 +75,18 @@ export default function HomeScreen() {
   };
 
   const handleLikePost = async (postId) => {
+    // Optimistic update - instant UI response
+    toggleLike(postId);
+    
     try {
       const res = await apiRequest(`/api/posts/${postId}/like`, {
         method: "POST",
       });
-      if (!res.ok) throw new Error("Failed to like post");
-      await load(); // Refresh feed to update like count
+      if (!res.ok) {
+        // Revert on failure
+        toggleLike(postId);
+        throw new Error("Failed to like post");
+      }
     } catch (e) {
       Alert.alert("Error", e.message || "Failed to like post");
     }
@@ -369,7 +375,6 @@ export default function HomeScreen() {
         ) : (
           posts.map((p) => (
             <View key={p.id} style={{ paddingHorizontal: 16, marginBottom: 20, opacity: deletingPostId === p.id ? 0.5 : 1 }}>
-              {/* Header */}
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                   {p.profiles?.avatar_url ? (
@@ -391,7 +396,6 @@ export default function HomeScreen() {
                 )}
               </View>
 
-              {/* Image with overlaid buttons */}
               {p.image_url ? (
                 <View style={{ position: "relative" }}>
                   <Image 
@@ -399,7 +403,6 @@ export default function HomeScreen() {
                     style={{ width: "100%", aspectRatio: 1, borderRadius: 12, backgroundColor: colors.surface }} 
                   />
                   
-                  {/* Like and Comment buttons - stacked vertically in bottom-right */}
                   <View 
                     style={{
                       position: "absolute",
@@ -408,7 +411,6 @@ export default function HomeScreen() {
                       gap: 12,
                     }}
                   >
-                    {/* Like button */}
                     <TouchableOpacity
                       onPress={() => handleLikePost(p.id)}
                       style={{
@@ -433,7 +435,6 @@ export default function HomeScreen() {
                       )}
                     </TouchableOpacity>
 
-                    {/* Comment button */}
                     <TouchableOpacity
                       onPress={() => handleCommentPress(p.id)}
                       style={{
@@ -457,7 +458,6 @@ export default function HomeScreen() {
                 </View>
               ) : null}
 
-              {/* Caption */}
               {p.caption ? (
                 <Text style={{ color: colors.textSecondary, marginTop: 8 }}>{p.caption}</Text>
               ) : null}
