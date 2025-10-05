@@ -3,6 +3,63 @@ import * as SecureStore from 'expo-secure-store';
 
 export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://stogie-production.up.railway.app';
 
+// Cache the auth token in memory to avoid SecureStore flakiness
+let tokenCache = null;
+let lastFetch = 0;
+const CACHE_DURATION = 5000; // 5 seconds
+
+/**
+ * Get auth token with caching
+ */
+async function getAuthToken() {
+  const now = Date.now();
+  
+  // Return cached token if recent
+  if (tokenCache && (now - lastFetch) < CACHE_DURATION) {
+    console.log('🚀 API: Using cached token');
+    return tokenCache;
+  }
+  
+  console.log('🚀 API: Fetching token from SecureStore');
+  try {
+    const authData = await SecureStore.getItemAsync('stogie-auth-jwt');
+    
+    if (authData) {
+      const auth = JSON.parse(authData);
+      const token = auth.jwt;
+      
+      // Check expiration
+      if (auth.expires_at) {
+        const expiresAt = new Date(auth.expires_at * 1000);
+        if (new Date() >= expiresAt) {
+          console.log('Token expired, clearing cache');
+          await SecureStore.deleteItemAsync('stogie-auth-jwt');
+          tokenCache = null;
+          return null;
+        }
+      }
+      
+      // Cache the token
+      tokenCache = token;
+      lastFetch = now;
+      return token;
+    }
+  } catch (error) {
+    console.error('Error getting auth token:', error);
+  }
+  
+  tokenCache = null;
+  return null;
+}
+
+/**
+ * Clear the token cache (call after logout)
+ */
+export function clearTokenCache() {
+  tokenCache = null;
+  lastFetch = 0;
+}
+
 /**
  * Make an API request with the correct base URL and automatic authentication
  * @param {string} endpoint - The API endpoint (e.g., '/api/cigars')
@@ -12,50 +69,9 @@ export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://stogie-p
 export const apiRequest = async (endpoint, options = {}) => {
   const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
   
-  // Debug logging for network issues
-  console.log('🔧 DEBUG - API_BASE_URL:', API_BASE_URL);
-  console.log('🔧 DEBUG - Full URL:', url);
-  console.log('🔧 DEBUG - Endpoint:', endpoint);
+  // Get JWT token
+  const token = await getAuthToken();
   
-  // Get JWT token from SecureStore
-  console.log('🚀 API: Starting token retrieval for:', endpoint);
-  let token = null;
-  try {
-    const authData = await SecureStore.getItemAsync('stogie-auth-jwt');
-    console.log('🚀 API: Raw auth data from SecureStore:', authData ? 'exists' : 'null');
-    console.log('🚀 API: Auth data length:', authData ? authData.length : 0);
-    
-    if (authData) {
-      const auth = JSON.parse(authData);
-      console.log('Parsed auth data keys:', Object.keys(auth));
-      
-      // Handle the simplified token format
-      token = auth.jwt;
-      console.log('🚀 API: Extracted token:', token ? 'exists' : 'null');
-      console.log('🚀 API: Token preview:', token ? token.substring(0, 30) + '...' : 'null');
-      console.log('🚀 API: Token type:', typeof token);
-      
-      // Check if token is expired (only if expires_at exists)
-      if (auth.expires_at) {
-        const expiresAt = new Date(auth.expires_at * 1000); // Convert to milliseconds
-        const now = new Date();
-        console.log('Token expiration check:', { expiresAt, now, expired: now >= expiresAt });
-        
-        if (now >= expiresAt) {
-          console.log('Token expired, clearing auth data');
-          await SecureStore.deleteItemAsync('stogie-auth-jwt');
-          token = null;
-        }
-      } else {
-        console.log('No expiration time found, using token as-is');
-      }
-    } else {
-      console.log('No auth data found in SecureStore');
-    }
-  } catch (error) {
-    console.log('Error getting auth token:', error);
-  }
-
   const headers = {
     'Content-Type': 'application/json',
     ...options.headers,
@@ -63,8 +79,8 @@ export const apiRequest = async (endpoint, options = {}) => {
 
   // Add Authorization header if token exists
   if (token) {
-    headers.Authorization = `Bearer ${token}`;
     console.log('Adding Authorization header with token');
+    headers.Authorization = `Bearer ${token}`;
   } else {
     console.log('No token available, making unauthenticated request');
   }
@@ -73,66 +89,26 @@ export const apiRequest = async (endpoint, options = {}) => {
   console.log('📋 Request headers:', headers);
   console.log('📦 Request method:', options.method || 'GET');
 
+  // Set up abort controller for timeout (30 seconds)
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
+
   try {
-    // iOS-specific timeout and network handling
-    const controller = new AbortController();
-    const isLargeRequest = options.body && options.body.length > 1000000; // 1MB+
-    const timeoutDuration = isLargeRequest ? 120000 : 30000; // 2min for large images, 30s for others
-    const timeoutId = setTimeout(() => controller.abort(), timeoutDuration);
-    
     const response = await fetch(url, {
       ...options,
       signal: controller.signal,
       headers,
     });
-    
+
     clearTimeout(timeoutId);
-
-  // If we get a 401 and this is an authenticated endpoint, log it but don't clear token
-  // (The 401 might be due to backend issues, not expired token)
-  if (response.status === 401 && token) {
-    console.log('Received 401 with token - backend authentication issue');
-    console.log('Token is still valid, not clearing from storage');
-  }
-
     return response;
   } catch (error) {
-    console.error('❌ Network request failed:', error);
-    console.error('🔍 Error details:', {
-      message: error.message,
-      name: error.name,
-      stack: error.stack?.substring(0, 200)
-    });
-    
-    // iOS-specific error messages
+    clearTimeout(timeoutId);
     if (error.name === 'AbortError') {
-      const timeoutMsg = isLargeRequest 
-        ? 'Image upload timeout - try using a smaller image or better connection'
-        : 'Request timeout - check your internet connection';
-      throw new Error(timeoutMsg);
-    } else if (error.message.includes('Network request failed')) {
-      throw new Error('Network connection failed - ensure you have a stable internet connection and try again');
-    } else if (error.message.includes('Failed to fetch')) {
-      throw new Error('Connection failed - check if you can access other apps that use internet');
+      throw new Error('Request timeout');
     }
-    
     throw error;
   }
 };
 
-/**
- * Make an authenticated API request with explicit token
- * @param {string} endpoint - The API endpoint
- * @param {RequestInit} options - Fetch options
- * @param {string} token - JWT token
- * @returns {Promise<Response>}
- */
-export const authenticatedRequest = async (endpoint, options = {}, token) => {
-  return apiRequest(endpoint, {
-    ...options,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      ...options.headers,
-    },
-  });
-};
+export default apiRequest;
