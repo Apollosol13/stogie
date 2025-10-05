@@ -234,3 +234,56 @@ router.post('/:id/comments', async (req, res) => {
 });
 
 export default router;
+
+// DELETE /api/posts/:id - Delete post
+router.delete('/:id', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      return res.status(401).json({ success: false, error: 'Invalid token' });
+    }
+
+    const postId = Number(req.params.id);
+    
+    // Check if post exists and user owns it
+    const { data: post } = await supabase
+      .from('posts')
+      .select('user_id')
+      .eq('id', postId)
+      .single();
+      
+    if (!post) {
+      return res.status(404).json({ success: false, error: 'Post not found' });
+    }
+    
+    if (post.user_id !== user.id) {
+      return res.status(403).json({ success: false, error: 'You can only delete your own posts' });
+    }
+
+    // Delete the post (cascade will delete likes and comments)
+    const { error: deleteError } = await supabase
+      .from('posts')
+      .delete()
+      .eq('id', postId);
+      
+    if (deleteError) {
+      console.error('[Posts] Delete error:', deleteError);
+      return res.status(500).json({ success: false, error: deleteError.message });
+    }
+    
+    console.log('[Posts] Deleted post:', postId);
+    res.json({ success: true });
+  } catch (e) {
+    console.error('[Posts] Error:', e);
+    res.status(500).json({ success: false, error: 'Failed to delete post' });
+  }
+});
+
+export default router;

@@ -6,22 +6,20 @@ import {
   ActivityIndicator,
   ScrollView,
   Image,
+  Alert,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/utils/auth/useAuth";
+import { useUser } from "@/utils/auth/useUser";
 import {
   Search,
   Plus,
-  Heart,
-  MessageCircle,
-  Share,
-  Bookmark,
-  MapPin,
-  Star,
+  MoreVertical,
 } from "lucide-react-native";
 import useFeed from "@/hooks/useFeed";
 import NewPostModal from "@/components/feed/NewPostModal";
+import { apiRequest } from "@/utils/api";
 
 const colors = {
   bgPrimary: "#0F0F0F",
@@ -35,9 +33,45 @@ const colors = {
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { isAuthenticated, isReady, signIn } = useAuth();
+  const { user } = useUser();
   const [activeTab, setActiveTab] = useState("Following");
   const { posts, loading, load } = useFeed();
   const [showNewPost, setShowNewPost] = useState(false);
+  const [deletingPostId, setDeletingPostId] = useState(null);
+
+  const handleDeletePost = async (postId, postUserId) => {
+    // Check if user owns the post
+    if (postUserId !== user?.id) {
+      Alert.alert("Error", "You can only delete your own posts");
+      return;
+    }
+
+    Alert.alert(
+      "Delete Post",
+      "Are you sure you want to delete this post?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setDeletingPostId(postId);
+              const res = await apiRequest(`/api/posts/${postId}`, {
+                method: "DELETE",
+              });
+              if (!res.ok) throw new Error("Failed to delete post");
+              await load(); // Refresh feed
+            } catch (e) {
+              Alert.alert("Error", e.message || "Failed to delete post");
+            } finally {
+              setDeletingPostId(null);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   // Show loading state while auth is initializing
   if (!isReady) {
@@ -61,7 +95,6 @@ export default function HomeScreen() {
       <View style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
         <StatusBar style="light" />
 
-        {/* Header */}
         <View
           style={{
             paddingTop: insets.top + 20,
@@ -124,7 +157,6 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Main Content */}
         <View
           style={{
             flex: 1,
@@ -160,7 +192,6 @@ export default function HomeScreen() {
             enthusiasts, and never forget a great smoke again.
           </Text>
 
-          {/* Action Buttons */}
           <View style={{ alignItems: "center" }}>
             <TouchableOpacity
               onPress={() => signIn()}
@@ -210,7 +241,6 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Bottom Section */}
         <View
           style={{
             paddingHorizontal: 20,
@@ -238,7 +268,6 @@ export default function HomeScreen() {
     <View style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
       <StatusBar style="light" />
 
-      {/* Header */}
       <View
         style={{
           paddingTop: insets.top + 16,
@@ -266,7 +295,6 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Tab Pills */}
       <View
         style={{
           flexDirection: "row",
@@ -301,7 +329,6 @@ export default function HomeScreen() {
         ))}
       </View>
 
-      {/* Feed */}
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
@@ -326,23 +353,32 @@ export default function HomeScreen() {
           </View>
         ) : (
           posts.map((p) => (
-            <View key={p.id} style={{ paddingHorizontal: 16, marginBottom: 20 }}>
-              {/* Header */}
-              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-                {p.profiles?.avatar_url ? (
-                  <Image source={{ uri: p.profiles.avatar_url }} style={{ width: 36, height: 36, borderRadius: 18, marginRight: 8 }} />
-                ) : (
-                  <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface, marginRight: 8 }} />
+            <View key={p.id} style={{ paddingHorizontal: 16, marginBottom: 20, opacity: deletingPostId === p.id ? 0.5 : 1 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  {p.profiles?.avatar_url ? (
+                    <Image source={{ uri: p.profiles.avatar_url }} style={{ width: 36, height: 36, borderRadius: 18, marginRight: 8 }} />
+                  ) : (
+                    <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface, marginRight: 8 }} />
+                  )}
+                  <Text style={{ color: colors.textPrimary, fontWeight: "600" }}>{p.profiles?.username || "User"}</Text>
+                </View>
+
+                {p.user_id === user?.id && (
+                  <TouchableOpacity 
+                    onPress={() => handleDeletePost(p.id, p.user_id)}
+                    disabled={deletingPostId === p.id}
+                    style={{ padding: 8 }}
+                  >
+                    <MoreVertical size={20} color={colors.textSecondary} />
+                  </TouchableOpacity>
                 )}
-                <Text style={{ color: colors.textPrimary, fontWeight: "600" }}>{p.profiles?.username || "User"}</Text>
               </View>
 
-              {/* Image */}
               {p.image_url ? (
                 <Image source={{ uri: p.image_url }} style={{ width: "100%", aspectRatio: 1, borderRadius: 12, backgroundColor: colors.surface }} />
               ) : null}
 
-              {/* Caption */}
               {p.caption ? (
                 <Text style={{ color: colors.textSecondary, marginTop: 8 }}>{p.caption}</Text>
               ) : null}
@@ -351,7 +387,6 @@ export default function HomeScreen() {
         )}
       </ScrollView>
 
-      {/* Floating + Button */}
       <View style={{ position: "absolute", right: 20, bottom: insets.bottom + 24 }}>
         <TouchableOpacity
           onPress={() => setShowNewPost(true)}
@@ -373,7 +408,6 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* New Post Modal */}
       <NewPostModal visible={showNewPost} onClose={() => setShowNewPost(false)} onPosted={load} />
     </View>
   );
