@@ -414,24 +414,29 @@ const SmokingSessionModal = ({
             <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
               <Text style={{ color: colors.textSecondary, marginBottom: 8 }}>Adjust pin location</Text>
               <View style={{ height: 160, borderRadius: 12, overflow: 'hidden' }}>
-                <MapView
-                  style={{ flex: 1 }}
-                  initialRegion={{
-                    latitude: pinLocation?.latitude || location?.latitude || 0,
-                    longitude: pinLocation?.longitude || location?.longitude || 0,
-                    latitudeDelta: 0.01,
-                    longitudeDelta: 0.01,
-                  }}
-                  onPress={(e) => setPinLocation(e.nativeEvent.coordinate)}
-                  userInterfaceStyle="dark"
-                  customMapStyle={[]}
-                  scrollEnabled
-                  zoomEnabled
-                >
-                  {(pinLocation || location) && (
+                { (pinLocation?.latitude && pinLocation?.longitude) || (location?.latitude && location?.longitude) ? (
+                  <MapView
+                    key={(pinLocation?.latitude || location?.latitude) + ',' + (pinLocation?.longitude || location?.longitude)}
+                    style={{ flex: 1 }}
+                    initialRegion={{
+                      latitude: pinLocation?.latitude || location?.latitude,
+                      longitude: pinLocation?.longitude || location?.longitude,
+                      latitudeDelta: 0.01,
+                      longitudeDelta: 0.01,
+                    }}
+                    onPress={(e) => setPinLocation(e.nativeEvent.coordinate)}
+                    userInterfaceStyle="dark"
+                    customMapStyle={[]}
+                    scrollEnabled
+                    zoomEnabled
+                  >
                     <Marker coordinate={pinLocation || location} />
-                  )}
-                </MapView>
+                  </MapView>
+                ) : (
+                  <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface2 }}>
+                    <Text style={{ color: colors.textTertiary }}>Tap the map to choose a spot</Text>
+                  </View>
+                ) }
               </View>
             </View>
 
