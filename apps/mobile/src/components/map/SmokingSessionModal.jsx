@@ -236,7 +236,7 @@ const SmokingSessionModal = ({
               </Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {[
-                  { key: 'marker_green', label: '📍' },
+                  { key: 'marker_green', label: 'pin' },
                   { key: 'classic', label: '🚬' },
                   { key: 'maduro', label: '🥃' },
                   { key: 'ash', label: '🧱' },
@@ -254,9 +254,13 @@ const SmokingSessionModal = ({
                       marginRight: 8,
                     }}
                   >
-                    <Text style={{ fontSize: 22, color: selectedSticker === s.key ? colors.bgPrimary : colors.textPrimary }}>
-                      {s.label}
-                    </Text>
+                    {s.key === 'marker_green' ? (
+                      <MapPin size={22} color={selectedSticker === s.key ? colors.bgPrimary : colors.accentGreen} />
+                    ) : (
+                      <Text style={{ fontSize: 22, color: selectedSticker === s.key ? colors.bgPrimary : colors.textPrimary }}>
+                        {s.label}
+                      </Text>
+                    )}
                   </TouchableOpacity>
                 ))}
               </ScrollView>
