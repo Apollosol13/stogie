@@ -5,12 +5,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LOCATION_PERMISSION_KEY } from "../components/map/constants";
 
 export default function useLocationManager(mapRef) {
-  const [region, setRegion] = useState({
-    latitude: 37.78825,
-    longitude: -122.4324,
-    latitudeDelta: 0.0922,
-    longitudeDelta: 0.0421,
-  });
+  const [region, setRegion] = useState(null); // Start with null, set after location fetch
   const [userLocation, setUserLocation] = useState(null);
   const [locationPermission, setLocationPermission] = useState(false);
   const [showLocationPermissionModal, setShowLocationPermissionModal] =
@@ -83,7 +78,15 @@ export default function useLocationManager(mapRef) {
       const hasPermission = await checkLocationPermission();
       if (hasPermission) {
         // Don't auto-animate on initial load, just get the location
-        getUserLocation(false);
+        await getUserLocation(false);
+      } else {
+        // Fallback to San Francisco if no permission
+        setRegion({
+          latitude: 37.78825,
+          longitude: -122.4324,
+          latitudeDelta: 0.0922,
+          longitudeDelta: 0.0421,
+        });
       }
     })();
   }, [checkLocationPermission, getUserLocation]);

@@ -120,26 +120,34 @@ export default function MapScreen() {
     <View style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
       <StatusBar style="light" />
 
-      <MapView
-        ref={mapRef}
-        provider={PROVIDER_GOOGLE}
-        style={{ flex: 1 }}
-        region={region}
-        onPress={handleMapPress}
-        showsUserLocation={locationPermission}
-        showsMyLocationButton={false}
-        customMapStyle={customMapStyle}
-        userInterfaceStyle="dark"
-        scrollEnabled={true}
-        zoomEnabled={true}
-        pitchEnabled={false}
-        rotateEnabled={false}
-      >
-        <MapMarkers
-          markers={filteredMarkers}
-          onMarkerPress={handleMarkerPress}
-        />
-      </MapView>
+      {region ? (
+        <MapView
+          ref={mapRef}
+          provider={PROVIDER_GOOGLE}
+          style={{ flex: 1 }}
+          region={region}
+          onPress={handleMapPress}
+          showsUserLocation={locationPermission}
+          showsMyLocationButton={false}
+          customMapStyle={customMapStyle}
+          userInterfaceStyle="dark"
+          scrollEnabled={true}
+          zoomEnabled={true}
+          pitchEnabled={false}
+          rotateEnabled={false}
+        >
+          <MapMarkers
+            markers={filteredMarkers}
+            onMarkerPress={handleMarkerPress}
+          />
+        </MapView>
+      ) : (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ color: colors.textPrimary, fontSize: 16 }}>
+            Loading map...
+          </Text>
+        </View>
+      )}
 
       <LoadingOverlay isVisible={loading} />
 
