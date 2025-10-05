@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
     
     const { data: posts, error } = await supabase
       .from('posts')
-      .select('id,image_url,caption,created_at,profiles:profiles(username,avatar_url)')
+      .select('id,image_url,caption,created_at,user_id,profiles!posts_user_id_fkey(username,avatar_url)')
       .order('created_at', { ascending: false })
       .limit(50);
       
@@ -135,7 +135,7 @@ router.get('/:id/comments', async (req, res) => {
     
     const { data, error } = await supabase
       .from('post_comments')
-      .select('id,text,created_at,profiles:profiles(username,avatar_url)')
+      .select('id,text,created_at,profiles!post_comments_user_id_fkey(username,avatar_url)')
       .eq('post_id', postId)
       .order('created_at', { ascending: false });
       
@@ -173,7 +173,7 @@ router.post('/:id/comments', async (req, res) => {
     const { data, error } = await supabase
       .from('post_comments')
       .insert({ post_id: postId, user_id: user.id, text })
-      .select('id,text,created_at,profiles:profiles(username,avatar_url)')
+      .select('id,text,created_at,profiles!post_comments_user_id_fkey(username,avatar_url)')
       .single();
       
     if (error) return res.status(500).json({ success: false, error: error.message });
@@ -186,4 +186,3 @@ router.post('/:id/comments', async (req, res) => {
 });
 
 export default router;
-
