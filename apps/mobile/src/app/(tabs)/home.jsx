@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/utils/auth/useAuth";
 import {
   Search,
+  Plus,
   Heart,
   MessageCircle,
   Share,
@@ -19,6 +20,8 @@ import {
   MapPin,
   Star,
 } from "lucide-react-native";
+import useFeed from "@/hooks/useFeed";
+import NewPostModal from "@/components/feed/NewPostModal";
 
 const colors = {
   bgPrimary: "#0F0F0F",
@@ -33,6 +36,8 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { isAuthenticated, isReady, signIn } = useAuth();
   const [activeTab, setActiveTab] = useState("Following");
+  const { posts, loading, load } = useFeed();
+  const [showNewPost, setShowNewPost] = useState(false);
 
   // Show loading state while auth is initializing
   if (!isReady) {
@@ -299,28 +304,77 @@ export default function HomeScreen() {
       {/* Feed */}
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{
-          paddingBottom: insets.bottom + 20,
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
         showsVerticalScrollIndicator={false}
       >
-        <View style={{ alignItems: "center", paddingHorizontal: 40 }}>
-          <Text
-            style={{
-              color: colors.textSecondary,
-              fontSize: 18,
-              textAlign: "center",
-              lineHeight: 26,
-            }}
-          >
-            No posts yet. Follow some users to see their reviews and cigar
-            experiences!
-          </Text>
-        </View>
+        {loading ? (
+          <View style={{ flex: 1, alignItems: "center", marginTop: 40 }}>
+            <ActivityIndicator size="large" color={colors.accentGold} />
+          </View>
+        ) : posts.length === 0 ? (
+          <View style={{ alignItems: "center", paddingHorizontal: 40, marginTop: 40 }}>
+            <Text
+              style={{
+                color: colors.textSecondary,
+                fontSize: 18,
+                textAlign: "center",
+                lineHeight: 26,
+              }}
+            >
+              No posts yet. Tap the + button to share your first photo.
+            </Text>
+          </View>
+        ) : (
+          posts.map((p) => (
+            <View key={p.id} style={{ paddingHorizontal: 16, marginBottom: 20 }}>
+              {/* Header */}
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+                {p.profiles?.avatar_url ? (
+                  <Image source={{ uri: p.profiles.avatar_url }} style={{ width: 36, height: 36, borderRadius: 18, marginRight: 8 }} />
+                ) : (
+                  <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface, marginRight: 8 }} />
+                )}
+                <Text style={{ color: colors.textPrimary, fontWeight: "600" }}>{p.profiles?.username || "User"}</Text>
+              </View>
+
+              {/* Image */}
+              {p.image_url ? (
+                <Image source={{ uri: p.image_url }} style={{ width: "100%", aspectRatio: 1, borderRadius: 12, backgroundColor: colors.surface }} />
+              ) : null}
+
+              {/* Caption */}
+              {p.caption ? (
+                <Text style={{ color: colors.textSecondary, marginTop: 8 }}>{p.caption}</Text>
+              ) : null}
+            </View>
+          ))
+        )}
       </ScrollView>
+
+      {/* Floating + Button */}
+      <View style={{ position: "absolute", right: 20, bottom: insets.bottom + 24 }}>
+        <TouchableOpacity
+          onPress={() => setShowNewPost(true)}
+          activeOpacity={0.9}
+          style={{
+            backgroundColor: colors.accentGold,
+            width: 56,
+            height: 56,
+            borderRadius: 28,
+            alignItems: "center",
+            justifyContent: "center",
+            shadowColor: "#000",
+            shadowOpacity: 0.3,
+            shadowRadius: 8,
+            shadowOffset: { width: 0, height: 4 },
+          }}
+        >
+          <Plus size={28} color={colors.bgPrimary} />
+        </TouchableOpacity>
+      </View>
+
+      {/* New Post Modal */}
+      <NewPostModal visible={showNewPost} onClose={() => setShowNewPost(false)} onPosted={load} />
     </View>
   );
 }
