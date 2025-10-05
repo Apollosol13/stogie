@@ -1,7 +1,6 @@
 import React from "react";
 import { Marker, Callout } from "react-native-maps";
 import { View, Text } from "react-native";
-import { SvgXml } from 'react-native-svg';
 import { colors } from "@/components/map/colors";
 
 const MapMarkers = ({ markers, onMarkerPress }) => {
@@ -24,12 +23,9 @@ const MapMarkers = ({ markers, onMarkerPress }) => {
         <Marker
           key={marker.id}
           coordinate={marker.coordinate}
-          pinColor={marker.data?.sticker && marker.data?.sticker !== 'marker_green' ? undefined : (marker.data?.sticker === 'marker_green' ? colors.accentGreen : getMarkerColor(marker.type))}
+          pinColor={marker.data?.sticker === 'marker_green' ? colors.accentGreen : getMarkerColor(marker.type)}
           onPress={() => onMarkerPress(marker)}
         >
-          {marker.data?.sticker === 'classic' ? (
-            <SvgXml xml={require('./cigarSvg').default} width={28} height={22} />
-          ) : null}
           <Callout tooltip>
             <View
               style={{
