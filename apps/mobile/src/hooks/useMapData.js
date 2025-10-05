@@ -37,6 +37,12 @@ export default function useMapData() {
     loadMapData();
   }, [loadMapData]);
 
+  // Optimistically add a session to the map immediately
+  const addSessionImmediate = (session) => {
+    setSessions((prev) => [session, ...prev]);
+    setRecentActivity((prev) => [session, ...prev].slice(0, 3));
+  };
+
   const getFilteredMarkers = () => {
     let markers = [];
     if (
@@ -93,5 +99,6 @@ export default function useMapData() {
     setActiveFilter,
     filteredMarkers,
     loadMapData,
+    addSessionImmediate,
   };
 }

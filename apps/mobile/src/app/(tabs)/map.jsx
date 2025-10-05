@@ -40,6 +40,7 @@ export default function MapScreen() {
     setActiveFilter,
     filteredMarkers,
     loadMapData,
+    addSessionImmediate,
   } = useMapData();
 
   const [selectedVenue, setSelectedVenue] = useState(null);
@@ -69,21 +70,37 @@ export default function MapScreen() {
   };
 
   const handleCreateSession = async (sessionData) => {
-    const response = await apiRequest("/api/smoking-sessions", {
-      method: "POST",
-      body: JSON.stringify(sessionData),
-    });
+    // Optimistic marker: add immediately
+    const optimistic = {
+      id: `tmp-${Date.now()}`,
+      latitude: sessionData.latitude,
+      longitude: sessionData.longitude,
+      location_name: sessionData.location_name,
+      profiles: { username: user?.username || user?.name || 'You' },
+      cigars: {},
+      sticker: sessionData.sticker || null,
+    };
+    addSessionImmediate(optimistic);
 
-    if (!response.ok) throw new Error("Failed to create session");
-
-    Alert.alert(
-      "Success!",
-      "Your smoking session has been posted to the map!",
-      [{ text: "OK", onPress: () => loadMapData() }],
-    );
-
+    // Close modal before network call for snappy UX
     setShowSessionModal(false);
     setSelectedLocation(null);
+
+    try {
+      const response = await apiRequest("/api/smoking-sessions", {
+        method: "POST",
+        body: JSON.stringify(sessionData),
+      });
+
+      if (!response.ok) throw new Error("Failed to create session");
+
+      // Refresh from server to replace optimistic with real record
+      loadMapData();
+    } catch (e) {
+      Alert.alert("Error", e.message || "Failed to create session");
+      // On error, reload to drop optimistic item
+      loadMapData();
+    }
   };
 
   const handleVenuesAdded = (newVenues) => {
