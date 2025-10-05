@@ -15,38 +15,64 @@ router.get('/', async (req, res) => {
       userId = user?.id || null;
     }
     
-    const { data: posts, error } = await supabase
+    // First, get posts without the relationship
+    const { data: posts, error: postsError } = await supabase
       .from('posts')
-      .select('id,image_url,caption,created_at,user_id,profiles!posts_user_id_fkey(username,avatar_url)')
+      .select('id,image_url,caption,created_at,user_id')
       .order('created_at', { ascending: false })
       .limit(50);
       
-    if (error) return res.status(500).json({ success: false, error: error.message });
+    if (postsError) {
+      console.error('[Posts] Error fetching posts:', postsError);
+      return res.status(500).json({ success: false, error: postsError.message });
+    }
 
+    if (!posts || posts.length === 0) {
+      return res.json({ success: true, posts: [] });
+    }
+
+    // Get user profiles separately
+    const userIds = [...new Set(posts.map(p => p.user_id))];
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id,username,avatar_url')
+      .in('id', userIds);
+    
+    const profileMap = Object.fromEntries((profiles || []).map(p => [p.id, p]));
+
+    // Get like and comment counts
     const ids = posts.map(p => p.id);
-    if (!ids.length) return res.json({ success: true, posts });
-
     const [{ data: likeCounts }, { data: commentCounts }, myLikesRes] = await Promise.all([
-      supabase.from('post_likes').select('post_id, count:post_id').in('post_id', ids).group('post_id'),
-      supabase.from('post_comments').select('post_id, count:post_id').in('post_id', ids).group('post_id'),
+      supabase.from('post_likes').select('post_id').in('post_id', ids),
+      supabase.from('post_comments').select('post_id').in('post_id', ids),
       userId ? supabase.from('post_likes').select('post_id').eq('user_id', userId).in('post_id', ids) : Promise.resolve({ data: [] })
     ]);
 
-    const likeMap = Object.fromEntries((likeCounts||[]).map(r => [r.post_id, r.count]));
-    const commentMap = Object.fromEntries((commentCounts||[]).map(r => [r.post_id, r.count]));
-    const myLikeSet = new Set((myLikesRes?.data||[]).map(r => r.post_id));
-
-    res.json({
-      success: true,
-      posts: posts.map(p => ({
-        ...p,
-        like_count: likeMap[p.id] || 0,
-        comment_count: commentMap[p.id] || 0,
-        liked_by_me: myLikeSet.has(p.id)
-      }))
+    // Count likes and comments per post
+    const likeCountMap = {};
+    (likeCounts || []).forEach(l => {
+      likeCountMap[l.post_id] = (likeCountMap[l.post_id] || 0) + 1;
     });
+
+    const commentCountMap = {};
+    (commentCounts || []).forEach(c => {
+      commentCountMap[c.post_id] = (commentCountMap[c.post_id] || 0) + 1;
+    });
+
+    const myLikeSet = new Set((myLikesRes?.data || []).map(r => r.post_id));
+
+    // Combine everything
+    const enrichedPosts = posts.map(p => ({
+      ...p,
+      profiles: profileMap[p.user_id] || null,
+      like_count: likeCountMap[p.id] || 0,
+      comment_count: commentCountMap[p.id] || 0,
+      liked_by_me: myLikeSet.has(p.id)
+    }));
+
+    res.json({ success: true, posts: enrichedPosts });
   } catch (e) {
-    console.error(e);
+    console.error('[Posts] Error:', e);
     res.status(500).json({ success: false, error: 'Failed to load posts' });
   }
 });
@@ -77,11 +103,15 @@ router.post('/', async (req, res) => {
       .select()
       .single();
       
-    if (error) return res.status(500).json({ success: false, error: error.message });
+    if (error) {
+      console.error('[Posts] Create error:', error);
+      return res.status(500).json({ success: false, error: error.message });
+    }
     
+    console.log('[Posts] Created post:', data.id);
     res.status(201).json({ success: true, post: data });
   } catch (e) {
-    console.error(e);
+    console.error('[Posts] Error:', e);
     res.status(500).json({ success: false, error: 'Failed to create post' });
   }
 });
@@ -133,15 +163,33 @@ router.get('/:id/comments', async (req, res) => {
   try {
     const postId = Number(req.params.id);
     
-    const { data, error } = await supabase
+    const { data: comments, error } = await supabase
       .from('post_comments')
-      .select('id,text,created_at,profiles!post_comments_user_id_fkey(username,avatar_url)')
+      .select('id,text,created_at,user_id')
       .eq('post_id', postId)
       .order('created_at', { ascending: false });
       
     if (error) return res.status(500).json({ success: false, error: error.message });
     
-    res.json({ success: true, comments: data });
+    // Get profiles separately
+    if (comments && comments.length > 0) {
+      const userIds = [...new Set(comments.map(c => c.user_id))];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id,username,avatar_url')
+        .in('id', userIds);
+      
+      const profileMap = Object.fromEntries((profiles || []).map(p => [p.id, p]));
+      
+      const enrichedComments = comments.map(c => ({
+        ...c,
+        profiles: profileMap[c.user_id] || null
+      }));
+      
+      return res.json({ success: true, comments: enrichedComments });
+    }
+    
+    res.json({ success: true, comments: [] });
   } catch (e) {
     console.error(e);
     res.status(500).json({ success: false, error: 'Failed to load comments' });
@@ -173,7 +221,7 @@ router.post('/:id/comments', async (req, res) => {
     const { data, error } = await supabase
       .from('post_comments')
       .insert({ post_id: postId, user_id: user.id, text })
-      .select('id,text,created_at,profiles!post_comments_user_id_fkey(username,avatar_url)')
+      .select()
       .single();
       
     if (error) return res.status(500).json({ success: false, error: error.message });
