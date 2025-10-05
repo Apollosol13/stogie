@@ -20,6 +20,7 @@ const PinAdjustmentModal = ({ isVisible, onClose, initialLocation, onConfirm }) 
   const mapRef = useRef(null);
   const [pinLocation, setPinLocation] = useState(initialLocation);
   const [region, setRegion] = useState(null);
+  const isUserInteracting = useRef(false);
 
   useEffect(() => {
     if (isVisible && initialLocation) {
@@ -80,12 +81,20 @@ const PinAdjustmentModal = ({ isVisible, onClose, initialLocation, onConfirm }) 
             showsMyLocationButton={false}
             scrollEnabled={true}
             zoomEnabled={true}
+            onTouchStart={() => {
+              isUserInteracting.current = true;
+            }}
+            onTouchEnd={() => {
+              isUserInteracting.current = false;
+            }}
             onRegionChangeComplete={(newRegion) => {
-              // Update pin to center of map as user pans/drags
-              setPinLocation({
-                latitude: newRegion.latitude,
-                longitude: newRegion.longitude,
-              });
+              // Only update pin if user is actively dragging
+              if (isUserInteracting.current) {
+                setPinLocation({
+                  latitude: newRegion.latitude,
+                  longitude: newRegion.longitude,
+                });
+              }
               setRegion(newRegion);
             }}
           >
