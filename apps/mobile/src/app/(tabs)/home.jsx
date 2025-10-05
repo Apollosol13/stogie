@@ -412,7 +412,7 @@ export default function HomeScreen() {
                     <TouchableOpacity
                       onPress={() => handleLikePost(p.id)}
                       style={{
-                        backgroundColor: "rgba(0, 0, 0, 0.6)",
+                        backgroundColor: "transparent",
                         borderRadius: 20,
                         padding: 10,
                         alignItems: "center",
@@ -437,7 +437,7 @@ export default function HomeScreen() {
                     <TouchableOpacity
                       onPress={() => handleCommentPress(p.id)}
                       style={{
-                        backgroundColor: "rgba(0, 0, 0, 0.6)",
+                        backgroundColor: "transparent",
                         borderRadius: 20,
                         padding: 10,
                         alignItems: "center",
