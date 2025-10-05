@@ -24,6 +24,7 @@ import {
   Check
 } from 'lucide-react-native';
 import useHumidor from '@/hooks/useHumidor';
+import PinAdjustmentModal from './PinAdjustmentModal';
 
 const colors = {
   bgPrimary: '#0F0F0F',
@@ -59,6 +60,7 @@ const SmokingSessionModal = ({
   const [selectedSticker, setSelectedSticker] = useState(null);
   const [creating, setCreating] = useState(false);
   const [pinLocation, setPinLocation] = useState(null);
+  const [showPinAdjustment, setShowPinAdjustment] = useState(false);
 
   const slideAnim = useRef(new Animated.Value(0)).current;
 
@@ -408,7 +410,7 @@ const SmokingSessionModal = ({
               />
             </View>
 
-            {/* Location Preview - Static Map */}
+            {/* Location Preview with Adjust Button */}
             {pinLocation?.latitude && pinLocation?.longitude && (
               <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
@@ -421,10 +423,11 @@ const SmokingSessionModal = ({
                       marginLeft: 8,
                     }}
                   >
-                    Location Preview
+                    Pin Location
                   </Text>
                 </View>
-                <View
+                <TouchableOpacity
+                  onPress={() => setShowPinAdjustment(true)}
                   style={{
                     height: 140,
                     borderRadius: 12,
@@ -433,6 +436,9 @@ const SmokingSessionModal = ({
                     justifyContent: 'center',
                     alignItems: 'center',
                     padding: 20,
+                    borderWidth: 2,
+                    borderColor: colors.accentGold,
+                    borderStyle: 'dashed',
                   }}
                 >
                   <MapPin size={40} color={colors.accentGold} />
@@ -449,15 +455,16 @@ const SmokingSessionModal = ({
                   </Text>
                   <Text
                     style={{
-                      color: colors.textSecondary,
-                      fontSize: 12,
-                      marginTop: 4,
+                      color: colors.accentGold,
+                      fontSize: 14,
+                      marginTop: 8,
                       textAlign: 'center',
+                      fontWeight: '600',
                     }}
                   >
-                    Your smoking session will be pinned here
+                    Tap to Adjust Location
                   </Text>
-                </View>
+                </TouchableOpacity>
               </View>
             )}
 
@@ -530,6 +537,16 @@ const SmokingSessionModal = ({
           </ScrollView>
         </Animated.View>
       </View>
+
+      {/* Pin Adjustment Modal - Full Screen */}
+      <PinAdjustmentModal
+        isVisible={showPinAdjustment}
+        onClose={() => setShowPinAdjustment(false)}
+        initialLocation={pinLocation}
+        onConfirm={(newLocation) => {
+          setPinLocation(newLocation);
+        }}
+      />
     </Modal>
   );
 };
