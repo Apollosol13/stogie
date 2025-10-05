@@ -16,6 +16,8 @@ import {
   Search,
   Plus,
   MoreVertical,
+  Heart,
+  MessageCircle,
 } from "lucide-react-native";
 import useFeed from "@/hooks/useFeed";
 import NewPostModal from "@/components/feed/NewPostModal";
@@ -40,7 +42,6 @@ export default function HomeScreen() {
   const [deletingPostId, setDeletingPostId] = useState(null);
 
   const handleDeletePost = async (postId, postUserId) => {
-    // Check if user owns the post
     if (postUserId !== user?.id) {
       Alert.alert("Error", "You can only delete your own posts");
       return;
@@ -61,7 +62,7 @@ export default function HomeScreen() {
                 method: "DELETE",
               });
               if (!res.ok) throw new Error("Failed to delete post");
-              await load(); // Refresh feed
+              await load();
             } catch (e) {
               Alert.alert("Error", e.message || "Failed to delete post");
             } finally {
@@ -73,7 +74,23 @@ export default function HomeScreen() {
     );
   };
 
-  // Show loading state while auth is initializing
+  const handleLikePost = async (postId) => {
+    try {
+      const res = await apiRequest(`/api/posts/${postId}/like`, {
+        method: "POST",
+      });
+      if (!res.ok) throw new Error("Failed to like post");
+      await load(); // Refresh feed to update like count
+    } catch (e) {
+      Alert.alert("Error", e.message || "Failed to like post");
+    }
+  };
+
+  const handleCommentPress = (postId) => {
+    // TODO: Open comments modal/screen
+    Alert.alert("Comments", "Comment feature coming soon!");
+  };
+
   if (!isReady) {
     return (
       <View
@@ -89,7 +106,6 @@ export default function HomeScreen() {
     );
   }
 
-  // Show the clean welcome screen for unauthenticated users
   if (!isAuthenticated) {
     return (
       <View style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
@@ -263,7 +279,6 @@ export default function HomeScreen() {
     );
   }
 
-  // Show authenticated social feed
   return (
     <View style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
       <StatusBar style="light" />
@@ -354,6 +369,7 @@ export default function HomeScreen() {
         ) : (
           posts.map((p) => (
             <View key={p.id} style={{ paddingHorizontal: 16, marginBottom: 20, opacity: deletingPostId === p.id ? 0.5 : 1 }}>
+              {/* Header */}
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                   {p.profiles?.avatar_url ? (
@@ -375,10 +391,73 @@ export default function HomeScreen() {
                 )}
               </View>
 
+              {/* Image with overlaid buttons */}
               {p.image_url ? (
-                <Image source={{ uri: p.image_url }} style={{ width: "100%", aspectRatio: 1, borderRadius: 12, backgroundColor: colors.surface }} />
+                <View style={{ position: "relative" }}>
+                  <Image 
+                    source={{ uri: p.image_url }} 
+                    style={{ width: "100%", aspectRatio: 1, borderRadius: 12, backgroundColor: colors.surface }} 
+                  />
+                  
+                  {/* Like and Comment buttons - stacked vertically in bottom-right */}
+                  <View 
+                    style={{
+                      position: "absolute",
+                      bottom: 16,
+                      right: 16,
+                      gap: 12,
+                    }}
+                  >
+                    {/* Like button */}
+                    <TouchableOpacity
+                      onPress={() => handleLikePost(p.id)}
+                      style={{
+                        backgroundColor: "rgba(0, 0, 0, 0.6)",
+                        borderRadius: 20,
+                        padding: 10,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: 44,
+                        height: 44,
+                      }}
+                    >
+                      <Heart 
+                        size={22} 
+                        color={p.liked_by_me ? colors.accentGold : "#fff"} 
+                        fill={p.liked_by_me ? colors.accentGold : "transparent"}
+                      />
+                      {p.like_count > 0 && (
+                        <Text style={{ color: "#fff", fontSize: 10, fontWeight: "600", marginTop: 2 }}>
+                          {p.like_count}
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+
+                    {/* Comment button */}
+                    <TouchableOpacity
+                      onPress={() => handleCommentPress(p.id)}
+                      style={{
+                        backgroundColor: "rgba(0, 0, 0, 0.6)",
+                        borderRadius: 20,
+                        padding: 10,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: 44,
+                        height: 44,
+                      }}
+                    >
+                      <MessageCircle size={22} color="#fff" />
+                      {p.comment_count > 0 && (
+                        <Text style={{ color: "#fff", fontSize: 10, fontWeight: "600", marginTop: 2 }}>
+                          {p.comment_count}
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                </View>
               ) : null}
 
+              {/* Caption */}
               {p.caption ? (
                 <Text style={{ color: colors.textSecondary, marginTop: 8 }}>{p.caption}</Text>
               ) : null}
