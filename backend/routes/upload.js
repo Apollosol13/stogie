@@ -1,5 +1,6 @@
 import express from 'express';
 import multer from 'multer';
+import supabase from '../config/database.js';
 
 const router = express.Router();
 
@@ -9,23 +10,31 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 } // 10MB
 });
 
-async function uploadToCreate({ buffer, base64, url }) {
-  console.log('[Upload] Uploading to Create.xyz, buffer size:', buffer?.length || 'N/A');
-  const r = await fetch('https://api.create.xyz/v0/upload', {
-    method: 'POST',
-    headers: { 'Content-Type': buffer ? 'application/octet-stream' : 'application/json' },
-    body: buffer ? buffer : JSON.stringify({ base64, url }),
-  });
+async function uploadToSupabase(buffer, mimetype) {
+  console.log('[Upload] Uploading to Supabase Storage...');
   
-  if (!r.ok) {
-    const errorText = await r.text();
-    console.error('[Upload] Create.xyz error:', r.status, errorText);
-    throw new Error(`Create.xyz upload failed: ${errorText}`);
+  const fileName = `post-${Date.now()}.${mimetype.split('/')[1] || 'jpg'}`;
+  const filePath = `posts/${fileName}`;
+
+  const { data: uploadData, error: uploadError} = await supabase.storage
+    .from('profile-images') // Using same bucket as profile images
+    .upload(filePath, buffer, {
+      contentType: mimetype,
+      upsert: false
+    });
+
+  if (uploadError) {
+    console.error('[Upload] Supabase error:', uploadError);
+    throw new Error(`Supabase upload failed: ${uploadError.message}`);
   }
+
+  // Get public URL
+  const { data: { publicUrl } } = supabase.storage
+    .from('profile-images')
+    .getPublicUrl(filePath);
   
-  const data = await r.json();
-  console.log('[Upload] Success! URL:', data.url);
-  return { url: data.url, mimeType: data.mimeType || null };
+  console.log('[Upload] Success! URL:', publicUrl);
+  return { url: publicUrl, mimeType: mimetype };
 }
 
 router.post('/', upload.single('image'), async (req, res) => {
@@ -34,28 +43,12 @@ router.post('/', upload.single('image'), async (req, res) => {
     console.log('[Upload] Content-Type:', req.headers['content-type']);
     console.log('[Upload] Has file:', !!req.file);
     
-    // Handle multipart form-data (from React Native)
-    if (req.file?.buffer) {
-      console.log('[Upload] Processing file buffer');
-      const result = await uploadToCreate({ buffer: req.file.buffer });
-      return res.json(result);
+    if (!req.file?.buffer) {
+      return res.status(400).json({ error: 'No file provided' });
     }
     
-    // Handle JSON body with base64 or url
-    const body = req.body || {};
-    if (body.base64) {
-      console.log('[Upload] Processing base64');
-      const result = await uploadToCreate({ base64: body.base64 });
-      return res.json(result);
-    }
-    if (body.url) {
-      console.log('[Upload] Processing URL');
-      const result = await uploadToCreate({ url: body.url });
-      return res.json(result);
-    }
-    
-    console.error('[Upload] No valid upload data found');
-    return res.status(400).json({ error: 'No file, base64, or url provided' });
+    const result = await uploadToSupabase(req.file.buffer, req.file.mimetype);
+    return res.json(result);
   } catch (e) {
     console.error('[Upload] Error:', e);
     res.status(500).json({ error: e.message || 'Upload failed' });
