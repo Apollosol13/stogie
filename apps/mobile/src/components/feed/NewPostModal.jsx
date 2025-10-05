@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Modal, TouchableOpacity, Image, TextInput, ActivityIndicator } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, Image, TextInput, ActivityIndicator, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { apiRequest } from '@/utils/api';
 
@@ -30,6 +30,7 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
     if (!image) return;
     setSubmitting(true);
     try {
+      console.log('[NewPost] Starting upload...');
       const formData = new FormData();
       formData.append('image', {
         uri: image.uri,
@@ -38,22 +39,40 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
       });
 
       const uploadRes = await apiRequest('/api/upload', { method: 'POST', body: formData });
-      if (!uploadRes.ok) throw new Error('Upload failed');
+      console.log('[NewPost] Upload status:', uploadRes.status);
+      
+      if (!uploadRes.ok) {
+        const errorText = await uploadRes.text();
+        console.error('[NewPost] Upload error:', errorText);
+        Alert.alert('Upload Failed', errorText);
+        throw new Error('Upload failed');
+      }
+      
       const { url } = await uploadRes.json();
+      console.log('[NewPost] Upload success, URL:', url);
 
       const createRes = await apiRequest('/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image_url: url, caption: caption.trim() || null })
       });
-      if (!createRes.ok) throw new Error('Create post failed');
+      console.log('[NewPost] Create post status:', createRes.status);
+      
+      if (!createRes.ok) {
+        const errorText = await createRes.text();
+        console.error('[NewPost] Create post error:', errorText);
+        Alert.alert('Post Failed', errorText);
+        throw new Error('Create post failed');
+      }
 
+      console.log('[NewPost] Success! Refreshing feed...');
       setImage(null);
       setCaption('');
       onPosted?.();
       onClose?.();
     } catch (e) {
-      console.log('post error', e);
+      console.error('[NewPost] Error:', e);
+      Alert.alert('Error', e.message || 'Failed to create post');
     } finally {
       setSubmitting(false);
     }
@@ -96,5 +115,3 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
     </Modal>
   );
 }
-
-
