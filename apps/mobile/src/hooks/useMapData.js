@@ -68,9 +68,19 @@ export default function useMapData() {
     }
 
     if (activeFilter === "all" || activeFilter === "sessions") {
-      const validSessions = sessions.filter(
-        (session) => session.latitude && session.longitude,
-      );
+      const now = new Date();
+      const twentyFourHoursAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000));
+      
+      const validSessions = sessions.filter((session) => {
+        // Must have coordinates
+        if (!session.latitude || !session.longitude) return false;
+        
+        // Must be within last 24 hours
+        if (!session.created_at) return false;
+        const sessionDate = new Date(session.created_at);
+        return sessionDate > twentyFourHoursAgo;
+      });
+      
       markers.push(
         ...validSessions.map((session) => ({
           id: `session-${session.id}`,
