@@ -12,6 +12,7 @@ import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/utils/auth/useAuth";
 import { useUser } from "@/utils/auth/useUser";
+import { router } from "expo-router";
 import {
   Search,
   Plus,
@@ -380,7 +381,10 @@ export default function HomeScreen() {
           posts.map((p) => (
             <View key={p.id} style={{ paddingHorizontal: 16, marginBottom: 20, opacity: deletingPostId === p.id ? 0.5 : 1 }}>
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+                <TouchableOpacity 
+                  onPress={() => p.user_id && router.push(`/user/${p.user_id}`)}
+                  style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
+                >
                   {p.profiles?.avatar_url ? (
                     <Image source={{ uri: p.profiles.avatar_url }} style={{ width: 36, height: 36, borderRadius: 18, marginRight: 8 }} />
                   ) : (
@@ -390,7 +394,7 @@ export default function HomeScreen() {
                     <Text style={{ color: colors.textPrimary, fontWeight: "600" }}>{p.profiles?.username || "User"}</Text>
                     <Text style={{ color: colors.textSecondary, fontSize: 12, marginTop: 2 }}>{formatTimeAgo(p.created_at)}</Text>
                   </View>
-                </View>
+                </TouchableOpacity>
 
                 {p.user_id === user?.id && (
                   <TouchableOpacity 
