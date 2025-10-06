@@ -3,6 +3,7 @@ import { View, Text, Switch } from "react-native";
 import SettingsItem from "@/components/profile/SettingsItem";
 import PrivacyPolicyModal from "@/components/profile/PrivacyPolicyModal";
 import TermsOfServiceModal from "@/components/profile/TermsOfServiceModal";
+import CommunityGuidelinesModal from "@/components/profile/CommunityGuidelinesModal";
 import {
   Bell,
   Shield,
@@ -11,6 +12,7 @@ import {
   MapPin,
   FileText,
   ScrollText,
+  Users,
 } from "lucide-react-native";
 import { colors } from "@/constants/colors";
 
@@ -19,6 +21,7 @@ export default function SettingsSection({ onSignOut }) {
   const [locationEnabled, setLocationEnabled] = useState(true);
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   const [showTermsOfService, setShowTermsOfService] = useState(false);
+  const [showCommunityGuidelines, setShowCommunityGuidelines] = useState(false);
 
   return (
     <>
@@ -91,6 +94,13 @@ export default function SettingsSection({ onSignOut }) {
         />
 
         <SettingsItem
+          icon={<Users size={20} color={colors.accentGold} />}
+          title="Community Guidelines"
+          subtitle="Read our community guidelines"
+          onPress={() => setShowCommunityGuidelines(true)}
+        />
+
+        <SettingsItem
           icon={<HelpCircle size={20} color={colors.textSecondary} />}
           title="Help & Support"
           subtitle="FAQ, contact support"
@@ -111,6 +121,11 @@ export default function SettingsSection({ onSignOut }) {
       <TermsOfServiceModal
         visible={showTermsOfService}
         onClose={() => setShowTermsOfService(false)}
+      />
+
+      <CommunityGuidelinesModal
+        visible={showCommunityGuidelines}
+        onClose={() => setShowCommunityGuidelines(false)}
       />
     </>
   );
