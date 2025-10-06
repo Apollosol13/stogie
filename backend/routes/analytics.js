@@ -39,6 +39,18 @@ router.get('/', async (req, res) => {
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
+    // Get followers count
+    const { count: followersCount } = await supabase
+      .from('follows')
+      .select('*', { count: 'exact', head: true })
+      .eq('following_id', user.id);
+
+    // Get following count
+    const { count: followingCount } = await supabase
+      .from('follows')
+      .select('*', { count: 'exact', head: true })
+      .eq('follower_id', user.id);
+
     // Calculate analytics
     const totalReviews = reviews ? reviews.length : 0;
     const totalCigarsInHumidor = humidorEntries ? humidorEntries.length : 0;
@@ -114,6 +126,10 @@ router.get('/', async (req, res) => {
 
     res.json({
       success: true,
+      followers: followersCount || 0,
+      following: followingCount || 0,
+      totalSmoked: totalSmokingSessions,
+      countries: uniqueCountries.size,
       analytics: {
         // Session stats (for "Smoked" metric)
         sessionStats: {
@@ -137,7 +153,9 @@ router.get('/', async (req, res) => {
         // User stats (general info)
         userStats: {
           account_age_days: accountAge,
-          total_spent: 0 // TODO: implement spending tracking
+          total_spent: 0, // TODO: implement spending tracking
+          followers: followersCount || 0,
+          following: followingCount || 0
         },
         // Legacy data for existing components
         overview: {
@@ -169,6 +187,119 @@ router.get('/', async (req, res) => {
 
   } catch (error) {
     console.error('Analytics endpoint error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// GET /api/analytics/:userId - Get analytics for a specific user (for viewing other profiles)
+router.get('/:userId', async (req, res) => {
+  try {
+    const targetUserId = req.params.userId;
+
+    // Get user's reviews count
+    const { data: reviews, error: reviewsError } = await supabase
+      .from('reviews')
+      .select('id, rating, created_at')
+      .eq('user_id', targetUserId);
+
+    // Get user's humidor entries count
+    const { data: humidorEntries, error: humidorError } = await supabase
+      .from('humidor_entries')
+      .select('id, created_at')
+      .eq('user_id', targetUserId);
+
+    // Get user's smoking sessions count
+    const { data: smokingSessions, error: sessionsError } = await supabase
+      .from('smoking_sessions')
+      .select('id, created_at, location_name, latitude, longitude')
+      .eq('user_id', targetUserId)
+      .order('created_at', { ascending: false });
+
+    // Get followers count
+    const { count: followersCount } = await supabase
+      .from('follows')
+      .select('*', { count: 'exact', head: true })
+      .eq('following_id', targetUserId);
+
+    // Get following count
+    const { count: followingCount } = await supabase
+      .from('follows')
+      .select('*', { count: 'exact', head: true })
+      .eq('follower_id', targetUserId);
+
+    // Calculate analytics
+    const totalReviews = reviews ? reviews.length : 0;
+    const totalCigarsInHumidor = humidorEntries ? humidorEntries.length : 0;
+    const totalSmokingSessions = smokingSessions ? smokingSessions.length : 0;
+    
+    // Calculate average rating
+    const averageRating = reviews && reviews.length > 0 
+      ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
+      : 0;
+
+    // Calculate unique countries from smoking sessions
+    const uniqueCountries = new Set();
+    if (smokingSessions && smokingSessions.length > 0) {
+      smokingSessions.forEach(session => {
+        if (session.location_name) {
+          uniqueCountries.add(session.location_name);
+        }
+      });
+    }
+
+    // Get user creation date for frequency stats
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('created_at')
+      .eq('id', targetUserId)
+      .single();
+
+    const accountAge = profile?.created_at ? 
+      Math.max(1, Math.floor((Date.now() - new Date(profile.created_at).getTime()) / (1000 * 60 * 60 * 24))) : 1;
+    
+    const cigarsPerDay = totalSmokingSessions / accountAge;
+    const cigarsPerWeek = cigarsPerDay * 7;
+    const cigarsPerMonth = cigarsPerDay * 30;
+
+    res.json({
+      success: true,
+      followers: followersCount || 0,
+      following: followingCount || 0,
+      totalSmoked: totalSmokingSessions,
+      countries: uniqueCountries.size,
+      analytics: {
+        sessionStats: {
+          total_sessions: totalSmokingSessions
+        },
+        reviewStats: {
+          avg_rating_given: averageRating,
+          total_reviews: totalReviews
+        },
+        locationStats: {
+          countries_visited: uniqueCountries.size
+        },
+        frequencyStats: {
+          cigars_per_day: cigarsPerDay,
+          cigars_per_week: cigarsPerWeek,
+          cigars_per_month: cigarsPerMonth
+        },
+        userStats: {
+          account_age_days: accountAge,
+          total_spent: 0,
+          followers: followersCount || 0,
+          following: followingCount || 0
+        },
+        overview: {
+          totalReviews,
+          totalCigarsInHumidor,
+          totalSmokingSessions,
+          averageRating: Math.round(averageRating * 10) / 10
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Analytics by userId endpoint error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });

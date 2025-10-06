@@ -1,0 +1,22 @@
+After line 23, add:
+import CommentsModal from "@/components/feed/CommentsModal";
+
+After line 42, add:
+  const [selectedPostId, setSelectedPostId] = useState(null);
+  const [showComments, setShowComments] = useState(false);
+
+Replace lines 95-98 (handleCommentPress) with:
+  const handleCommentPress = (postId) => {
+    setSelectedPostId(postId);
+    setShowComments(true);
+  };
+
+Before the closing </View> at the end (after NewPostModal), add:
+      <CommentsModal
+        visible={showComments}
+        onClose={() => {
+          setShowComments(false);
+          setSelectedPostId(null);
+        }}
+        postId={selectedPostId}
+      />

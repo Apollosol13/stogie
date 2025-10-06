@@ -24,9 +24,9 @@ export default function StatsView({ analytics }) {
           ? analytics.reviewStats.avg_rating_given.toFixed(2)
           : fallback.toFixed(2);
       case "followers":
-        return 0; // TODO: implement following system
+        return analytics.userStats?.followers || 0;
       case "following":
-        return 0; // TODO: implement following system
+        return analytics.userStats?.following || 0;
       case "countries":
         return analytics.locationStats?.countries_visited || fallback;
       case "cigarsPerDay":

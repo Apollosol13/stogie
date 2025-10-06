@@ -1,0 +1,21 @@
+--- home.jsx.old
++++ home.jsx.new
+@@ -57,10 +57,17 @@
+           onPress: async () => {
+             try {
+               setDeletingPostId(postId);
++              console.log('[Delete] Deleting post:', postId);
+               const res = await apiRequest(`/api/posts/${postId}`, {
+                 method: "DELETE",
+               });
+-              if (!res.ok) throw new Error("Failed to delete post");
++              console.log('[Delete] Response status:', res.status);
++              if (!res.ok) {
++                const errorText = await res.text();
++                console.error('[Delete] Error response:', errorText);
++                throw new Error(errorText || "Failed to delete post");
++              }
++              console.log('[Delete] Success!');
+               await load(); // Refresh feed
+             } catch (e) {
+               Alert.alert("Error", e.message || "Failed to delete post");

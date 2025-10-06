@@ -1,0 +1,40 @@
+Line 1: Add RefreshControl import:
+import { View, ScrollView, Alert, RefreshControl } from "react-native";
+
+Line 33: Add refreshProfile to destructuring:
+  const {
+    profile,
+    analytics,
+    loading: profileLoading,
+    showEditModal,
+    setShowEditModal,
+    saving,
+    handleSaveProfile,
+    handleSelectProfileImage,
+    refreshProfile,
+  } = useProfile();
+
+Line 35: Add refreshing state:
+  const [activeTab, setActiveTab] = useState("activity");
+  const [refreshing, setRefreshing] = useState(false);
+
+After line 43: Add handleRefresh function:
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await refreshProfile();
+    setRefreshing(false);
+  };
+
+Line 67-70: Add RefreshControl to ScrollView:
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingTop: insets.top + 16 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={colors.accentGold}
+            colors={[colors.accentGold]}
+          />
+        }
+      >

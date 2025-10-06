@@ -1,0 +1,45 @@
+Line 40: Change from:
+  const { posts, loading, load } = useFeed();
+
+To:
+  const { posts, loading, load, toggleLike, removePost } = useFeed();
+
+Lines 77-85: Change from:
+  const handleLikePost = async (postId) => {
+    try {
+      const res = await apiRequest(`/api/posts/${postId}/like`, {
+        method: "POST",
+      });
+      if (!res.ok) throw new Error("Failed to like post");
+      await load(); // Refresh feed to update like count
+    } catch (e) {
+      Alert.alert("Error", e.message || "Failed to like post");
+    }
+  };
+
+To:
+  const handleLikePost = async (postId) => {
+    // Optimistic update - instant UI response
+    toggleLike(postId);
+    
+    try {
+      const res = await apiRequest(`/api/posts/${postId}/like`, {
+        method: "POST",
+      });
+      if (!res.ok) {
+        // Revert on failure
+        toggleLike(postId);
+        throw new Error("Failed to like post");
+      }
+    } catch (e) {
+      Alert.alert("Error", e.message || "Failed to like post");
+    }
+  };
+
+Lines 64-65: Change from:
+              if (!res.ok) throw new Error("Failed to delete post");
+              await load();
+
+To:
+              if (!res.ok) throw new Error("Failed to delete post");
+              removePost(postId); // Optimistic removal

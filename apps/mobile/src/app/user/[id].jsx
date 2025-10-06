@@ -93,11 +93,22 @@ export default function UserProfileScreen() {
         const data = await res.json();
         setIsFollowing(data.following);
         
-        // Optimistically update follower count
-        setAnalytics((prev) => ({
-          ...prev,
-          followers: data.following ? (prev?.followers || 0) + 1 : Math.max((prev?.followers || 0) - 1, 0),
-        }));
+        // Optimistically update follower count in the correct nested structure
+        setAnalytics((prev) => {
+          const currentFollowers = prev?.userStats?.followers || 0;
+          const newFollowers = data.following 
+            ? currentFollowers + 1 
+            : Math.max(currentFollowers - 1, 0);
+          
+          return {
+            ...prev,
+            followers: newFollowers, // Top-level for compatibility
+            userStats: {
+              ...prev?.userStats,
+              followers: newFollowers,
+            },
+          };
+        });
         
         // Reload full analytics to sync with server
         const analyticsRes = await apiRequest(`/api/analytics/${userId}`);
