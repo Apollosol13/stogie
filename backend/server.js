@@ -17,6 +17,7 @@ import sessionRoutes from './routes/sessions.js';
 import integrationRoutes from './routes/integrations.js';
 import uploadRoutes from './routes/upload.js';
 import postRoutes from './routes/posts.js';
+import followRoutes from './routes/follow.js';
 
 // Load environment variables
 dotenv.config();
@@ -80,6 +81,7 @@ app.use('/api/smoking-sessions', sessionRoutes);
 app.use('/integrations', integrationRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/posts', postRoutes);
+app.use('/api/follow', followRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
