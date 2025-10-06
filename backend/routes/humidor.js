@@ -167,25 +167,42 @@ router.get('/:userId', authenticateToken, async (req, res) => {
 router.post('/', authenticateToken, async (req, res) => {
   try {
     const {
-      cigarId,
+      cigar_id,
+      cigarId, // Support both snake_case and camelCase
       status,
       quantity = 1,
       pricePaid,
       acquiredDate,
       notes,
-      rating
+      rating,
+      // Fields for creating a new cigar
+      brand,
+      line,
+      vitola,
+      strength,
+      wrapper,
+      binder,
+      filler,
+      origin_country,
+      ring_gauge,
+      length_inches,
+      price_range,
+      flavor_profile,
+      smoking_time_minutes,
+      description
     } = req.body;
 
-    // Validate required fields
-    if (!cigarId || !status) {
-      return res.status(400).json({
-        success: false,
-        error: 'Cigar ID and status are required'
-      });
-    }
+    const finalCigarId = cigar_id || cigarId;
 
     // Validate status
     const validStatuses = ['owned', 'smoked', 'wishlist'];
+    if (!status) {
+      return res.status(400).json({
+        success: false,
+        error: 'Status is required'
+      });
+    }
+    
     if (!validStatuses.includes(status)) {
       return res.status(400).json({
         success: false,
@@ -201,23 +218,67 @@ router.post('/', authenticateToken, async (req, res) => {
       });
     }
 
-    // Check if cigar exists
-    const { data: cigar, error: cigarError } = await supabase
-      .from('cigars')
-      .select('id')
-      .eq('id', cigarId)
-      .single();
+    let actualCigarId = finalCigarId;
 
-    if (cigarError || !cigar) {
-      return res.status(404).json({
+    // If no cigar ID, create the cigar first
+    if (!finalCigarId && brand && vitola) {
+      console.log('[Humidor] Creating new cigar:', { brand, line, vitola });
+      
+      const { data: newCigar, error: createError } = await supabase
+        .from('cigars')
+        .insert([{
+          brand: brand,
+          line: line || '',
+          vitola: vitola,
+          strength: strength || 'MEDIUM',
+          wrapper: wrapper || 'Unknown',
+          binder: binder || 'Unknown',
+          filler: filler || 'Unknown',
+          origin_country: origin_country || 'Unknown',
+          ring_gauge: ring_gauge || null,
+          length_inches: length_inches || null,
+          price_range: price_range || '',
+          flavor_profile: flavor_profile || [],
+          smoking_time_minutes: smoking_time_minutes || null,
+          description: description || ''
+        }])
+        .select()
+        .single();
+
+      if (createError) {
+        console.error('[Humidor] Error creating cigar:', createError);
+        return res.status(500).json({
+          success: false,
+          error: 'Failed to create cigar'
+        });
+      }
+
+      actualCigarId = newCigar.id;
+      console.log('[Humidor] Created cigar with ID:', actualCigarId);
+    } else if (!finalCigarId) {
+      return res.status(400).json({
         success: false,
-        error: 'Cigar not found'
+        error: 'Either cigar_id or brand/vitola must be provided'
       });
+    } else {
+      // Check if cigar exists
+      const { data: cigar, error: cigarError } = await supabase
+        .from('cigars')
+        .select('id')
+        .eq('id', finalCigarId)
+        .single();
+
+      if (cigarError || !cigar) {
+        return res.status(404).json({
+          success: false,
+          error: 'Cigar not found'
+        });
+      }
     }
 
     const entryData = {
       user_id: req.user.id,
-      cigar_id: cigarId,
+      cigar_id: actualCigarId,
       status,
       quantity: status === 'owned' ? quantity : 1,
       price_paid: pricePaid || null,
