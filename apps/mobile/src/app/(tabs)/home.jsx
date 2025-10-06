@@ -23,6 +23,7 @@ import useFeed from "@/hooks/useFeed";
 import NewPostModal from "@/components/feed/NewPostModal";
 import CommentsModal from "@/components/feed/CommentsModal";
 import { apiRequest } from "@/utils/api";
+import { formatTimeAgo } from "@/utils/timeAgo";
 
 const colors = {
   bgPrimary: "#0F0F0F",
@@ -379,13 +380,16 @@ export default function HomeScreen() {
           posts.map((p) => (
             <View key={p.id} style={{ paddingHorizontal: 16, marginBottom: 20, opacity: deletingPostId === p.id ? 0.5 : 1 }}>
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
                   {p.profiles?.avatar_url ? (
                     <Image source={{ uri: p.profiles.avatar_url }} style={{ width: 36, height: 36, borderRadius: 18, marginRight: 8 }} />
                   ) : (
                     <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface, marginRight: 8 }} />
                   )}
-                  <Text style={{ color: colors.textPrimary, fontWeight: "600" }}>{p.profiles?.username || "User"}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: colors.textPrimary, fontWeight: "600" }}>{p.profiles?.username || "User"}</Text>
+                    <Text style={{ color: colors.textSecondary, fontSize: 12, marginTop: 2 }}>{formatTimeAgo(p.created_at)}</Text>
+                  </View>
                 </View>
 
                 {p.user_id === user?.id && (

@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { X, Heart, MessageCircle, MoreVertical, Send } from "lucide-react-native";
 import { colors } from "@/constants/colors";
 import { apiRequest } from "@/utils/api";
+import { formatTimeAgo } from "@/utils/timeAgo";
 
 export default function PostDetailModal({
   visible,
@@ -146,7 +147,7 @@ export default function PostDetailModal({
               <X size={20} color={colors.textSecondary} />
             </TouchableOpacity>
 
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
               <Image
                 source={{ uri: post.profiles?.avatar_url }}
                 style={{
@@ -156,15 +157,26 @@ export default function PostDetailModal({
                   marginRight: 8,
                 }}
               />
-              <Text
-                style={{
-                  color: colors.textPrimary,
-                  fontSize: 16,
-                  fontWeight: "600",
-                }}
-              >
-                {post.profiles?.username || "User"}
-              </Text>
+              <View>
+                <Text
+                  style={{
+                    color: colors.textPrimary,
+                    fontSize: 16,
+                    fontWeight: "600",
+                  }}
+                >
+                  {post.profiles?.username || "User"}
+                </Text>
+                <Text
+                  style={{
+                    color: colors.textSecondary,
+                    fontSize: 12,
+                    marginTop: 2,
+                  }}
+                >
+                  {formatTimeAgo(post.created_at)}
+                </Text>
+              </View>
             </View>
 
             {isMyPost && (
