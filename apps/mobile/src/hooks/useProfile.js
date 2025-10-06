@@ -203,5 +203,10 @@ export default function useProfile() {
     saving,
     handleSaveProfile,
     handleSelectProfileImage,
+    refreshProfile: async () => {
+      setLoading(true);
+      await Promise.all([fetchProfile(), fetchAnalytics()]);
+      setLoading(false);
+    },
   };
 }

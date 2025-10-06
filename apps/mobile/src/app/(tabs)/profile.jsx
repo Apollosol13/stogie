@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, ScrollView, Alert } from "react-native";
+import { View, ScrollView, Alert, RefreshControl } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../utils/auth/useAuth";
@@ -30,15 +30,23 @@ export default function ProfileScreen() {
     saving,
     handleSaveProfile,
     handleSelectProfileImage,
+    refreshProfile,
   } = useProfile();
 
   const [activeTab, setActiveTab] = useState("activity");
+  const [refreshing, setRefreshing] = useState(false);
 
   const handleSignOut = () => {
     Alert.alert("Sign Out", "Are you sure you want to sign out?", [
       { text: "Cancel", style: "cancel" },
       { text: "Sign Out", style: "destructive", onPress: signOut },
     ]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await refreshProfile();
+    setRefreshing(false);
+  };
   };
 
   const renderTabContent = () => {
@@ -67,6 +75,14 @@ export default function ProfileScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingTop: insets.top + 16 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor="#D4B896"
+            colors={["#D4B896"]}
+          />
+        }
       >
         <ProfileHeader
           profile={profile}
