@@ -39,17 +39,23 @@ router.get('/', async (req, res) => {
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
-    // Get followers count
-    const { count: followersCount } = await supabase
+    // Get followers count - also fetch actual rows to debug
+    const { data: followersData, count: followersCount } = await supabase
       .from('follows')
-      .select('*', { count: 'exact', head: true })
+      .select('follower_id, following_id', { count: 'exact' })
       .eq('following_id', user.id);
+    
+    console.log(`[Analytics] Current user followers data:`, followersData);
+    console.log(`[Analytics] Current user followers count: ${followersCount}`);
 
-    // Get following count
-    const { count: followingCount } = await supabase
+    // Get following count - also fetch actual rows to debug
+    const { data: followingData, count: followingCount } = await supabase
       .from('follows')
-      .select('*', { count: 'exact', head: true })
+      .select('follower_id, following_id', { count: 'exact' })
       .eq('follower_id', user.id);
+    
+    console.log(`[Analytics] Current user following data:`, followingData);
+    console.log(`[Analytics] Current user following count: ${followingCount}`);
 
     // Calculate analytics
     const totalReviews = reviews ? reviews.length : 0;
@@ -216,21 +222,23 @@ router.get('/:userId', async (req, res) => {
       .eq('user_id', targetUserId)
       .order('created_at', { ascending: false });
 
-    // Get followers count
-    const { count: followersCount, error: followersError } = await supabase
+    // Get followers count - also fetch actual rows to debug
+    const { data: followersData, count: followersCount, error: followersError } = await supabase
       .from('follows')
-      .select('*', { count: 'exact', head: true })
+      .select('follower_id, following_id', { count: 'exact' })
       .eq('following_id', targetUserId);
 
+    console.log(`[Analytics] Followers data for ${targetUserId}:`, followersData);
     console.log(`[Analytics] Followers count for ${targetUserId}: ${followersCount}`);
     if (followersError) console.error('[Analytics] Followers error:', followersError);
 
-    // Get following count
-    const { count: followingCount, error: followingError } = await supabase
+    // Get following count - also fetch actual rows to debug
+    const { data: followingData, count: followingCount, error: followingError } = await supabase
       .from('follows')
-      .select('*', { count: 'exact', head: true })
+      .select('follower_id, following_id', { count: 'exact' })
       .eq('follower_id', targetUserId);
     
+    console.log(`[Analytics] Following data for ${targetUserId}:`, followingData);
     console.log(`[Analytics] Following count for ${targetUserId}: ${followingCount}`);
     if (followingError) console.error('[Analytics] Following error:', followingError);
 
