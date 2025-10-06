@@ -43,13 +43,19 @@ export default function PostDetailModal({
     if (!post?.id) return;
     try {
       setLoadingComments(true);
+      console.log('[PostDetailModal] Fetching comments for post:', post.id);
       const response = await apiRequest(`/api/posts/${post.id}/comments`);
+      console.log('[PostDetailModal] Comments response status:', response.status);
       if (response.ok) {
         const data = await response.json();
+        console.log('[PostDetailModal] Comments data:', data);
         setComments(data.comments || []);
+      } else {
+        const errorText = await response.text();
+        console.error('[PostDetailModal] Failed to fetch comments:', errorText);
       }
     } catch (error) {
-      console.error("Error fetching comments:", error);
+      console.error("[PostDetailModal] Error fetching comments:", error);
     } finally {
       setLoadingComments(false);
     }
@@ -63,7 +69,7 @@ export default function PostDetailModal({
       const response = await apiRequest(`/api/posts/${post.id}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ comment_text: comment.trim() }),
+        body: JSON.stringify({ text: comment.trim() }),
       });
 
       if (response.ok) {
@@ -310,7 +316,7 @@ export default function PostDetailModal({
                         <Text style={{ fontWeight: "600" }}>
                           {c.profiles?.username}{" "}
                         </Text>
-                        {c.comment_text}
+                        {c.text}
                       </Text>
                       <Text
                         style={{
