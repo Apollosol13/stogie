@@ -81,7 +81,7 @@ export default function StatsView({ analytics }) {
         <StatCard
           icon={<Globe size={20} color={colors.textSecondary} />}
           value={getStatValue("countries")}
-          label="Countries"
+          label="Locations"
           color={colors.textSecondary}
         />
       </View>
