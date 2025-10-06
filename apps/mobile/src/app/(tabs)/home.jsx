@@ -39,8 +39,12 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { isAuthenticated, isReady, signIn } = useAuth();
   const { user } = useUser();
-  const [activeTab, setActiveTab] = useState("Following");
-  const { posts, loading, load, toggleLike, removePost } = useFeed();
+  const [activeTab, setActiveTab] = useState("For You");
+  
+  // Pass filter to useFeed based on activeTab
+  const filter = activeTab === "Following" ? "following" : null;
+  const { posts, loading, load, toggleLike, removePost } = useFeed(filter);
+  
   const [showNewPost, setShowNewPost] = useState(false);
   const [deletingPostId, setDeletingPostId] = useState(null);
   const [selectedPostId, setSelectedPostId] = useState(null);
@@ -148,133 +152,163 @@ export default function HomeScreen() {
               style={{
                 paddingHorizontal: 16,
                 paddingVertical: 8,
-                marginRight: 8,
+                borderRadius: 8,
+                backgroundColor: colors.accentGold,
+              }}
+            >
+              <Text
+                style={{
+                  color: colors.bgPrimary,
+                  fontSize: 16,
+                  fontWeight: "600",
+                }}
+              >
+                Sign In
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <ScrollView
+          contentContainerStyle={{
+            paddingHorizontal: 20,
+            paddingBottom: insets.bottom + 40,
+          }}
+        >
+          <View style={{ marginBottom: 40 }}>
+            <Text
+              style={{
+                color: colors.textPrimary,
+                fontSize: 32,
+                fontWeight: "700",
+                lineHeight: 42,
+                marginBottom: 16,
+              }}
+            >
+              Your Digital{"\n"}Cigar Companion
+            </Text>
+            <Text
+              style={{
+                color: colors.textSecondary,
+                fontSize: 18,
+                lineHeight: 26,
+              }}
+            >
+              Track your collection, discover new cigars, and connect with
+              fellow enthusiasts.
+            </Text>
+          </View>
+
+          <View style={{ marginBottom: 40 }}>
+            <View
+              style={{
+                backgroundColor: colors.surface,
+                padding: 24,
+                borderRadius: 16,
+                marginBottom: 16,
               }}
             >
               <Text
                 style={{
                   color: colors.textPrimary,
-                  fontSize: 16,
-                  fontWeight: "500",
+                  fontSize: 20,
+                  fontWeight: "600",
+                  marginBottom: 8,
                 }}
               >
-                Sign In
+                🔍 AI-Powered Scanner
               </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => signIn()}
-              style={{
-                backgroundColor: colors.accentGold,
-                paddingHorizontal: 20,
-                paddingVertical: 8,
-                borderRadius: 20,
-              }}
-            >
               <Text
                 style={{
-                  color: colors.bgPrimary,
+                  color: colors.textSecondary,
                   fontSize: 16,
-                  fontWeight: "600",
+                  lineHeight: 24,
                 }}
               >
-                Sign Up
+                Instantly identify any cigar with your camera
               </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+            </View>
 
-        <View
-          style={{
-            flex: 1,
-            paddingHorizontal: 20,
-            justifyContent: "center",
-            marginTop: -100,
-          }}
-        >
-          <Text
-            style={{
-              color: colors.textPrimary,
-              fontSize: 48,
-              fontWeight: "700",
-              lineHeight: 56,
-              textAlign: "center",
-              marginBottom: 24,
-            }}
-          >
-            Track Your Cigar Journey
-          </Text>
-
-          <Text
-            style={{
-              color: colors.textSecondary,
-              fontSize: 18,
-              lineHeight: 28,
-              textAlign: "center",
-              marginBottom: 60,
-              paddingHorizontal: 20,
-            }}
-          >
-            Discover new cigars, manage your humidor, connect with fellow
-            enthusiasts, and never forget a great smoke again.
-          </Text>
-
-          <View style={{ alignItems: "center" }}>
-            <TouchableOpacity
-              onPress={() => signIn()}
+            <View
               style={{
-                backgroundColor: colors.accentGold,
-                paddingHorizontal: 48,
-                paddingVertical: 16,
-                borderRadius: 24,
+                backgroundColor: colors.surface,
+                padding: 24,
+                borderRadius: 16,
                 marginBottom: 16,
-                minWidth: 200,
               }}
             >
               <Text
                 style={{
-                  color: colors.bgPrimary,
-                  fontSize: 18,
+                  color: colors.textPrimary,
+                  fontSize: 20,
                   fontWeight: "600",
-                  textAlign: "center",
+                  marginBottom: 8,
                 }}
               >
-                Get Started Free
+                📱 Digital Humidor
               </Text>
-            </TouchableOpacity>
+              <Text
+                style={{
+                  color: colors.textSecondary,
+                  fontSize: 16,
+                  lineHeight: 24,
+                }}
+              >
+                Manage your collection and wishlist in one place
+              </Text>
+            </View>
 
-            <TouchableOpacity
-              onPress={() => signIn()}
+            <View
               style={{
-                borderWidth: 1,
-                borderColor: colors.buttonOutline,
-                paddingHorizontal: 48,
-                paddingVertical: 16,
-                borderRadius: 24,
-                minWidth: 200,
+                backgroundColor: colors.surface,
+                padding: 24,
+                borderRadius: 16,
               }}
             >
               <Text
                 style={{
-                  color: colors.accentGold,
-                  fontSize: 18,
+                  color: colors.textPrimary,
+                  fontSize: 20,
                   fontWeight: "600",
-                  textAlign: "center",
+                  marginBottom: 8,
                 }}
               >
-                Sign In
+                🗺️ Find Nearby Shops
               </Text>
-            </TouchableOpacity>
+              <Text
+                style={{
+                  color: colors.textSecondary,
+                  fontSize: 16,
+                  lineHeight: 24,
+                }}
+              >
+                Discover cigar lounges and retailers near you
+              </Text>
+            </View>
           </View>
-        </View>
 
-        <View
-          style={{
-            paddingHorizontal: 20,
-            paddingBottom: insets.bottom + 40,
-            alignItems: "center",
-          }}
-        >
+          <TouchableOpacity
+            onPress={() => signIn()}
+            style={{
+              backgroundColor: colors.accentGold,
+              paddingVertical: 16,
+              borderRadius: 12,
+              alignItems: "center",
+            }}
+          >
+            <Text
+              style={{
+                color: colors.bgPrimary,
+                fontSize: 18,
+                fontWeight: "700",
+              }}
+            >
+              Get Started
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
+
+        <View style={{ alignItems: "center", marginBottom: insets.bottom + 20 }}>
           <Text
             style={{
               color: colors.textPrimary,
@@ -329,7 +363,7 @@ export default function HomeScreen() {
           gap: 16,
         }}
       >
-        {["Following", "Nearby", "Trending"].map((tab) => (
+        {["For You", "Following"].map((tab) => (
           <TouchableOpacity
             key={tab}
             onPress={() => setActiveTab(tab)}
@@ -374,140 +408,214 @@ export default function HomeScreen() {
                 lineHeight: 26,
               }}
             >
-              No posts yet. Tap the + button to share your first photo.
+              {activeTab === "Following" 
+                ? "No posts from people you follow yet. Follow some users to see their posts here!"
+                : "No posts yet. Tap the + button to share your first photo."}
             </Text>
           </View>
         ) : (
           posts.map((p) => (
-            <View key={p.id} style={{ paddingHorizontal: 16, marginBottom: 20, opacity: deletingPostId === p.id ? 0.5 : 1 }}>
-              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                <TouchableOpacity 
+            <View
+              key={p.id}
+              style={{
+                marginBottom: 20,
+                backgroundColor: colors.surface,
+                borderRadius: 12,
+                overflow: "hidden",
+                marginHorizontal: 16,
+              }}
+            >
+              {/* Post Header */}
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: 12,
+                }}
+              >
+                <TouchableOpacity
                   onPress={() => p.user_id && router.push(`/user/${p.user_id}`)}
                   style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
                 >
                   {p.profiles?.avatar_url ? (
-                    <Image source={{ uri: p.profiles.avatar_url }} style={{ width: 36, height: 36, borderRadius: 18, marginRight: 8 }} />
+                    <Image
+                      source={{ uri: p.profiles.avatar_url }}
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 18,
+                        marginRight: 8,
+                      }}
+                    />
                   ) : (
-                    <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface, marginRight: 8 }} />
+                    <View
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 18,
+                        backgroundColor: colors.surface,
+                        marginRight: 8,
+                      }}
+                    />
                   )}
                   <View style={{ flex: 1 }}>
-                    <Text style={{ color: colors.textPrimary, fontWeight: "600" }}>{p.profiles?.username || "User"}</Text>
-                    <Text style={{ color: colors.textSecondary, fontSize: 12, marginTop: 2 }}>{formatTimeAgo(p.created_at)}</Text>
+                    <Text
+                      style={{
+                        color: colors.textPrimary,
+                        fontWeight: "600",
+                      }}
+                    >
+                      {p.profiles?.username || "User"}
+                    </Text>
+                    <Text
+                      style={{
+                        color: colors.textSecondary,
+                        fontSize: 12,
+                        marginTop: 2,
+                      }}
+                    >
+                      {formatTimeAgo(p.created_at)}
+                    </Text>
                   </View>
                 </TouchableOpacity>
 
+                {/* Three-dot menu (only for post owner) */}
                 {p.user_id === user?.id && (
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     onPress={() => handleDeletePost(p.id, p.user_id)}
                     disabled={deletingPostId === p.id}
-                    style={{ padding: 8 }}
                   >
-                    <MoreVertical size={20} color={colors.textSecondary} />
+                    {deletingPostId === p.id ? (
+                      <ActivityIndicator
+                        size="small"
+                        color={colors.textSecondary}
+                      />
+                    ) : (
+                      <MoreVertical size={20} color={colors.textSecondary} />
+                    )}
                   </TouchableOpacity>
                 )}
               </View>
 
-              {p.image_url ? (
-                <View style={{ position: "relative" }}>
-                  <Image 
-                    source={{ uri: p.image_url }} 
-                    style={{ width: "100%", aspectRatio: 1, borderRadius: 12, backgroundColor: colors.surface }} 
+              {/* Post Image */}
+              <Image
+                source={{ uri: p.image_url }}
+                style={{
+                  width: "100%",
+                  aspectRatio: 1,
+                  backgroundColor: colors.bgPrimary,
+                }}
+                resizeMode="cover"
+              />
+
+              {/* Like & Comment Buttons */}
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  padding: 12,
+                  gap: 16,
+                }}
+              >
+                <TouchableOpacity
+                  onPress={() => handleLikePost(p.id)}
+                  style={{ flexDirection: "row", alignItems: "center" }}
+                >
+                  <Heart
+                    size={24}
+                    color={p.liked_by_me ? colors.accentGold : colors.textSecondary}
+                    fill={p.liked_by_me ? colors.accentGold : "transparent"}
                   />
-                  
-                  <View 
+                  <Text
                     style={{
-                      position: "absolute",
-                      bottom: 16,
-                      right: 16,
-                      gap: 12,
+                      color: colors.textPrimary,
+                      marginLeft: 6,
+                      fontSize: 16,
+                      fontWeight: "600",
                     }}
                   >
-                    <TouchableOpacity
-                      onPress={() => handleLikePost(p.id)}
-                      style={{
-                        backgroundColor: "transparent",
-                        borderRadius: 20,
-                        padding: 10,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        width: 44,
-                        height: 44,
-                      }}
-                    >
-                      <Heart 
-                        size={22} 
-                        color={p.liked_by_me ? colors.accentGold : "#fff"} 
-                        fill={p.liked_by_me ? colors.accentGold : "transparent"}
-                      />
-                      {p.like_count > 0 && (
-                        <Text style={{ color: "#fff", fontSize: 10, fontWeight: "600", marginTop: 2 }}>
-                          {p.like_count}
-                        </Text>
-                      )}
-                    </TouchableOpacity>
+                    {p.like_count || 0}
+                  </Text>
+                </TouchableOpacity>
 
-                    <TouchableOpacity
-                      onPress={() => handleCommentPress(p.id)}
-                      style={{
-                        backgroundColor: "transparent",
-                        borderRadius: 20,
-                        padding: 10,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        width: 44,
-                        height: 44,
-                      }}
-                    >
-                      <MessageCircle size={22} color="#fff" />
-                      {p.comment_count > 0 && (
-                        <Text style={{ color: "#fff", fontSize: 10, fontWeight: "600", marginTop: 2 }}>
-                          {p.comment_count}
-                        </Text>
-                      )}
-                    </TouchableOpacity>
-                  </View>
+                <TouchableOpacity
+                  onPress={() => handleCommentPress(p.id)}
+                  style={{ flexDirection: "row", alignItems: "center" }}
+                >
+                  <MessageCircle size={24} color={colors.textSecondary} />
+                  <Text
+                    style={{
+                      color: colors.textPrimary,
+                      marginLeft: 6,
+                      fontSize: 16,
+                      fontWeight: "600",
+                    }}
+                  >
+                    {p.comment_count || 0}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Caption */}
+              {p.caption && (
+                <View style={{ paddingHorizontal: 12, paddingBottom: 12 }}>
+                  <Text style={{ color: colors.textPrimary, lineHeight: 20 }}>
+                    <Text style={{ fontWeight: "600" }}>
+                      {p.profiles?.username || "User"}
+                    </Text>{" "}
+                    {p.caption}
+                  </Text>
                 </View>
-              ) : null}
-
-              {p.caption ? (
-                <Text style={{ color: colors.textSecondary, marginTop: 8 }}>{p.caption}</Text>
-              ) : null}
+              )}
             </View>
           ))
         )}
       </ScrollView>
 
-      <View style={{ position: "absolute", right: 20, bottom: insets.bottom + 24 }}>
-        <TouchableOpacity
-          onPress={() => setShowNewPost(true)}
-          activeOpacity={0.9}
-          style={{
-            backgroundColor: colors.accentGold,
-            width: 56,
-            height: 56,
-            borderRadius: 28,
-            alignItems: "center",
-            justifyContent: "center",
-            shadowColor: "#000",
-            shadowOpacity: 0.3,
-            shadowRadius: 8,
-            shadowOffset: { width: 0, height: 4 },
-          }}
-        >
-          <Plus size={28} color={colors.bgPrimary} />
-        </TouchableOpacity>
-      </View>
-
-      <NewPostModal visible={showNewPost} onClose={() => setShowNewPost(false)} onPosted={load} />
-
-      <CommentsModal
-        visible={showComments}
-        onClose={() => {
-          setShowComments(false);
-          setSelectedPostId(null);
+      {/* Floating Action Button */}
+      <TouchableOpacity
+        style={{
+          position: "absolute",
+          bottom: insets.bottom + 80,
+          right: 20,
+          backgroundColor: colors.accentGold,
+          borderRadius: 30,
+          width: 60,
+          height: 60,
+          justifyContent: "center",
+          alignItems: "center",
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 5,
+          elevation: 5,
         }}
-        postId={selectedPostId}
+        onPress={() => setShowNewPost(true)}
+      >
+        <Plus size={30} color={colors.bgPrimary} />
+      </TouchableOpacity>
+
+      <NewPostModal
+        visible={showNewPost}
+        onClose={() => setShowNewPost(false)}
+        onPosted={() => {
+          load();
+          setShowNewPost(false);
+        }}
       />
+
+      {selectedPostId && (
+        <CommentsModal
+          visible={showComments}
+          postId={selectedPostId}
+          onClose={() => {
+            setShowComments(false);
+            setSelectedPostId(null);
+            load(); // Reload to update comment counts
+          }}
+        />
+      )}
     </View>
   );
 }

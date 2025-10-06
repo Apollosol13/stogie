@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { apiRequest } from '@/utils/api';
 
-export default function useFeed() {
+export default function useFeed(filter = null) {
   const [posts, setPosts] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState(null);
@@ -10,8 +10,13 @@ export default function useFeed() {
     try {
       setLoading(true);
       setError(null);
-      console.log('[useFeed] Loading posts...');
-      const res = await apiRequest('/api/posts');
+      console.log('[useFeed] Loading posts with filter:', filter);
+      
+      const url = filter === 'following' 
+        ? '/api/posts?filter=following' 
+        : '/api/posts';
+      
+      const res = await apiRequest(url);
       console.log('[useFeed] Response status:', res.status);
       if (!res.ok) throw new Error('Failed to load feed');
       const data = await res.json();
@@ -23,7 +28,7 @@ export default function useFeed() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [filter]);
 
   // Optimistic like toggle
   const toggleLike = React.useCallback((postId) => {
@@ -48,7 +53,7 @@ export default function useFeed() {
   }, []);
 
   React.useEffect(() => {
-    console.log('[useFeed] Initial load on mount');
+    console.log('[useFeed] Filter changed, reloading:', filter);
     load();
   }, [load]);
 
