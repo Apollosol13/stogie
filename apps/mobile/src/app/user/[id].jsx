@@ -55,7 +55,8 @@ export default function UserProfileScreen() {
         console.log('[UserProfile] Analytics received:', JSON.stringify(analyticsData, null, 2));
         console.log('[UserProfile] Followers from API:', analyticsData.followers);
         console.log('[UserProfile] Followers from userStats:', analyticsData.analytics?.userStats?.followers);
-        setAnalytics(analyticsData);
+        // Pass the nested analytics object to match the structure expected by StatsView
+        setAnalytics(analyticsData.analytics);
       }
 
       // Fetch user's posts
@@ -108,7 +109,6 @@ export default function UserProfileScreen() {
           
           return {
             ...prev,
-            followers: newFollowers, // Top-level for compatibility
             userStats: {
               ...prev?.userStats,
               followers: newFollowers,
@@ -123,7 +123,8 @@ export default function UserProfileScreen() {
         if (analyticsRes.ok) {
           const analyticsData = await analyticsRes.json();
           console.log('[Follow] Analytics refresh:', analyticsData.followers, 'followers');
-          setAnalytics(analyticsData);
+          // Pass the nested analytics object
+          setAnalytics(analyticsData.analytics);
         }
       } else {
         Alert.alert("Error", "Failed to follow/unfollow");
