@@ -14,7 +14,7 @@ import StatsView from "../../components/profile/StatsView";
 import ProfileTabs from "../../components/profile/ProfileTabs";
 import ActivityTab from "../../components/profile/ActivityTab";
 import StatsTab from "../../components/profile/StatsTab";
-import SettingsSection from "../../components/profile/SettingsSection";
+import SettingsModal from "../../components/profile/SettingsModal";
 import EditProfileModal from "../../components/profile/EditProfileModal";
 
 export default function ProfileScreen() {
@@ -35,11 +35,19 @@ export default function ProfileScreen() {
 
   const [activeTab, setActiveTab] = useState("activity");
   const [refreshing, setRefreshing] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   const handleSignOut = () => {
     Alert.alert("Sign Out", "Are you sure you want to sign out?", [
       { text: "Cancel", style: "cancel" },
-      { text: "Sign Out", style: "destructive", onPress: signOut },
+      { 
+        text: "Sign Out", 
+        style: "destructive", 
+        onPress: () => {
+          signOut();
+          setShowSettingsModal(false);
+        }
+      },
     ]);
   };
 
@@ -89,6 +97,7 @@ export default function ProfileScreen() {
           user={user}
           onEdit={() => setShowEditModal(true)}
           onSelectImage={handleSelectProfileImage}
+          onSettingsPress={() => setShowSettingsModal(true)}
         />
 
         <StatsView analytics={analytics} />
@@ -96,8 +105,6 @@ export default function ProfileScreen() {
         <ProfileTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
         {renderTabContent()}
-
-        <SettingsSection onSignOut={handleSignOut} />
 
         <View style={{ height: insets.bottom + 100 }} />
       </ScrollView>
@@ -108,6 +115,12 @@ export default function ProfileScreen() {
         profile={profile}
         onSave={handleSaveProfile}
         saving={saving}
+      />
+
+      <SettingsModal
+        visible={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
+        onSignOut={handleSignOut}
       />
     </View>
   );

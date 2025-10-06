@@ -14,6 +14,7 @@ export default function ProfileHeader({
   user,
   onEdit,
   onSelectImage,
+  onSettingsPress,
 }) {
   const getAvatarUrl = () => {
     if (profile?.avatar_url) return `${profile.avatar_url}?v=${encodeURIComponent(profile?.updated_at || Date.now())}`;
@@ -38,6 +39,7 @@ export default function ProfileHeader({
         }}
       >
         <TouchableOpacity
+          onPress={onSettingsPress}
           style={{
             width: 44,
             height: 44,
