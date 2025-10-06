@@ -10,7 +10,7 @@ import { apiRequest } from "../utils/api";
 export default function useCigarScanner() {
   const router = useRouter();
   const { data: user } = useUser();
-  const { addToHumidorAsync, isAdding } = useHumidor();
+  const { addToHumidor, isAdding } = useHumidor();
 
   const [step, setStep] = useState("camera"); // camera, processing, results
   const [capturedImage, setCapturedImage] = useState(null);
@@ -289,7 +289,7 @@ export default function useCigarScanner() {
         matchData: match, // Add full match data for debugging
       });
 
-      const result = await addToHumidorAsync({
+      const result = await addToHumidor({
         cigarId:
           match.id && !match.id.toString().startsWith("expert-identified")
             ? match.id
