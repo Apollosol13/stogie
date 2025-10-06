@@ -92,8 +92,19 @@ export default function UserProfileScreen() {
       if (res.ok) {
         const data = await res.json();
         setIsFollowing(data.following);
-        // Reload analytics to update follower count
-        await loadUserProfile();
+        
+        // Optimistically update follower count
+        setAnalytics((prev) => ({
+          ...prev,
+          followers: data.following ? (prev?.followers || 0) + 1 : Math.max((prev?.followers || 0) - 1, 0),
+        }));
+        
+        // Reload full analytics to sync with server
+        const analyticsRes = await apiRequest(`/api/analytics/${userId}`);
+        if (analyticsRes.ok) {
+          const analyticsData = await analyticsRes.json();
+          setAnalytics(analyticsData);
+        }
       } else {
         Alert.alert("Error", "Failed to follow/unfollow");
       }
