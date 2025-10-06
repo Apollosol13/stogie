@@ -86,11 +86,15 @@ export default function CommentsModal({ visible, onClose, postId }) {
 
   const handleLikeComment = async (commentId) => {
     try {
+      console.log('[CommentsModal] Liking comment:', commentId, 'on post:', postId);
       const res = await apiRequest(`/api/posts/${postId}/comments/${commentId}/like`, {
         method: 'POST',
       });
 
+      console.log('[CommentsModal] Like response status:', res.status);
       if (res.ok) {
+        const data = await res.json();
+        console.log('[CommentsModal] Like response data:', data);
         // Update comment in list optimistically
         setComments((prev) =>
           prev.map((c) =>
@@ -103,9 +107,12 @@ export default function CommentsModal({ visible, onClose, postId }) {
               : c
           )
         );
+      } else {
+        const errorText = await res.text();
+        console.error('[CommentsModal] Failed to like:', res.status, errorText);
       }
     } catch (e) {
-      console.error('Failed to like comment:', e);
+      console.error('[CommentsModal] Error liking comment:', e);
     }
   };
 
