@@ -1,19 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, ScrollView, Alert, RefreshControl } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../utils/auth/useAuth";
 import useUser from "../../utils/auth/useUser";
 import useProfile from "../../hooks/useProfile";
+import { apiRequest } from "../../utils/api";
 
 import { colors } from "../../constants/colors";
 import LoadingScreen from "../../components/common/LoadingScreen";
 import AuthPrompt from "../../components/auth/AuthPrompt";
 import ProfileHeader from "../../components/profile/ProfileHeader";
 import StatsView from "../../components/profile/StatsView";
-import ProfileTabs from "../../components/profile/ProfileTabs";
-import ActivityTab from "../../components/profile/ActivityTab";
-import StatsTab from "../../components/profile/StatsTab";
+import PostsGrid from "../../components/profile/PostsGrid";
 import SettingsModal from "../../components/profile/SettingsModal";
 import EditProfileModal from "../../components/profile/EditProfileModal";
 
@@ -33,7 +32,8 @@ export default function ProfileScreen() {
     refreshProfile,
   } = useProfile();
 
-  const [activeTab, setActiveTab] = useState("activity");
+  const [userPosts, setUserPosts] = useState([]);
+  const [loadingPosts, setLoadingPosts] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
@@ -51,21 +51,34 @@ export default function ProfileScreen() {
     ]);
   };
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await refreshProfile();
-    setRefreshing(false);
+  // Fetch user's posts
+  const fetchUserPosts = async () => {
+    try {
+      setLoadingPosts(true);
+      const response = await apiRequest("/api/posts");
+      if (response.ok) {
+        const data = await response.json();
+        // Filter to only show current user's posts
+        const myPosts = data.posts.filter((post) => post.user_id === user?.id);
+        setUserPosts(myPosts);
+      }
+    } catch (error) {
+      console.error("Error fetching user posts:", error);
+    } finally {
+      setLoadingPosts(false);
+    }
   };
 
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case "activity":
-        return <ActivityTab />;
-      case "stats":
-        return <StatsTab profile={profile} />;
-      default:
-        return null;
+  useEffect(() => {
+    if (user?.id) {
+      fetchUserPosts();
     }
+  }, [user?.id]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([refreshProfile(), fetchUserPosts()]);
+    setRefreshing(false);
   };
 
   if (!isReady || userLoading || profileLoading) {
@@ -102,9 +115,7 @@ export default function ProfileScreen() {
 
         <StatsView analytics={analytics} />
 
-        <ProfileTabs activeTab={activeTab} setActiveTab={setActiveTab} />
-
-        {renderTabContent()}
+        <PostsGrid posts={userPosts} />
 
         <View style={{ height: insets.bottom + 100 }} />
       </ScrollView>
