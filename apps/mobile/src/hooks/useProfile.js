@@ -43,7 +43,8 @@ export default function useProfile() {
       const response = await apiRequest("/api/analytics");
       if (response.ok) {
         const data = await response.json();
-        setAnalytics(data);
+        // Extract the nested analytics object to match StatsView expectations
+        setAnalytics(data.analytics);
       }
     } catch (error) {
       console.error("Analytics fetch error:", error);
