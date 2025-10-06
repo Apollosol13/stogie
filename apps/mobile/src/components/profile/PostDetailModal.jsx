@@ -12,10 +12,12 @@ import {
   Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { X, Heart, MessageCircle, MoreVertical, Send } from "lucide-react-native";
+import { X, Heart, MessageCircle, MoreVertical, Send, Reply } from "lucide-react-native";
 import { colors } from "@/constants/colors";
 import { apiRequest } from "@/utils/api";
 import { formatTimeAgo } from "@/utils/timeAgo";
+
+const accentRed = "#FF4444";
 
 export default function PostDetailModal({
   visible,
@@ -30,6 +32,7 @@ export default function PostDetailModal({
   const [comments, setComments] = useState([]);
   const [loadingComments, setLoadingComments] = useState(false);
   const [submittingComment, setSubmittingComment] = useState(false);
+  const [replyingTo, setReplyingTo] = useState(null); // { id, username }
 
   const isMyPost = post?.user_id === currentUserId;
 
@@ -67,14 +70,20 @@ export default function PostDetailModal({
 
     try {
       setSubmittingComment(true);
+      const body = { text: comment.trim() };
+      if (replyingTo) {
+        body.parent_comment_id = replyingTo.id;
+      }
+      
       const response = await apiRequest(`/api/posts/${post.id}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: comment.trim() }),
+        body: JSON.stringify(body),
       });
 
       if (response.ok) {
         setComment("");
+        setReplyingTo(null);
         await fetchComments(); // Reload comments
       } else {
         Alert.alert("Error", "Failed to post comment");
@@ -84,6 +93,31 @@ export default function PostDetailModal({
       Alert.alert("Error", "Failed to post comment");
     } finally {
       setSubmittingComment(false);
+    }
+  };
+
+  const handleLikeComment = async (commentId) => {
+    try {
+      const response = await apiRequest(`/api/posts/${post.id}/comments/${commentId}/like`, {
+        method: "POST",
+      });
+
+      if (response.ok) {
+        // Update comment in list
+        setComments((prev) =>
+          prev.map((c) =>
+            c.id === commentId
+              ? {
+                  ...c,
+                  liked_by_me: !c.liked_by_me,
+                  like_count: c.liked_by_me ? c.like_count - 1 : c.like_count + 1,
+                }
+              : c
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error liking comment:", error);
     }
   };
 
@@ -312,6 +346,7 @@ export default function PostDetailModal({
                     style={{
                       flexDirection: "row",
                       marginBottom: 16,
+                      marginLeft: c.parent_comment_id ? 40 : 0,
                     }}
                   >
                     <Image
@@ -330,16 +365,32 @@ export default function PostDetailModal({
                         </Text>
                         {c.text}
                       </Text>
-                      <Text
-                        style={{
-                          color: colors.textTertiary,
-                          fontSize: 12,
-                          marginTop: 4,
-                        }}
-                      >
-                        {new Date(c.created_at).toLocaleDateString()}
-                      </Text>
+                      <View style={{ flexDirection: "row", alignItems: "center", marginTop: 6, gap: 12 }}>
+                        <Text style={{ color: colors.textTertiary, fontSize: 12 }}>
+                          {formatTimeAgo(c.created_at)}
+                        </Text>
+                        {c.like_count > 0 && (
+                          <Text style={{ color: colors.textSecondary, fontSize: 12, fontWeight: "600" }}>
+                            {c.like_count} {c.like_count === 1 ? "like" : "likes"}
+                          </Text>
+                        )}
+                        <TouchableOpacity onPress={() => setReplyingTo({ id: c.id, username: c.profiles?.username })}>
+                          <Text style={{ color: colors.textSecondary, fontSize: 12, fontWeight: "600" }}>
+                            Reply
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
                     </View>
+                    <TouchableOpacity 
+                      onPress={() => handleLikeComment(c.id)}
+                      style={{ paddingLeft: 8 }}
+                    >
+                      <Heart
+                        size={16}
+                        color={c.liked_by_me ? accentRed : colors.textSecondary}
+                        fill={c.liked_by_me ? accentRed : "transparent"}
+                      />
+                    </TouchableOpacity>
                   </View>
                 ))
               )}
@@ -359,47 +410,71 @@ export default function PostDetailModal({
               borderTopWidth: 1,
               borderTopColor: colors.divider,
               paddingBottom: insets.bottom,
-              paddingHorizontal: 16,
-              paddingVertical: 12,
-              flexDirection: "row",
-              alignItems: "center",
             }}
           >
-            <TextInput
-              placeholder="Add a comment..."
-              placeholderTextColor={colors.textSecondary}
-              value={comment}
-              onChangeText={setComment}
+            {replyingTo && (
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  paddingHorizontal: 16,
+                  paddingTop: 8,
+                  paddingBottom: 4,
+                }}
+              >
+                <Text style={{ color: colors.textSecondary, fontSize: 13 }}>
+                  Replying to <Text style={{ fontWeight: "600" }}>{replyingTo.username}</Text>
+                </Text>
+                <TouchableOpacity onPress={() => setReplyingTo(null)}>
+                  <X size={16} color={colors.textSecondary} />
+                </TouchableOpacity>
+              </View>
+            )}
+            <View
               style={{
-                flex: 1,
-                backgroundColor: colors.bgPrimary,
-                color: colors.textPrimary,
-                borderRadius: 20,
                 paddingHorizontal: 16,
-                paddingVertical: 10,
-                fontSize: 15,
-                marginRight: 12,
-              }}
-              multiline
-              maxLength={500}
-            />
-            <TouchableOpacity
-              onPress={handleSubmitComment}
-              disabled={!comment.trim() || submittingComment}
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 20,
-                backgroundColor: comment.trim() ? colors.accentGold : colors.surface2,
-                justifyContent: "center",
+                paddingVertical: 12,
+                flexDirection: "row",
                 alignItems: "center",
               }}
             >
-              <Send
-                size={20}
-                color={comment.trim() ? colors.bgPrimary : colors.textSecondary}
+              <TextInput
+                placeholder={replyingTo ? `Reply to ${replyingTo.username}...` : "Add a comment..."}
+                placeholderTextColor={colors.textSecondary}
+                value={comment}
+                onChangeText={setComment}
+                style={{
+                  flex: 1,
+                  backgroundColor: colors.bgPrimary,
+                  color: colors.textPrimary,
+                  borderRadius: 20,
+                  paddingHorizontal: 16,
+                  paddingVertical: 10,
+                  fontSize: 15,
+                  marginRight: 12,
+                }}
+                multiline
+                maxLength={500}
               />
-            </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleSubmitComment}
+                disabled={!comment.trim() || submittingComment}
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  backgroundColor: comment.trim() ? colors.accentGold : colors.surface2,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Send
+                  size={20}
+                  color={comment.trim() ? colors.bgPrimary : colors.textSecondary}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </KeyboardAvoidingView>

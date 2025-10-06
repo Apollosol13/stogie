@@ -162,12 +162,20 @@ router.post('/:id/like', async (req, res) => {
 router.get('/:id/comments', async (req, res) => {
   try {
     const postId = Number(req.params.id);
+    const authHeader = req.headers.authorization;
+    let userId = null;
+    
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      const { data: { user } } = await supabase.auth.getUser(token);
+      userId = user?.id || null;
+    }
     
     const { data: comments, error } = await supabase
       .from('post_comments')
-      .select('id,text,created_at,user_id')
+      .select('id,text,created_at,user_id,parent_comment_id')
       .eq('post_id', postId)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: true });
       
     if (error) return res.status(500).json({ success: false, error: error.message });
     
@@ -181,9 +189,25 @@ router.get('/:id/comments', async (req, res) => {
       
       const profileMap = Object.fromEntries((profiles || []).map(p => [p.id, p]));
       
+      // Get like counts for all comments
+      const commentIds = comments.map(c => c.id);
+      const [{ data: likeCounts }, myLikesRes] = await Promise.all([
+        supabase.from('comment_likes').select('comment_id').in('comment_id', commentIds),
+        userId ? supabase.from('comment_likes').select('comment_id').eq('user_id', userId).in('comment_id', commentIds) : Promise.resolve({ data: [] })
+      ]);
+      
+      const likeCountMap = {};
+      (likeCounts || []).forEach(l => {
+        likeCountMap[l.comment_id] = (likeCountMap[l.comment_id] || 0) + 1;
+      });
+      
+      const myLikeSet = new Set((myLikesRes?.data || []).map(r => r.comment_id));
+      
       const enrichedComments = comments.map(c => ({
         ...c,
-        profiles: profileMap[c.user_id] || null
+        profiles: profileMap[c.user_id] || null,
+        like_count: likeCountMap[c.id] || 0,
+        liked_by_me: myLikeSet.has(c.id)
       }));
       
       return res.json({ success: true, comments: enrichedComments });
@@ -196,7 +220,7 @@ router.get('/:id/comments', async (req, res) => {
   }
 });
 
-// POST /api/posts/:id/comments - Add comment
+// POST /api/posts/:id/comments - Add comment (or reply)
 router.post('/:id/comments', async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
@@ -213,26 +237,92 @@ router.post('/:id/comments', async (req, res) => {
 
     const postId = Number(req.params.id);
     const text = (req.body?.text || '').trim();
+    const parent_comment_id = req.body?.parent_comment_id || null;
     
     if (!text) {
       return res.status(400).json({ success: false, error: 'text required' });
     }
 
+    const insertData = { post_id: postId, user_id: user.id, text };
+    if (parent_comment_id) {
+      insertData.parent_comment_id = parent_comment_id;
+    }
+
     const { data, error } = await supabase
       .from('post_comments')
-      .insert({ post_id: postId, user_id: user.id, text })
+      .insert(insertData)
       .select()
       .single();
       
     if (error) return res.status(500).json({ success: false, error: error.message });
     
-    res.status(201).json({ success: true, comment: data });
+    // Get profile for the response
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('id,username,avatar_url')
+      .eq('id', user.id)
+      .single();
+    
+    res.status(201).json({ 
+      success: true, 
+      comment: {
+        ...data,
+        profiles: profile,
+        like_count: 0,
+        liked_by_me: false
+      }
+    });
   } catch (e) {
     console.error(e);
     res.status(500).json({ success: false, error: 'Failed to comment' });
   }
 });
 
+// POST /api/posts/:postId/comments/:commentId/like - Toggle comment like
+router.post('/:postId/comments/:commentId/like', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      return res.status(401).json({ success: false, error: 'Invalid token' });
+    }
+
+    const commentId = Number(req.params.commentId);
+    
+    // Check if already liked
+    const { data: existing } = await supabase
+      .from('comment_likes')
+      .select('comment_id')
+      .eq('comment_id', commentId)
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (existing) {
+      // Unlike
+      await supabase.from('comment_likes').delete().eq('comment_id', commentId).eq('user_id', user.id);
+    } else {
+      // Like
+      await supabase.from('comment_likes').insert({ comment_id: commentId, user_id: user.id });
+    }
+
+    // Get updated count
+    const { count } = await supabase
+      .from('comment_likes')
+      .select('comment_id', { head: true, count: 'exact' })
+      .eq('comment_id', commentId);
+
+    res.json({ success: true, liked: !existing, like_count: count || 0 });
+  } catch (e) {
+    console.error('[Comment Like]', e);
+    res.status(500).json({ success: false, error: 'Failed to like comment' });
+  }
+});
 
 // DELETE /api/posts/:id - Delete post
 router.delete('/:id', async (req, res) => {
