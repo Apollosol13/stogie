@@ -21,6 +21,7 @@ import {
 } from "lucide-react-native";
 import useFeed from "@/hooks/useFeed";
 import NewPostModal from "@/components/feed/NewPostModal";
+import CommentsModal from "@/components/feed/CommentsModal";
 import { apiRequest } from "@/utils/api";
 
 const colors = {
@@ -40,6 +41,8 @@ export default function HomeScreen() {
   const { posts, loading, load, toggleLike, removePost } = useFeed();
   const [showNewPost, setShowNewPost] = useState(false);
   const [deletingPostId, setDeletingPostId] = useState(null);
+  const [selectedPostId, setSelectedPostId] = useState(null);
+  const [showComments, setShowComments] = useState(false);
 
   const handleDeletePost = async (postId, postUserId) => {
     if (postUserId !== user?.id) {
@@ -92,9 +95,10 @@ export default function HomeScreen() {
     }
   };
 
+  };
   const handleCommentPress = (postId) => {
-    // TODO: Open comments modal/screen
-    Alert.alert("Comments", "Comment feature coming soon!");
+    setSelectedPostId(postId);
+    setShowComments(true);
   };
 
   if (!isReady) {
@@ -488,6 +492,18 @@ export default function HomeScreen() {
       </View>
 
       <NewPostModal visible={showNewPost} onClose={() => setShowNewPost(false)} onPosted={load} />
+    </View>
+  );
+}
+
+      <CommentsModal
+        visible={showComments}
+        onClose={() => {
+          setShowComments(false);
+          setSelectedPostId(null);
+        }}
+        postId={selectedPostId}
+      />
     </View>
   );
 }
