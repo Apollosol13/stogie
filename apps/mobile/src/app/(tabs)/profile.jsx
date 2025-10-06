@@ -13,6 +13,7 @@ import AuthPrompt from "../../components/auth/AuthPrompt";
 import ProfileHeader from "../../components/profile/ProfileHeader";
 import StatsView from "../../components/profile/StatsView";
 import PostsGrid from "../../components/profile/PostsGrid";
+import PostDetailModal from "../../components/profile/PostDetailModal";
 import SettingsModal from "../../components/profile/SettingsModal";
 import EditProfileModal from "../../components/profile/EditProfileModal";
 
@@ -36,6 +37,8 @@ export default function ProfileScreen() {
   const [loadingPosts, setLoadingPosts] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [showPostDetailModal, setShowPostDetailModal] = useState(false);
 
   const handleSignOut = () => {
     Alert.alert("Sign Out", "Are you sure you want to sign out?", [
@@ -81,6 +84,60 @@ export default function ProfileScreen() {
     setRefreshing(false);
   };
 
+  const handlePostPress = (post) => {
+    setSelectedPost(post);
+    setShowPostDetailModal(true);
+  };
+
+  const handleLikePost = async (postId) => {
+    try {
+      const response = await apiRequest(`/api/posts/${postId}/like`, {
+        method: "POST",
+      });
+      if (response.ok) {
+        // Update the post in the list
+        setUserPosts((prevPosts) =>
+          prevPosts.map((p) =>
+            p.id === postId
+              ? {
+                  ...p,
+                  liked_by_me: !p.liked_by_me,
+                  like_count: p.liked_by_me ? p.like_count - 1 : p.like_count + 1,
+                }
+              : p
+          )
+        );
+        // Update selected post if it's open
+        if (selectedPost?.id === postId) {
+          setSelectedPost((prev) => ({
+            ...prev,
+            liked_by_me: !prev.liked_by_me,
+            like_count: prev.liked_by_me ? prev.like_count - 1 : prev.like_count + 1,
+          }));
+        }
+      }
+    } catch (error) {
+      console.error("Error liking post:", error);
+      Alert.alert("Error", "Failed to like post");
+    }
+  };
+
+  const handleDeletePost = async (postId) => {
+    try {
+      const response = await apiRequest(`/api/posts/${postId}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        setUserPosts((prevPosts) => prevPosts.filter((p) => p.id !== postId));
+      } else {
+        Alert.alert("Error", "Failed to delete post");
+      }
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      Alert.alert("Error", "Failed to delete post");
+    }
+  };
+
   if (!isReady || userLoading || profileLoading) {
     return <LoadingScreen text="Loading profile..." />;
   }
@@ -115,7 +172,7 @@ export default function ProfileScreen() {
 
         <StatsView analytics={analytics} />
 
-        <PostsGrid posts={userPosts} />
+        <PostsGrid posts={userPosts} onPostPress={handlePostPress} />
 
         <View style={{ height: insets.bottom + 100 }} />
       </ScrollView>
@@ -132,6 +189,15 @@ export default function ProfileScreen() {
         visible={showSettingsModal}
         onClose={() => setShowSettingsModal(false)}
         onSignOut={handleSignOut}
+      />
+
+      <PostDetailModal
+        visible={showPostDetailModal}
+        onClose={() => setShowPostDetailModal(false)}
+        post={selectedPost}
+        currentUserId={user?.id}
+        onLike={handleLikePost}
+        onDelete={handleDeletePost}
       />
     </View>
   );

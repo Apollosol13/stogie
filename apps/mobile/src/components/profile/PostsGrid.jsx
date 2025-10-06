@@ -35,7 +35,7 @@ export default function PostsGrid({ posts, onPostPress }) {
     );
   }
 
-  const renderPost = ({ item, index }) => (
+  const renderPost = ({ item }) => (
     <TouchableOpacity
       onPress={() => onPostPress?.(item)}
       style={{
@@ -43,6 +43,7 @@ export default function PostsGrid({ posts, onPostPress }) {
         aspectRatio: 1,
         padding: 1,
       }}
+      activeOpacity={0.9}
     >
       <Image
         source={{ uri: item.image_url }}
