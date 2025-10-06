@@ -41,12 +41,12 @@ export default function ProfileScreen() {
       { text: "Cancel", style: "cancel" },
       { text: "Sign Out", style: "destructive", onPress: signOut },
     ]);
+  };
 
   const handleRefresh = async () => {
     setRefreshing(true);
     await refreshProfile();
     setRefreshing(false);
-  };
   };
 
   const renderTabContent = () => {
