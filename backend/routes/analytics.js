@@ -32,13 +32,17 @@ router.get('/', async (req, res) => {
       .select('id, created_at')
       .eq('user_id', user.id);
 
-    // Get user's smoking sessions count (when implemented)
-    const smokingSessions = []; // Placeholder for now
+    // Get user's smoking sessions count
+    const { data: smokingSessions, error: sessionsError } = await supabase
+      .from('smoking_sessions')
+      .select('id, created_at, location_name, latitude, longitude')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
 
     // Calculate analytics
     const totalReviews = reviews ? reviews.length : 0;
     const totalCigarsInHumidor = humidorEntries ? humidorEntries.length : 0;
-    const totalSmokingSessions = smokingSessions.length;
+    const totalSmokingSessions = smokingSessions ? smokingSessions.length : 0;
     
     // Calculate average rating
     const averageRating = reviews && reviews.length > 0 
@@ -57,15 +61,48 @@ router.get('/', async (req, res) => {
       new Date(entry.created_at) > thirtyDaysAgo
     ).length : 0;
 
-    // Monthly activity for charts (placeholder data)
-    const monthlyActivity = [
-      { month: 'Jan', reviews: Math.floor(Math.random() * 10), sessions: Math.floor(Math.random() * 15) },
-      { month: 'Feb', reviews: Math.floor(Math.random() * 10), sessions: Math.floor(Math.random() * 15) },
-      { month: 'Mar', reviews: Math.floor(Math.random() * 10), sessions: Math.floor(Math.random() * 15) },
-      { month: 'Apr', reviews: Math.floor(Math.random() * 10), sessions: Math.floor(Math.random() * 15) },
-      { month: 'May', reviews: Math.floor(Math.random() * 10), sessions: Math.floor(Math.random() * 15) },
-      { month: 'Jun', reviews: Math.floor(Math.random() * 10), sessions: Math.floor(Math.random() * 15) }
-    ];
+    const recentSessions = smokingSessions ? smokingSessions.filter(session => 
+      new Date(session.created_at) > thirtyDaysAgo
+    ).length : 0;
+
+    // Calculate unique countries from smoking sessions
+    const uniqueCountries = new Set();
+    if (smokingSessions && smokingSessions.length > 0) {
+      // For now, we'll count unique location names as a proxy for countries
+      // In the future, you could use reverse geocoding to get actual country names
+      smokingSessions.forEach(session => {
+        if (session.location_name) {
+          uniqueCountries.add(session.location_name);
+        }
+      });
+    }
+
+    // Monthly activity for charts
+    const monthlyActivity = [];
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const now = new Date();
+    
+    for (let i = 5; i >= 0; i--) {
+      const month = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthStart = new Date(month.getFullYear(), month.getMonth(), 1);
+      const monthEnd = new Date(month.getFullYear(), month.getMonth() + 1, 0);
+      
+      const monthReviews = reviews ? reviews.filter(r => {
+        const date = new Date(r.created_at);
+        return date >= monthStart && date <= monthEnd;
+      }).length : 0;
+      
+      const monthSessions = smokingSessions ? smokingSessions.filter(s => {
+        const date = new Date(s.created_at);
+        return date >= monthStart && date <= monthEnd;
+      }).length : 0;
+      
+      monthlyActivity.push({
+        month: monthNames[month.getMonth()],
+        reviews: monthReviews,
+        sessions: monthSessions
+      });
+    }
 
     // Calculate frequency stats
     const accountAge = user.created_at ? 
@@ -89,7 +126,7 @@ router.get('/', async (req, res) => {
         },
         // Location stats (for "Countries" metric)
         locationStats: {
-          countries_visited: 0 // TODO: implement location tracking
+          countries_visited: uniqueCountries.size
         },
         // Frequency stats (for cigars per day/week/month)
         frequencyStats: {
@@ -112,7 +149,7 @@ router.get('/', async (req, res) => {
         recentActivity: {
           reviewsLast30Days: recentReviews,
           humidorAdditionsLast30Days: recentHumidorAdditions,
-          sessionsLast30Days: 0 // Placeholder
+          sessionsLast30Days: recentSessions
         },
         monthlyActivity,
         topBrands: [
