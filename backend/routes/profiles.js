@@ -21,6 +21,47 @@ const upload = multer({
   }
 });
 
+// GET /api/profiles/:userId - Get any user's profile by ID
+router.get('/:userId', async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    console.log('[Profiles] Fetching profile for user:', userId);
+
+    // Get user profile from profiles table (public data)
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (profileError) {
+      console.error('[Profiles] Profile fetch error:', profileError);
+      return res.status(404).json({ success: false, error: 'Profile not found' });
+    }
+
+    console.log('[Profiles] Profile found:', profile.username);
+
+    res.json({
+      success: true,
+      profile: {
+        id: profile.id,
+        full_name: profile.full_name,
+        username: profile.username,
+        avatar_url: profile.avatar_url,
+        bio: profile.bio,
+        location: profile.location,
+        favorite_cigar: profile.favorite_cigar,
+        created_at: profile.created_at,
+        updated_at: profile.updated_at
+      }
+    });
+
+  } catch (error) {
+    console.error('[Profiles] Profile endpoint error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
 // GET /api/profiles - Get current user's profile
 router.get('/', async (req, res) => {
   try {
