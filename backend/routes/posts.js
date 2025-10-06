@@ -3,6 +3,21 @@ import supabase from '../config/database.js';
 
 const router = express.Router();
 
+// Calculate trending score for a post
+function calculateTrendingScore(post, likeCount, commentCount) {
+  const now = new Date();
+  const postDate = new Date(post.created_at);
+  const hoursSincePosted = Math.max((now - postDate) / (1000 * 60 * 60), 0.5); // At least 0.5 hours
+  
+  // Weighted score: comments are worth more than likes
+  // Likes × 2 + Comments × 5 = engagement score
+  // Divide by (hours + 2) to decay older posts but not too aggressively
+  const engagementScore = (likeCount * 2) + (commentCount * 5);
+  const trendingScore = engagementScore / (hoursSincePosted + 2);
+  
+  return trendingScore;
+}
+
 // GET /api/posts - Get feed with counts
 router.get('/', async (req, res) => {
   try {
@@ -39,7 +54,7 @@ router.get('/', async (req, res) => {
         .select('id,image_url,caption,created_at,user_id')
         .in('user_id', followedUserIds)
         .order('created_at', { ascending: false })
-        .limit(50);
+        .limit(100); // Get more for better sorting
         
       if (postsError) {
         console.error('[Posts] Error fetching posts:', postsError);
@@ -48,12 +63,12 @@ router.get('/', async (req, res) => {
       
       posts = followingPosts;
     } else {
-      // Get all posts (For You feed)
+      // Get all posts (For You feed) - get more posts for trending algorithm
       const { data: allPosts, error: postsError } = await supabase
         .from('posts')
         .select('id,image_url,caption,created_at,user_id')
         .order('created_at', { ascending: false })
-        .limit(50);
+        .limit(100); // Get last 100 posts to calculate trending from
         
       if (postsError) {
         console.error('[Posts] Error fetching posts:', postsError);
@@ -97,16 +112,35 @@ router.get('/', async (req, res) => {
 
     const myLikeSet = new Set((myLikesRes?.data || []).map(r => r.post_id));
 
-    // Combine everything
-    const enrichedPosts = posts.map(p => ({
-      ...p,
-      profiles: profileMap[p.user_id] || null,
-      like_count: likeCountMap[p.id] || 0,
-      comment_count: commentCountMap[p.id] || 0,
-      liked_by_me: myLikeSet.has(p.id)
-    }));
+    // Combine everything with trending scores
+    const enrichedPosts = posts.map(p => {
+      const likeCount = likeCountMap[p.id] || 0;
+      const commentCount = commentCountMap[p.id] || 0;
+      const trendingScore = calculateTrendingScore(p, likeCount, commentCount);
+      
+      return {
+        ...p,
+        profiles: profileMap[p.user_id] || null,
+        like_count: likeCount,
+        comment_count: commentCount,
+        liked_by_me: myLikeSet.has(p.id),
+        trending_score: trendingScore
+      };
+    });
 
-    res.json({ success: true, posts: enrichedPosts });
+    // Sort by trending score for "For You" feed, chronological for "Following"
+    if (filterType === 'following') {
+      // Following feed: chronological order (already sorted by created_at)
+      enrichedPosts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    } else {
+      // For You feed: sort by trending score
+      enrichedPosts.sort((a, b) => b.trending_score - a.trending_score);
+    }
+
+    // Return top 50 posts
+    const topPosts = enrichedPosts.slice(0, 50);
+
+    res.json({ success: true, posts: topPosts });
   } catch (e) {
     console.error('[Posts] Error:', e);
     res.status(500).json({ success: false, error: 'Failed to load posts' });
