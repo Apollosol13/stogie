@@ -23,10 +23,13 @@ async function getAuthToken() {
   console.log('🚀 API: Fetching token from SecureStore');
   try {
     const authData = await SecureStore.getItemAsync('stogie-auth-jwt');
+    console.log('📱 SecureStore authData:', authData ? 'exists' : 'null');
     
     if (authData) {
       const auth = JSON.parse(authData);
+      console.log('🔑 Parsed auth keys:', Object.keys(auth));
       const token = auth.jwt;
+      console.log('🎫 Token:', token ? 'exists' : 'null');
       
       // Check expiration
       if (auth.expires_at) {
