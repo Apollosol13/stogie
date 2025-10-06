@@ -35,19 +35,33 @@ router.post('/:userId', async (req, res) => {
 
     if (existing) {
       // Unfollow
-      await supabase
+      console.log(`[Follow] Unfollowing: ${followerId} -> ${followingId}`);
+      const { error: deleteError } = await supabase
         .from('follows')
         .delete()
         .eq('follower_id', followerId)
         .eq('following_id', followingId);
+      
+      if (deleteError) {
+        console.error('[Follow] Delete error:', deleteError);
+        return res.status(500).json({ success: false, error: 'Failed to unfollow' });
+      }
 
+      console.log('[Follow] Successfully unfollowed');
       return res.json({ success: true, following: false });
     } else {
       // Follow
-      await supabase
+      console.log(`[Follow] Following: ${followerId} -> ${followingId}`);
+      const { error: insertError } = await supabase
         .from('follows')
         .insert({ follower_id: followerId, following_id: followingId });
+      
+      if (insertError) {
+        console.error('[Follow] Insert error:', insertError);
+        return res.status(500).json({ success: false, error: 'Failed to follow' });
+      }
 
+      console.log('[Follow] Successfully followed');
       return res.json({ success: true, following: true });
     }
   } catch (e) {

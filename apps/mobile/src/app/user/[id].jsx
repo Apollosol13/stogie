@@ -91,6 +91,7 @@ export default function UserProfileScreen() {
 
       if (res.ok) {
         const data = await res.json();
+        console.log('[Follow] Server response:', data);
         setIsFollowing(data.following);
         
         // Optimistically update follower count in the correct nested structure
@@ -99,6 +100,8 @@ export default function UserProfileScreen() {
           const newFollowers = data.following 
             ? currentFollowers + 1 
             : Math.max(currentFollowers - 1, 0);
+          
+          console.log('[Follow] Optimistic update:', currentFollowers, '->', newFollowers);
           
           return {
             ...prev,
@@ -110,10 +113,13 @@ export default function UserProfileScreen() {
           };
         });
         
-        // Reload full analytics to sync with server
+        // Wait a moment for DB to update, then reload full analytics to sync with server
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         const analyticsRes = await apiRequest(`/api/analytics/${userId}`);
         if (analyticsRes.ok) {
           const analyticsData = await analyticsRes.json();
+          console.log('[Follow] Analytics refresh:', analyticsData.followers, 'followers');
           setAnalytics(analyticsData);
         }
       } else {

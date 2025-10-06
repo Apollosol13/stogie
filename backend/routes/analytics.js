@@ -195,6 +195,7 @@ router.get('/', async (req, res) => {
 router.get('/:userId', async (req, res) => {
   try {
     const targetUserId = req.params.userId;
+    console.log(`[Analytics] Fetching analytics for user: ${targetUserId}`);
 
     // Get user's reviews count
     const { data: reviews, error: reviewsError } = await supabase
@@ -216,16 +217,22 @@ router.get('/:userId', async (req, res) => {
       .order('created_at', { ascending: false });
 
     // Get followers count
-    const { count: followersCount } = await supabase
+    const { count: followersCount, error: followersError } = await supabase
       .from('follows')
       .select('*', { count: 'exact', head: true })
       .eq('following_id', targetUserId);
 
+    console.log(`[Analytics] Followers count for ${targetUserId}: ${followersCount}`);
+    if (followersError) console.error('[Analytics] Followers error:', followersError);
+
     // Get following count
-    const { count: followingCount } = await supabase
+    const { count: followingCount, error: followingError } = await supabase
       .from('follows')
       .select('*', { count: 'exact', head: true })
       .eq('follower_id', targetUserId);
+    
+    console.log(`[Analytics] Following count for ${targetUserId}: ${followingCount}`);
+    if (followingError) console.error('[Analytics] Following error:', followingError);
 
     // Calculate analytics
     const totalReviews = reviews ? reviews.length : 0;
