@@ -240,7 +240,8 @@ router.post('/', authenticateToken, async (req, res) => {
           price_range: price_range || '',
           flavor_profile: flavor_profile || [],
           smoking_time_minutes: smoking_time_minutes || null,
-          description: description || ''
+          description: description || '',
+          image_url: req.body.image_url || null // Add scanned image
         }])
         .select()
         .single();

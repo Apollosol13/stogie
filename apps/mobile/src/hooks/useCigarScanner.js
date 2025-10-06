@@ -289,12 +289,45 @@ export default function useCigarScanner() {
         matchData: match, // Add full match data for debugging
       });
 
+      // Upload the scanned image if we have one and this is a new cigar
+      let uploadedImageUrl = match.image_url;
+      if (capturedImage && (!match.id || match.id.toString().startsWith("expert-identified"))) {
+        console.log("Uploading scanned image...");
+        try {
+          const formData = new FormData();
+          formData.append('image', {
+            uri: capturedImage,
+            name: `cigar-scan-${Date.now()}.jpg`,
+            type: 'image/jpeg',
+          });
+
+          const uploadRes = await apiRequest('/api/upload', {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (uploadRes.ok) {
+            const uploadData = await uploadRes.json();
+            uploadedImageUrl = uploadData.url;
+            console.log("Image uploaded successfully:", uploadedImageUrl);
+          } else {
+            console.warn("Image upload failed, using local URI");
+          }
+        } catch (uploadError) {
+          console.error("Error uploading image:", uploadError);
+          // Continue with local URI if upload fails
+        }
+      }
+
       const result = await addToHumidor({
         cigarId:
           match.id && !match.id.toString().startsWith("expert-identified")
             ? match.id
             : null,
-        cigarData: match,
+        cigarData: {
+          ...match,
+          image_url: uploadedImageUrl, // Use uploaded image URL
+        },
         isWishlist,
         quantity: 1,
         notes: match.isAiIdentified ? "Automatically identified" : "",

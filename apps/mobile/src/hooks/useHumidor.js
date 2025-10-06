@@ -128,6 +128,7 @@ const useHumidor = () => {
         payload.flavor_profile = cigarData.flavorProfile || [];
         payload.smoking_time_minutes = safeParseInt(cigarData.smokingTimeMinutes);
         payload.description = cigarData.description || "";
+        payload.image_url = cigarData.image_url || null; // Include scanned image
       }
 
       console.log("📤 Sending humidor entry payload:", payload);
