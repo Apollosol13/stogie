@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
 import { Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import * as SecureStore from 'expo-secure-store';
 import { useAuth } from "@/utils/auth/useAuth";
 import useUser from "@/utils/auth/useUser";
-import { apiRequest, API_BASE_URL } from "../utils/api";
+import { apiRequest, API_BASE_URL, getAuthToken } from "../utils/api";
 
 export default function useProfile() {
   const { isAuthenticated } = useAuth();
@@ -15,59 +14,54 @@ export default function useProfile() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // Fetch profile data
   const fetchProfile = async () => {
+    if (!isAuthenticated) return;
+
+    console.log("👤 useProfile: Fetching profile...");
     try {
-      const response = await apiRequest("/api/profiles", {
-        // Bust any caches along proxies just in case
-        headers: { "Cache-Control": "no-cache" },
-      });
+      const response = await apiRequest("/api/profiles");
+      console.log("👤 useProfile: Response status:", response.status);
+
       if (response.ok) {
         const data = await response.json();
+        console.log("👤 useProfile: Profile loaded:", data.profile?.username);
         setProfile(data.profile);
       } else {
-        console.error(
-          "Profile fetch failed:",
-          response.status,
-          response.statusText,
-        );
-        setProfile(null);
+        console.error("👤 useProfile: Failed to load profile:", response.status);
       }
     } catch (error) {
-      console.error("Error fetching profile:", error);
-      setProfile(null);
+      console.error("👤 useProfile: Error:", error);
     }
   };
 
+  // Fetch analytics data
   const fetchAnalytics = async () => {
+    if (!isAuthenticated) return;
+
     try {
       const response = await apiRequest("/api/analytics");
       if (response.ok) {
         const data = await response.json();
-        setAnalytics(data.analytics);
-      } else {
-        console.error(
-          "Analytics fetch failed:",
-          response.status,
-          response.statusText,
-        );
-        setAnalytics(null);
+        setAnalytics(data);
       }
     } catch (error) {
-      console.error("Error fetching analytics:", error);
-      setAnalytics(null);
+      console.error("Analytics fetch error:", error);
     }
   };
 
+  // Initial load
   useEffect(() => {
-    if (isAuthenticated && user) {
+    const loadData = async () => {
       setLoading(true);
-      Promise.all([fetchProfile(), fetchAnalytics()]).finally(() =>
-        setLoading(false),
-      );
-    } else {
+      await Promise.all([fetchProfile(), fetchAnalytics()]);
       setLoading(false);
+    };
+
+    if (isAuthenticated) {
+      loadData();
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated]);
 
   const handleSaveProfile = async (editForm) => {
     setSaving(true);
@@ -86,26 +80,20 @@ export default function useProfile() {
         }),
       });
 
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        // Immediately refresh profile to ensure UI shows latest bio/location
-        await fetchProfile();
-        setShowEditModal(false);
+      if (response.ok) {
         Alert.alert("Success", "Profile updated successfully!");
+        setShowEditModal(false);
+        await fetchProfile();
       } else {
-        console.error("Profile update error:", data);
+        const errorData = await response.json();
         Alert.alert(
           "Error",
-          data.error || "Failed to update profile. Please try again.",
+          errorData.error || "Failed to update profile. Please try again.",
         );
       }
     } catch (error) {
-      console.error("Error updating profile:", error);
-      Alert.alert(
-        "Error",
-        "Network error. Please check your connection and try again.",
-      );
+      console.error("Profile update error:", error);
+      Alert.alert("Error", "An unexpected error occurred. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -135,17 +123,8 @@ export default function useProfile() {
       setSaving(true);
 
       try {
-        // Get JWT token for authorization
-        let token = null;
-        try {
-          const authData = await SecureStore.getItemAsync('stogie-auth-jwt');
-          if (authData) {
-            const auth = JSON.parse(authData);
-            token = auth.jwt || auth.session?.access_token || auth.access_token;
-          }
-        } catch (error) {
-          console.log('Error getting auth token:', error);
-        }
+        // Use the exported getAuthToken function for consistency
+        const token = await getAuthToken();
 
         if (!token) {
           Alert.alert("Error", "Please sign in again to update your profile picture.");
@@ -155,10 +134,12 @@ export default function useProfile() {
         const formData = new FormData();
         // Prefer React Native file object over Blob for iOS camera roll URIs
         const asset = result.assets[0];
-        const fileName = asset.fileName || 'profile-image.jpg';
+        const fileName = asset.fileName || `profile-image-${Date.now()}.jpg`;
         const mimeType = asset.mimeType || 'image/jpeg';
         formData.append('image', { uri: imageUri, name: fileName, type: mimeType });
 
+        console.log('[Profile] Uploading image with token:', token ? 'exists' : 'null');
+        
         const uploadResponse = await fetch(`${API_BASE_URL}/api/profiles/image`, {
           method: "POST",
           headers: {
@@ -169,6 +150,7 @@ export default function useProfile() {
         });
 
         const data = await uploadResponse.json();
+        console.log('[Profile] Upload response:', data);
 
         if (uploadResponse.ok && data.success) {
         // Refresh the profile to get updated data (add cache-busting query)
@@ -183,10 +165,10 @@ export default function useProfile() {
           );
         }
       } catch (error) {
-        console.error("Error uploading image:", error);
+        console.error("Image upload error:", error);
         Alert.alert(
           "Error",
-          "Network error. Please check your connection and try again.",
+          "Failed to upload image. Please check your connection and try again.",
         );
       } finally {
         setSaving(false);
@@ -198,9 +180,9 @@ export default function useProfile() {
     profile,
     analytics,
     loading,
+    saving,
     showEditModal,
     setShowEditModal,
-    saving,
     handleSaveProfile,
     handleSelectProfileImage,
     refreshProfile: async () => {

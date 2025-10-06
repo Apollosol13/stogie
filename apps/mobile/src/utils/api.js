@@ -9,9 +9,9 @@ let lastFetch = 0;
 const CACHE_DURATION = 5000; // 5 seconds
 
 /**
- * Get auth token with caching
+ * Get auth token with caching (exported for use in other modules)
  */
-async function getAuthToken() {
+export async function getAuthToken() {
   const now = Date.now();
   
   // Return cached token if recent
@@ -83,7 +83,7 @@ export const apiRequest = async (endpoint, options = {}) => {
   // Add Authorization header if token exists
   if (token) {
     console.log('Adding Authorization header with token');
-    headers.Authorization = `Bearer ${token}`;
+    headers['Authorization'] = `Bearer ${token}`;
   } else {
     console.log('No token available, making unauthenticated request');
   }
@@ -92,9 +92,9 @@ export const apiRequest = async (endpoint, options = {}) => {
   console.log('📋 Request headers:', headers);
   console.log('📦 Request method:', options.method || 'GET');
 
-  // Set up abort controller for timeout (30 seconds)
+  // Set timeout for requests
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 30000);
+  const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
   try {
     const response = await fetch(url, {
@@ -108,10 +108,8 @@ export const apiRequest = async (endpoint, options = {}) => {
   } catch (error) {
     clearTimeout(timeoutId);
     if (error.name === 'AbortError') {
-      throw new Error('Request timeout');
+      throw new Error('Request timed out');
     }
     throw error;
   }
 };
-
-export default apiRequest;
