@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, Text, Switch } from "react-native";
 import SettingsItem from "@/components/profile/SettingsItem";
 import PrivacyPolicyModal from "@/components/profile/PrivacyPolicyModal";
+import TermsOfServiceModal from "@/components/profile/TermsOfServiceModal";
 import {
   Bell,
   Shield,
@@ -9,6 +10,7 @@ import {
   LogOut,
   MapPin,
   FileText,
+  ScrollText,
 } from "lucide-react-native";
 import { colors } from "@/constants/colors";
 
@@ -16,6 +18,7 @@ export default function SettingsSection({ onSignOut }) {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [locationEnabled, setLocationEnabled] = useState(true);
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
+  const [showTermsOfService, setShowTermsOfService] = useState(false);
 
   return (
     <>
@@ -81,6 +84,13 @@ export default function SettingsSection({ onSignOut }) {
         />
 
         <SettingsItem
+          icon={<ScrollText size={20} color={colors.accentGold} />}
+          title="Terms of Service"
+          subtitle="Read our terms of service"
+          onPress={() => setShowTermsOfService(true)}
+        />
+
+        <SettingsItem
           icon={<HelpCircle size={20} color={colors.textSecondary} />}
           title="Help & Support"
           subtitle="FAQ, contact support"
@@ -96,6 +106,11 @@ export default function SettingsSection({ onSignOut }) {
       <PrivacyPolicyModal
         visible={showPrivacyPolicy}
         onClose={() => setShowPrivacyPolicy(false)}
+      />
+
+      <TermsOfServiceModal
+        visible={showTermsOfService}
+        onClose={() => setShowTermsOfService(false)}
       />
     </>
   );
