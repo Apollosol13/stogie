@@ -52,6 +52,9 @@ export default function UserProfileScreen() {
       const analyticsRes = await apiRequest(`/api/analytics/${userId}`);
       if (analyticsRes.ok) {
         const analyticsData = await analyticsRes.json();
+        console.log('[UserProfile] Analytics received:', JSON.stringify(analyticsData, null, 2));
+        console.log('[UserProfile] Followers from API:', analyticsData.followers);
+        console.log('[UserProfile] Followers from userStats:', analyticsData.analytics?.userStats?.followers);
         setAnalytics(analyticsData);
       }
 
