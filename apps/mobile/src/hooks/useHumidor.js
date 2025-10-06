@@ -8,7 +8,7 @@ const useHumidor = () => {
   const queryClient = useQueryClient();
   const { user } = useUser();
 
-  // Fetch humidor entries
+  // Fetch humidor entries and smoking sessions
   const {
     data: humidorData,
     loading,
@@ -17,21 +17,42 @@ const useHumidor = () => {
   } = useQuery({
     queryKey: ["humidor"],
     queryFn: async () => {
-      const response = await apiRequest("/api/humidor?includeWishlist=true");
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      const [humidorResponse, sessionsResponse] = await Promise.all([
+        apiRequest("/api/humidor?includeWishlist=true"),
+        apiRequest("/api/smoking-sessions")
+      ]);
+      
+      if (!humidorResponse.ok) {
+        throw new Error(`HTTP error! status: ${humidorResponse.status}`);
       }
-      const data = await response.json();
+      
+      const humidorData = await humidorResponse.json();
+      const sessionsData = sessionsResponse.ok ? await sessionsResponse.json() : { sessions: [] };
 
       // Transform data for the UI
-      const owned = data.entries.filter((entry) => entry.status === 'owned');
-      const wishlist = data.entries.filter((entry) => entry.status === 'wishlist');
+      const owned = humidorData.entries.filter((entry) => entry.status === 'owned');
+      const wishlist = humidorData.entries.filter((entry) => entry.status === 'wishlist');
+      
+      // Transform smoking sessions to match humidor entry format
+      const smoked = (sessionsData.sessions || []).map((session) => ({
+        id: session.id,
+        cigar_id: session.cigar_id,
+        brand: session.cigars?.brand || 'Unknown',
+        line: session.cigars?.line || '',
+        vitola: session.cigars?.vitola || 'Unknown',
+        strength: session.cigars?.strength || 'MEDIUM',
+        wrapper: session.cigars?.wrapper || 'Unknown',
+        image: session.cigars?.image_url || 'https://images.unsplash.com/photo-1571613316887-6f8d5cbf7ef7?w=200&h=150&fit=crop',
+        location_name: session.location_name,
+        created_at: session.created_at,
+        sticker: session.sticker,
+      }));
 
       return {
         owned: owned.map(transformEntry),
-        smoked: [], // Will be populated from smoking_sessions table later
+        smoked: smoked,
         wishlist: wishlist.map(transformEntry),
-        stats: data.stats || {},
+        stats: humidorData.stats || {},
       };
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -68,172 +89,77 @@ const useHumidor = () => {
   };
 
   // Helper function to normalize strength values to backend requirements
-  const normalizeStrength = (strength) => {
-    if (!strength) return "MEDIUM";
-    
-    const str = strength.toLowerCase();
-    if (str.includes('mild') || str.includes('light') || str.includes('weak')) return "MILD";
-    if (str.includes('full') || str.includes('strong') || str.includes('bold')) return "FULL";
-    return "MEDIUM"; // Default for medium, moderate, etc.
+  const normalizeStrength = (strengthValue) => {
+    if (!strengthValue) return "MEDIUM";
+    const str = strengthValue.toUpperCase();
+    // Handle various AI response formats
+    if (str.includes("MILD") || str.includes("LIGHT")) return "MILD";
+    if (str.includes("MEDIUM")) return "MEDIUM";
+    if (str.includes("FULL") || str.includes("STRONG")) return "FULL";
+    return "MEDIUM"; // default fallback
   };
 
   // Add cigar to humidor
   const addToHumidorMutation = useMutation({
-    mutationFn: async ({
-      cigarId,
-      cigarData,
-      isWishlist = false,
-      quantity = 1,
-      notes = "",
-      purchasePrice = null,
-    }) => {
-      try {
-        console.log("=== addToHumidorMutation START ===");
-        console.log("Input parameters:", {
-          cigarId,
-          isWishlist,
-          quantity,
-          notes,
-        });
-        console.log("CigarData:", cigarData);
+    mutationFn: async ({ cigarId, cigarData, isWishlist, quantity = 1, notes = "" }) => {
+      console.log("🔧 addToHumidor mutation called with:", { cigarId, cigarData, isWishlist });
+      
+      // Prepare the payload
+      const payload = {
+        cigar_id: cigarId, // may be null if not in cigars table
+        status: isWishlist ? 'wishlist' : 'owned',
+        quantity: isWishlist ? 0 : quantity,
+        notes,
+      };
 
-        // First ensure the cigar exists in our database
-        let finalCigarId = cigarId;
-
-        if (
-          !cigarId ||
-          (typeof cigarId === "string" &&
-            cigarId.startsWith("expert-identified"))
-        ) {
-          console.log("Creating new cigar from AI analysis...");
-          // Create the cigar first if it doesn't exist - include all AI analysis data
-          // Fix payload to match backend API expectations
-          const createPayload = {
-            brand: cigarData.brand,
-            line: cigarData.line || "",
-            vitola: cigarData.vitola,
-            strength: normalizeStrength(cigarData.strength),  // Normalize to MILD, MEDIUM, or FULL
-            wrapper: cigarData.wrapper || "",
-            binder: cigarData.binder || "",
-            filler: cigarData.filler || "",
-            country: cigarData.origin || "",  // Backend expects 'country'
-            imageUrl: cigarData.image || cigarData.image_url || null,  // Backend expects 'imageUrl'
-            description: cigarData.description || cigarData.notes || "",
-          };
-
-          console.log("Creating cigar with payload:", createPayload);
-          
-          // Debug authentication
-          console.log("🔐 DEBUG: About to create cigar with authentication");
-          console.log("🔐 DEBUG: User authenticated?", !!user);
-          console.log("🔐 DEBUG: User ID:", user?.id);
-
-          const createResponse = await apiRequest("/api/cigars", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(createPayload),
-          });
-
-          console.log("Create response status:", createResponse.status);
-
-          if (!createResponse.ok) {
-            const errorData = await createResponse.text();
-            console.error("Cigar creation failed:", errorData);
-            throw new Error(
-              `Failed to create cigar: ${createResponse.status} ${errorData}`,
-            );
-          }
-
-          const newCigar = await createResponse.json();
-          console.log("Cigar created successfully:", newCigar);
-          finalCigarId = newCigar.cigar?.id || newCigar.id;
-        }
-
-        console.log("Adding to humidor with cigar ID:", finalCigarId);
-
-        // Add to humidor - fix API payload to match backend expectations
-        const humidorPayload = {
-          cigarId: finalCigarId,  // Backend expects camelCase
-          status: isWishlist ? 'wishlist' : 'owned',  // Backend expects status string
-          quantity,
-          notes: notes,  // Backend expects 'notes' not 'personal_notes'
-          pricePaid: purchasePrice,  // Backend expects camelCase
-          acquiredDate: new Date().toISOString().split("T")[0],  // Backend expects camelCase
-        };
-
-        console.log("Adding to humidor with payload:", humidorPayload);
-        
-        // Debug authentication for humidor
-        console.log("🔐 DEBUG: About to add to humidor with authentication");
-        console.log("🔐 DEBUG: User authenticated?", !!user);
-        console.log("🔐 DEBUG: User ID:", user?.id);
-        console.log("🔐 DEBUG: User object:", user);
-
-        // Debug token before API call
-        console.log("🔐 HUMIDOR: About to make API call to /api/humidor");
-        const testAuth = await SecureStore.getItemAsync('stogie-auth-jwt');
-        console.log("🔐 HUMIDOR: SecureStore auth data exists?", !!testAuth);
-        if (testAuth) {
-          try {
-            const parsed = JSON.parse(testAuth);
-            console.log("🔐 HUMIDOR: JWT exists in storage?", !!parsed.jwt);
-            console.log("🔐 HUMIDOR: JWT preview:", parsed.jwt?.substring(0, 30) + '...');
-          } catch (e) {
-            console.log("🔐 HUMIDOR: Failed to parse auth data:", e.message);
-          }
-        }
-
-        const response = await apiRequest("/api/humidor", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(humidorPayload),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.text();
-          console.error("Humidor add failed:", errorData);
-          throw new Error(
-            `Failed to add to humidor: ${response.status} ${errorData}`,
-          );
-        }
-
-        const result = await response.json();
-        console.log("Added to humidor successfully:", result);
-        return result;
-      } catch (error) {
-        console.error("addToHumidorMutation error:", error);
-        throw error;
+      // If we don't have a cigarId, we need to send the full cigar data
+      if (!cigarId && cigarData) {
+        payload.brand = cigarData.brand;
+        payload.line = cigarData.line || "";
+        payload.vitola = cigarData.vitola || "Unknown";
+        payload.strength = normalizeStrength(cigarData.strength);
+        payload.wrapper = cigarData.wrapper || "Unknown";
+        payload.binder = cigarData.binder || "Unknown";
+        payload.filler = cigarData.filler || "Unknown";
+        payload.origin_country = cigarData.origin || "Unknown";
+        payload.ring_gauge = safeParseInt(cigarData.ringGauge);
+        payload.length_inches = safeParseFloat(cigarData.length);
+        payload.price_range = cigarData.priceRange || "";
+        payload.flavor_profile = cigarData.flavorProfile || [];
+        payload.smoking_time_minutes = safeParseInt(cigarData.smokingTimeMinutes);
+        payload.description = cigarData.description || "";
       }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["humidor"] });
-    },
-    onError: (error) => {
-      console.error("Humidor mutation failed:", error);
-    },
-  });
 
-  // Update humidor entry
-  const updateEntryMutation = useMutation({
-    mutationFn: async ({ id, updates }) => {
-      const response = await apiRequest(`/api/humidor/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updates),
+      console.log("📤 Sending humidor entry payload:", payload);
+
+      const response = await apiRequest("/api/humidor", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json();
+        console.error("❌ Server error:", errorData);
+        throw new Error(errorData.error || "Failed to add to humidor");
       }
 
-      return response.json();
+      const data = await response.json();
+      console.log("✅ Successfully added to humidor:", data);
+      return data;
     },
     onSuccess: () => {
+      // Refetch humidor data after adding
       queryClient.invalidateQueries({ queryKey: ["humidor"] });
+    },
+    onError: (error) => {
+      console.error("Error adding to humidor:", error);
     },
   });
 
-  // Delete humidor entry
+  // Delete entry from humidor
   const deleteEntryMutation = useMutation({
     mutationFn: async (entryId) => {
       const response = await apiRequest(`/api/humidor/${entryId}`, {
@@ -241,37 +167,61 @@ const useHumidor = () => {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error("Failed to delete entry");
       }
 
-      return response.json();
+      return await response.json();
+    },
+    onSuccess: () => {
+      // Refetch humidor data after deleting
+      queryClient.invalidateQueries({ queryKey: ["humidor"] });
+    },
+  });
+
+  // Move entry between tabs (owned/wishlist)
+  const moveEntryMutation = useMutation({
+    mutationFn: async ({ entryId, newStatus }) => {
+      const response = await apiRequest(`/api/humidor/${entryId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to move entry");
+      }
+
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["humidor"] });
     },
   });
 
+  // Wrapper functions for mutations
+  const addToHumidor = async (params) => {
+    return addToHumidorMutation.mutateAsync(params);
+  };
+
+  const deleteEntry = async (entryId) => {
+    return deleteEntryMutation.mutateAsync(entryId);
+  };
+
+  const moveEntry = async (entryId, newStatus) => {
+    return moveEntryMutation.mutateAsync({ entryId, newStatus });
+  };
+
   return {
-    // Data
-    humidorData: humidorData || {
-      owned: [],
-      smoked: [],
-      wishlist: [],
-      stats: {},
-    },
+    humidorData: humidorData || { owned: [], smoked: [], wishlist: [], stats: {} },
     loading,
     error,
-
-    // Actions
-    addToHumidor: addToHumidorMutation.mutate,
-    addToHumidorAsync: addToHumidorMutation.mutateAsync,
-    updateEntry: updateEntryMutation.mutate,
-    deleteEntry: deleteEntryMutation.mutate,
     refetch,
-
-    // Status
+    addToHumidor,
+    deleteEntry,
+    moveEntry,
     isAdding: addToHumidorMutation.isPending,
-    isUpdating: updateEntryMutation.isPending,
     isDeleting: deleteEntryMutation.isPending,
   };
 };
@@ -309,10 +259,8 @@ const transformEntry = (entry) => {
       ? `${entry.cigars?.smoking_time_minutes || entry.smoking_time_minutes} minutes`
       : "45-60 minutes",
     smokingExperience: entry.cigars?.smoking_experience || entry.smoking_experience || "",
-    aiConfidence: entry.cigars?.ai_confidence || entry.ai_confidence || null,
-    confidence: entry.cigars?.ai_confidence || entry.ai_confidence || null,
-    analysisNotes: entry.cigars?.analysis_notes || entry.analysis_notes || "",
-    isAiIdentified: entry.cigars?.is_ai_identified || entry.is_ai_identified || false,
+    aiConfidence: entry.ai_confidence || entry.aiConfidence || 0,
+    status: entry.status
   };
 };
 
