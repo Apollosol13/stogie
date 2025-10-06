@@ -491,9 +491,6 @@ export default function HomeScreen() {
       </View>
 
       <NewPostModal visible={showNewPost} onClose={() => setShowNewPost(false)} onPosted={load} />
-    </View>
-  );
-}
 
       <CommentsModal
         visible={showComments}
