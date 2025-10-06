@@ -95,7 +95,6 @@ export default function HomeScreen() {
     }
   };
 
-  };
   const handleCommentPress = (postId) => {
     setSelectedPostId(postId);
     setShowComments(true);
