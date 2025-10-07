@@ -13,7 +13,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/utils/auth/useAuth";
 import { useUser } from "@/utils/auth/useUser";
 import { router } from "expo-router";
-import { useFonts } from "expo-font";
 import {
   Search,
   Plus,
@@ -41,11 +40,6 @@ export default function HomeScreen() {
   const { isAuthenticated, isReady, signIn } = useAuth();
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState("For You");
-  
-  // Load custom font
-  const [fontsLoaded] = useFonts({
-    'ClassyVogue': require('../../../assets/fonts/classyvogueregular.ttf'),
-  });
   
   // Pass filter to useFeed based on activeTab
   const filter = activeTab === "Following" ? "following" : null;
@@ -146,8 +140,7 @@ export default function HomeScreen() {
             style={{
               color: colors.textPrimary,
               fontSize: 24,
-              fontWeight: "700",
-              fontFamily: fontsLoaded ? 'ClassyVogue' : undefined,
+              fontFamily: 'ClassyVogue',
             }}
           >
             Stogie
@@ -351,8 +344,7 @@ export default function HomeScreen() {
           style={{
             color: colors.textPrimary,
             fontSize: 28,
-            fontWeight: "700",
-            fontFamily: fontsLoaded ? 'ClassyVogue' : undefined,
+            fontFamily: 'ClassyVogue',
           }}
         >
           Stogie

@@ -5,6 +5,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useFonts } from "expo-font";
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient({
@@ -20,18 +21,23 @@ const queryClient = new QueryClient({
 
 export default function RootLayout() {
   const { initiate, isReady } = useAuth();
+  
+  // Load custom fonts
+  const [fontsLoaded] = useFonts({
+    'ClassyVogue': require('../assets/fonts/classyvogueregular.ttf'),
+  });
 
   useEffect(() => {
     initiate();
   }, [initiate]);
 
   useEffect(() => {
-    if (isReady) {
+    if (isReady && fontsLoaded) {
       SplashScreen.hideAsync();
     }
-  }, [isReady]);
+  }, [isReady, fontsLoaded]);
 
-  if (!isReady) {
+  if (!isReady || !fontsLoaded) {
     return null;
   }
 
