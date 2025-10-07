@@ -140,6 +140,7 @@ export default function HomeScreen() {
             style={{
               color: colors.textPrimary,
               fontSize: 24,
+              fontWeight: "700",
               fontFamily: 'ClassyVogue',
             }}
           >
@@ -344,6 +345,7 @@ export default function HomeScreen() {
           style={{
             color: colors.textPrimary,
             fontSize: 28,
+            fontWeight: "700",
             fontFamily: 'ClassyVogue',
           }}
         >

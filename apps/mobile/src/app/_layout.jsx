@@ -22,8 +22,8 @@ const queryClient = new QueryClient({
 export default function RootLayout() {
   const { initiate, isReady } = useAuth();
   
-  // Load custom fonts
-  const [fontsLoaded] = useFonts({
+  // Load custom fonts - don't block app if font fails
+  const [fontsLoaded, fontError] = useFonts({
     'ClassyVogue': require('../../assets/fonts/classyvogueregular.ttf'),
   });
 
@@ -32,12 +32,19 @@ export default function RootLayout() {
   }, [initiate]);
 
   useEffect(() => {
-    if (isReady && fontsLoaded) {
+    if (fontError) {
+      console.error('Font loading error:', fontError);
+    }
+  }, [fontError]);
+
+  useEffect(() => {
+    // Hide splash when auth is ready (don't wait for font)
+    if (isReady) {
       SplashScreen.hideAsync();
     }
-  }, [isReady, fontsLoaded]);
+  }, [isReady]);
 
-  if (!isReady || !fontsLoaded) {
+  if (!isReady) {
     return null;
   }
 
