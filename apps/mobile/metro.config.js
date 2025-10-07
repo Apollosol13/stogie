@@ -54,10 +54,6 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   ) {
     return context.resolveRequest(context, moduleName, platform);
   }
-  // Wildcard alias for Expo Google Fonts
-  if (moduleName.startsWith('@expo-google-fonts/') && moduleName !== '@expo-google-fonts/dev') {
-    return context.resolveRequest(context, '@expo-google-fonts/dev', platform);
-  }
   if (SHARED_ALIASES[moduleName] && !moduleName.startsWith('./polyfills/')) {
     return context.resolveRequest(context, SHARED_ALIASES[moduleName], platform);
   }
