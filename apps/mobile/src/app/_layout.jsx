@@ -5,6 +5,8 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useFonts } from "expo-font";
+import { Text } from "react-native";
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient({
@@ -20,18 +22,36 @@ const queryClient = new QueryClient({
 
 export default function RootLayout() {
   const { initiate, isReady } = useAuth();
+  
+  // Load custom font for entire app
+  const [fontsLoaded, fontError] = useFonts({
+    'ClassyVogue': require('../../assets/fonts/classyvogueregular.ttf'),
+  });
 
   useEffect(() => {
     initiate();
   }, [initiate]);
 
   useEffect(() => {
-    if (isReady) {
+    if (fontError) {
+      console.error('❌ Font loading error:', fontError);
+    }
+    if (fontsLoaded) {
+      console.log('✅ ClassyVogue font loaded successfully');
+      // Set as default font for all Text components
+      Text.defaultProps = Text.defaultProps || {};
+      Text.defaultProps.style = { fontFamily: 'ClassyVogue' };
+    }
+  }, [fontsLoaded, fontError]);
+
+  useEffect(() => {
+    // Wait for both auth and fonts before showing app
+    if (isReady && fontsLoaded) {
       SplashScreen.hideAsync();
     }
-  }, [isReady]);
+  }, [isReady, fontsLoaded]);
 
-  if (!isReady) {
+  if (!isReady || !fontsLoaded) {
     return null;
   }
 
