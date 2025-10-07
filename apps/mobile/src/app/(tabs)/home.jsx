@@ -56,7 +56,7 @@ export default function HomeScreen() {
     async function loadFont() {
       try {
         await Font.loadAsync({
-          'ClassyVogue': require('../../assets/fonts/classyvogueregular.ttf'),
+          'ClassyVogue': require('../../../assets/fonts/classyvogueregular.ttf'),
         });
         setFontLoaded(true);
       } catch (error) {
