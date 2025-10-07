@@ -25,7 +25,7 @@ export default function RootLayout() {
   
   // Load Adamina font for entire app from local asset
   const [fontsLoaded, fontError] = useFonts({
-    Adamina_400Regular: require("../assets/fonts/Adamina_400Regular.ttf"),
+    Adamina_400Regular: require("../../assets/fonts/Adamina_400Regular.ttf"),
   });
 
   useEffect(() => {
