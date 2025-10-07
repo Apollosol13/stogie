@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/utils/auth/useAuth";
 import { useUser } from "@/utils/auth/useUser";
 import { router } from "expo-router";
+import * as Font from "expo-font";
 import {
   Search,
   Plus,
@@ -40,6 +41,7 @@ export default function HomeScreen() {
   const { isAuthenticated, isReady, signIn } = useAuth();
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState("For You");
+  const [fontLoaded, setFontLoaded] = useState(false);
   
   // Pass filter to useFeed based on activeTab
   const filter = activeTab === "Following" ? "following" : null;
@@ -49,6 +51,21 @@ export default function HomeScreen() {
   const [deletingPostId, setDeletingPostId] = useState(null);
   const [selectedPostId, setSelectedPostId] = useState(null);
   const [showComments, setShowComments] = useState(false);
+
+  useEffect(() => {
+    async function loadFont() {
+      try {
+        await Font.loadAsync({
+          'ClassyVogue': require('../../assets/fonts/classyvogueregular.ttf'),
+        });
+        setFontLoaded(true);
+      } catch (error) {
+        console.error('Error loading font:', error);
+        setFontLoaded(true); // Still show UI even if font fails
+      }
+    }
+    loadFont();
+  }, []);
 
   const handleDeletePost = async (postId, postUserId) => {
     if (postUserId !== user?.id) {
@@ -141,6 +158,7 @@ export default function HomeScreen() {
               color: colors.textPrimary,
               fontSize: 24,
               fontWeight: "700",
+              fontFamily: fontLoaded ? 'ClassyVogue' : undefined,
             }}
           >
             Stogie
@@ -345,6 +363,7 @@ export default function HomeScreen() {
             color: colors.textPrimary,
             fontSize: 28,
             fontWeight: "700",
+            fontFamily: fontLoaded ? 'ClassyVogue' : undefined,
           }}
         >
           Stogie

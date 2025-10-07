@@ -86,6 +86,9 @@
     },
     "runtimeVersion": {
       "policy": "appVersion"
-    }
+    },
+    "fonts": [
+      "./assets/fonts/classyvogueregular.ttf"
+    ]
   }
 }
