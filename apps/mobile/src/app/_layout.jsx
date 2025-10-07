@@ -24,7 +24,7 @@ export default function RootLayout() {
   
   // Load custom fonts
   const [fontsLoaded] = useFonts({
-    'ClassyVogue': require('../assets/fonts/classyvogueregular.ttf'),
+    'ClassyVogue': require('../../assets/fonts/classyvogueregular.ttf'),
   });
 
   useEffect(() => {
