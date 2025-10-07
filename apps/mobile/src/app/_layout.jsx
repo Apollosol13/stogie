@@ -5,7 +5,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useFonts } from "expo-font";
+import { useFonts, Adamina_400Regular } from "@expo-google-fonts/adamina";
 import { Text } from "react-native";
 SplashScreen.preventAutoHideAsync();
 
@@ -23,9 +23,9 @@ const queryClient = new QueryClient({
 export default function RootLayout() {
   const { initiate, isReady } = useAuth();
   
-  // Load custom font for entire app
+  // Load Adamina font for entire app
   const [fontsLoaded, fontError] = useFonts({
-    'ClassyVogue': require('../../assets/fonts/classyvogueregular.ttf'),
+    Adamina_400Regular,
   });
 
   useEffect(() => {
@@ -38,10 +38,10 @@ export default function RootLayout() {
       console.log('⚠️  App will use system font instead');
     }
     if (fontsLoaded) {
-      console.log('✅ ClassyVogue font loaded successfully');
+      console.log('✅ Adamina font loaded successfully');
       // Set as default font for all Text components
       Text.defaultProps = Text.defaultProps || {};
-      Text.defaultProps.style = { fontFamily: 'ClassyVogue' };
+      Text.defaultProps.style = { fontFamily: 'Adamina_400Regular' };
     }
   }, [fontsLoaded, fontError]);
 
