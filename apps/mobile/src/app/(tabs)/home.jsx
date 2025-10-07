@@ -141,7 +141,6 @@ export default function HomeScreen() {
               color: colors.textPrimary,
               fontSize: 24,
               fontWeight: "700",
-              fontFamily: 'ClassyVogue',
             }}
           >
             Stogie
@@ -346,7 +345,6 @@ export default function HomeScreen() {
             color: colors.textPrimary,
             fontSize: 28,
             fontWeight: "700",
-            fontFamily: 'ClassyVogue',
           }}
         >
           Stogie
