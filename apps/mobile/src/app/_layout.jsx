@@ -5,7 +5,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useFonts, Adamina_400Regular } from "@expo-google-fonts/adamina";
+import { useFonts } from "expo-font";
 import { Text } from "react-native";
 SplashScreen.preventAutoHideAsync();
 
@@ -23,9 +23,9 @@ const queryClient = new QueryClient({
 export default function RootLayout() {
   const { initiate, isReady } = useAuth();
   
-  // Load Adamina font for entire app
+  // Load Adamina font for entire app from local asset
   const [fontsLoaded, fontError] = useFonts({
-    Adamina_400Regular,
+    Adamina_400Regular: require("../assets/fonts/Adamina_400Regular.ttf"),
   });
 
   useEffect(() => {
