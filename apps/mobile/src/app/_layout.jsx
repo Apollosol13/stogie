@@ -35,6 +35,7 @@ export default function RootLayout() {
   useEffect(() => {
     if (fontError) {
       console.error('❌ Font loading error:', fontError);
+      console.log('⚠️  App will use system font instead');
     }
     if (fontsLoaded) {
       console.log('✅ ClassyVogue font loaded successfully');
@@ -45,13 +46,13 @@ export default function RootLayout() {
   }, [fontsLoaded, fontError]);
 
   useEffect(() => {
-    // Wait for both auth and fonts before showing app
-    if (isReady && fontsLoaded) {
+    // Show app when auth is ready (don't wait for font - it's optional)
+    if (isReady) {
       SplashScreen.hideAsync();
     }
-  }, [isReady, fontsLoaded]);
+  }, [isReady]);
 
-  if (!isReady || !fontsLoaded) {
+  if (!isReady) {
     return null;
   }
 
