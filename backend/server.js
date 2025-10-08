@@ -108,8 +108,9 @@ app.use(cors({
   optionsSuccessStatus: 200
 }));
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// Default size limit for general API endpoints (text/JSON data)
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
 // Rate limiting configuration
 const createRateLimiter = (windowMinutes, maxRequests, message) => rateLimit({
@@ -138,6 +139,12 @@ app.get('/health', (req, res) => {
     version: '1.0.0'
   });
 });
+
+// Route-specific size limits for uploads and posts (must come BEFORE mounting routes)
+app.use('/api/upload', express.json({ limit: '12mb' }));
+app.use('/api/upload', express.urlencoded({ extended: true, limit: '12mb' }));
+app.use('/api/posts', express.json({ limit: '12mb' }));
+app.use('/api/posts', express.urlencoded({ extended: true, limit: '12mb' }));
 
 // API Routes with rate limiting
 app.use('/api/auth', authLimiter, authRoutes);
