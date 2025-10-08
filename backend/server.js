@@ -64,10 +64,45 @@ app.use(helmet({
 
 app.use(morgan('combined'));
 
+// CORS configuration with dynamic origin validation
+const getAllowedOrigins = () => {
+  if (process.env.NODE_ENV === 'production') {
+    // Production: strict whitelist from env var
+    const origins = process.env.CORS_ORIGINS?.split(',').map(o => o.trim()) || [];
+    console.log('🔒 CORS: Production whitelist:', origins);
+    return origins;
+  }
+  // Development: allow localhost, Expo dev, and local network
+  return [
+    'http://localhost:8081',
+    'http://localhost:19006',
+    'http://localhost:3000',
+    /^exp:\/\/.*/, // Expo Go on any local IP
+    /^http:\/\/192\.168\.\d+\.\d+:\d+$/, // Local network IPs
+  ];
+};
+
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.CORS_ORIGINS?.split(',') || []
-    : ['http://localhost:8081', 'http://localhost:19006', 'exp://192.168.1.100:8081'],
+  origin: (origin, callback) => {
+    const allowedOrigins = getAllowedOrigins();
+    
+    // Allow requests with no origin (mobile apps, Postman, curl)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin matches whitelist (string or regex)
+    const isAllowed = allowedOrigins.some(allowed => 
+      typeof allowed === 'string' 
+        ? allowed === origin 
+        : allowed.test(origin)
+    );
+    
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      console.warn(`🚫 CORS blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200
 }));
