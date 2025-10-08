@@ -23,7 +23,7 @@ const MapHeader = ({ onSearchPress, onCenterPress, onFilterPress }) => {
         style={{
           color: colors.textPrimary,
           fontSize: 28,
-          fontWeight: "700",
+          fontFamily: 'LibreBodoni_700Bold',
           letterSpacing: -0.5,
           textShadowColor: "rgba(0, 0, 0, 0.8)",
           textShadowOffset: { width: 1, height: 1 },

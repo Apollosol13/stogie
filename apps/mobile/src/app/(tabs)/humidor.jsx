@@ -636,7 +636,7 @@ export default function HumidorScreen() {
             style={{
               color: colors.textPrimary,
               fontSize: 28,
-              fontWeight: "700",
+              fontFamily: 'LibreBodoni_700Bold',
               letterSpacing: -0.5,
             }}
           >
