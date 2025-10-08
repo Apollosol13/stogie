@@ -103,7 +103,7 @@ export default function SettingsSection({ onSignOut }) {
         />
 
         <SettingsItem
-          icon={<HelpCircle size={20} color={colors.textSecondary} />}
+          icon={<HelpCircle size={20} color={colors.accentGold} />}
           title="Help & Support"
           subtitle="FAQ, contact support"
           onPress={() => setShowHelpSupport(true)}
