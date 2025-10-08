@@ -4,10 +4,35 @@ import supabase from '../config/database.js';
 
 const router = express.Router();
 
-// Configure multer for memory storage
+// Whitelist of allowed MIME types
+const ALLOWED_MIME_TYPES = [
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/webp',
+  'image/heic', // iPhone default format
+  'image/heif'  // iPhone format variant
+];
+
+// MIME type validation function
+const fileFilter = (req, file, cb) => {
+  console.log('[Upload] Validating MIME type:', file.mimetype);
+  
+  if (ALLOWED_MIME_TYPES.includes(file.mimetype.toLowerCase())) {
+    cb(null, true); // Accept file
+  } else {
+    cb(new Error(`Invalid file type: ${file.mimetype}. Only images (JPEG, PNG, WebP, HEIC) are allowed.`), false);
+  }
+};
+
+// Configure multer for memory storage with MIME filtering
 const upload = multer({ 
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 } // 10MB
+  limits: { 
+    fileSize: 12 * 1024 * 1024, // 12MB (matches server.js config)
+    files: 1 // Only allow 1 file per request
+  },
+  fileFilter: fileFilter
 });
 
 async function uploadToSupabase(buffer, mimetype) {
@@ -47,11 +72,52 @@ router.post('/', upload.single('image'), async (req, res) => {
       return res.status(400).json({ error: 'No file provided' });
     }
     
+    // Server-side MIME type validation (second layer of defense)
+    if (!ALLOWED_MIME_TYPES.includes(req.file.mimetype.toLowerCase())) {
+      console.warn('[Upload] Rejected invalid MIME type:', req.file.mimetype);
+      return res.status(400).json({ 
+        success: false,
+        error: `Invalid file type: ${req.file.mimetype}. Only images (JPEG, PNG, WebP, HEIC) are allowed.` 
+      });
+    }
+    
+    // Additional validation: check file size
+    if (req.file.size > 12 * 1024 * 1024) {
+      console.warn('[Upload] File too large:', req.file.size, 'bytes');
+      return res.status(400).json({ 
+        success: false,
+        error: 'File too large. Maximum size is 12MB.' 
+      });
+    }
+    
+    console.log('[Upload] File validated:', {
+      mimetype: req.file.mimetype,
+      size: `${(req.file.size / 1024 / 1024).toFixed(2)}MB`
+    });
+    
     const result = await uploadToSupabase(req.file.buffer, req.file.mimetype);
-    return res.json(result);
+    return res.json({ success: true, ...result });
   } catch (e) {
     console.error('[Upload] Error:', e);
-    res.status(500).json({ error: e.message || 'Upload failed' });
+    
+    // Handle multer errors specifically
+    if (e instanceof multer.MulterError) {
+      if (e.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ 
+          success: false,
+          error: 'File too large. Maximum size is 12MB.' 
+        });
+      }
+      return res.status(400).json({ 
+        success: false,
+        error: `Upload error: ${e.message}` 
+      });
+    }
+    
+    res.status(500).json({ 
+      success: false,
+      error: e.message || 'Upload failed' 
+    });
   }
 });
 
