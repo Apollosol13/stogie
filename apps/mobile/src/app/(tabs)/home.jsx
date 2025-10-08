@@ -143,7 +143,7 @@ export default function HomeScreen() {
               fontFamily: 'LibreBodoni_700Bold',
             }}
           >
-            Stogie
+            Aficionado
           </Text>
 
           <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -347,7 +347,7 @@ export default function HomeScreen() {
             fontFamily: 'LibreBodoni_700Bold',
           }}
         >
-          Stogie
+          Aficionado
         </Text>
 
         <TouchableOpacity>
