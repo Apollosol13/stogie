@@ -4,6 +4,7 @@ import SettingsItem from "@/components/profile/SettingsItem";
 import PrivacyPolicyModal from "@/components/profile/PrivacyPolicyModal";
 import TermsOfServiceModal from "@/components/profile/TermsOfServiceModal";
 import CommunityGuidelinesModal from "@/components/profile/CommunityGuidelinesModal";
+import HelpSupportModal from "@/components/profile/HelpSupportModal";
 import {
   Bell,
   Shield,
@@ -22,6 +23,7 @@ export default function SettingsSection({ onSignOut }) {
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   const [showTermsOfService, setShowTermsOfService] = useState(false);
   const [showCommunityGuidelines, setShowCommunityGuidelines] = useState(false);
+  const [showHelpSupport, setShowHelpSupport] = useState(false);
 
   return (
     <>
@@ -104,6 +106,7 @@ export default function SettingsSection({ onSignOut }) {
           icon={<HelpCircle size={20} color={colors.textSecondary} />}
           title="Help & Support"
           subtitle="FAQ, contact support"
+          onPress={() => setShowHelpSupport(true)}
         />
 
         <SettingsItem
@@ -126,6 +129,11 @@ export default function SettingsSection({ onSignOut }) {
       <CommunityGuidelinesModal
         visible={showCommunityGuidelines}
         onClose={() => setShowCommunityGuidelines(false)}
+      />
+
+      <HelpSupportModal
+        visible={showHelpSupport}
+        onClose={() => setShowHelpSupport(false)}
       />
     </>
   );
