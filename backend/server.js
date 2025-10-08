@@ -41,9 +41,25 @@ export const supabase = createClient(
   }
 );
 
-// Middleware
+// Trust proxy for Railway (enables req.ip and secure cookies)
+app.set('trust proxy', 1);
+
+// Middleware - Helmet security headers
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:", "blob:"],
+      connectSrc: ["'self'", "https://fjfvmhhmqtbrbpgxcrec.supabase.co"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+    }
+  },
+  hsts: {
+    maxAge: 31536000, // 1 year
+    includeSubDomains: true,
+    preload: true
+  }
 }));
 
 app.use(morgan('combined'));
