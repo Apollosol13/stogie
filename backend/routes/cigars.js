@@ -1,8 +1,19 @@
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import supabase from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
+
+// Extra strict rate limit for expensive AI scanning
+const scanLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,
+  message: { success: false, error: 'Too many cigar scans. Please wait 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => req.user?.id || req.ip,
+});
 
 // Get all cigars (public endpoint)
 router.get('/', async (req, res) => {
@@ -372,8 +383,8 @@ router.post('/test-analyze', (req, res) => {
   });
 });
 
-// Analyze cigar image with OpenAI Vision
-router.post('/analyze-v2', async (req, res) => {
+// Analyze cigar image with OpenAI Vision (with strict rate limiting)
+router.post('/analyze-v2', scanLimiter, async (req, res) => {
   try {
     console.log('🚀 Cigar analysis request received - DEBUG VERSION');
     console.log('📝 OpenAI API Key configured:', !!process.env.OPENAI_API_KEY);

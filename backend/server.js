@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import rateLimit from 'express-rate-limit';
 import { createClient } from '@supabase/supabase-js';
 
 // Import route modules
@@ -110,6 +111,24 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Rate limiting configuration
+const createRateLimiter = (windowMinutes, maxRequests, message) => rateLimit({
+  windowMs: windowMinutes * 60 * 1000,
+  max: maxRequests,
+  message: { success: false, error: message },
+  standardHeaders: true,
+  legacyHeaders: false,
+  // Use user ID from JWT if available, otherwise fall back to IP
+  keyGenerator: (req) => req.user?.id || req.ip,
+});
+
+// Specific rate limiters
+const authLimiter = createRateLimiter(15, 5, 'Too many authentication attempts. Please wait 15 minutes.');
+const scanLimiter = createRateLimiter(15, 10, 'Too many cigar scans. Please wait 15 minutes.');
+const uploadLimiter = createRateLimiter(15, 10, 'Too many uploads. Please wait 15 minutes.');
+const apiLimiter = createRateLimiter(15, 100, 'Too many requests. Please slow down.');
+const readLimiter = createRateLimiter(15, 200, 'Too many requests. Please slow down.');
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ 
@@ -120,19 +139,19 @@ app.get('/health', (req, res) => {
   });
 });
 
-// API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/cigars', cigarRoutes);
-app.use('/api/humidor', humidorRoutes);
-app.use('/api/reviews', reviewRoutes);
-app.use('/api/profiles', profileRoutes);
-app.use('/api/analytics', analyticsRoutes);
-app.use('/api/shops', shopRoutes);
-app.use('/api/smoking-sessions', sessionRoutes);
-app.use('/integrations', integrationRoutes);
-app.use('/api/upload', uploadRoutes);
-app.use('/api/posts', postRoutes);
-app.use('/api/follow', followRoutes);
+// API Routes with rate limiting
+app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/upload', uploadLimiter, uploadRoutes);
+app.use('/api/cigars', apiLimiter, cigarRoutes);
+app.use('/api/humidor', apiLimiter, humidorRoutes);
+app.use('/api/reviews', apiLimiter, reviewRoutes);
+app.use('/api/profiles', readLimiter, profileRoutes);
+app.use('/api/analytics', readLimiter, analyticsRoutes);
+app.use('/api/shops', readLimiter, shopRoutes);
+app.use('/api/smoking-sessions', apiLimiter, sessionRoutes);
+app.use('/integrations', apiLimiter, integrationRoutes);
+app.use('/api/posts', apiLimiter, postRoutes);
+app.use('/api/follow', apiLimiter, followRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
