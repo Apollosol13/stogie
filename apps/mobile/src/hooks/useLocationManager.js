@@ -3,6 +3,9 @@ import { Alert } from "react-native";
 import * as Location from "expo-location";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LOCATION_PERMISSION_KEY } from "../components/map/constants";
+import * as SecureStore from "expo-secure-store";
+
+const LOCATION_PREF_KEY = "stg-location-enabled"; // persisted by settings toggle
 
 export default function useLocationManager(mapRef) {
   const [region, setRegion] = useState(null); // Start with null, set after location fetch
@@ -14,6 +17,13 @@ export default function useLocationManager(mapRef) {
     useState(false);
 
   const checkLocationPermission = useCallback(async () => {
+    // Respect the user toggle first
+    const pref = await SecureStore.getItemAsync(LOCATION_PREF_KEY);
+    if (pref === "false") {
+      setLocationPermission(false);
+      setShowLocationPermissionModal(false);
+      return false;
+    }
     const hasAsked = await AsyncStorage.getItem(LOCATION_PERMISSION_KEY);
     const { status } = await Location.getForegroundPermissionsAsync();
 
@@ -115,6 +125,14 @@ export default function useLocationManager(mapRef) {
   const centerOnUser = () => {
     const requestAndCenter = async () => {
       try {
+        const pref = await SecureStore.getItemAsync(LOCATION_PREF_KEY);
+        if (pref === 'false') {
+          Alert.alert(
+            'Location Disabled',
+            'Enable Location Services in Settings to center on your position.'
+          );
+          return;
+        }
         // If already granted, just fetch and center
         const current = await Location.getForegroundPermissionsAsync();
         if (current.status === 'granted') {
