@@ -1,6 +1,7 @@
 import express from 'express';
 import supabase from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { validateReview, validateId } from '../middleware/validation.js';
 
 const router = express.Router();
 
@@ -152,7 +153,7 @@ router.get('/:reviewId', async (req, res) => {
 });
 
 // Create new review
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', authenticateToken, validateReview, async (req, res) => {
   try {
     const {
       cigarId,
@@ -265,7 +266,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // Update review
-router.put('/:reviewId', authenticateToken, async (req, res) => {
+router.put('/:reviewId', authenticateToken, validateId, validateReview, async (req, res) => {
   try {
     const { reviewId } = req.params;
     const updates = req.body;

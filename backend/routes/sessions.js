@@ -1,6 +1,7 @@
 import express from 'express';
 import supabase from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { validateSmokingSession, validateId } from '../middleware/validation.js';
 
 const router = express.Router();
 
@@ -73,7 +74,7 @@ router.get('/', async (req, res) => {
 });
 
 // Create smoking session
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', authenticateToken, validateSmokingSession, async (req, res) => {
   try {
     const {
       cigar_id,
@@ -125,7 +126,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // Update smoking session
-router.put('/:sessionId', authenticateToken, async (req, res) => {
+router.put('/:sessionId', authenticateToken, validateId, validateSmokingSession, async (req, res) => {
   try {
     const { sessionId } = req.params;
     const userId = req.user.id;

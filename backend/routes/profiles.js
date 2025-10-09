@@ -2,6 +2,7 @@ import express from 'express';
 import supabase, { supabaseAuth } from '../config/database.js';
 import multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
+import { validateProfile, validateUUID } from '../middleware/validation.js';
 
 const router = express.Router();
 
@@ -117,7 +118,7 @@ router.get('/', async (req, res) => {
 });
 
 // PUT /api/profiles - Update current user's profile
-router.put('/', async (req, res) => {
+router.put('/', validateProfile, async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {

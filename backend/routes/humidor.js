@@ -1,6 +1,7 @@
 import express from 'express';
 import supabase from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { validateHumidorEntry, validateId } from '../middleware/validation.js';
 
 const router = express.Router();
 
@@ -164,7 +165,7 @@ router.get('/:userId', authenticateToken, async (req, res) => {
 });
 
 // Add entry to humidor
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', authenticateToken, validateHumidorEntry, async (req, res) => {
   try {
     const {
       cigar_id,
@@ -337,7 +338,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // Update humidor entry
-router.put('/:entryId', authenticateToken, async (req, res) => {
+router.put('/:entryId', authenticateToken, validateId, validateHumidorEntry, async (req, res) => {
   try {
     const { entryId } = req.params;
     const updates = req.body;

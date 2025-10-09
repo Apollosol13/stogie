@@ -1,5 +1,6 @@
 import express from 'express';
 import supabase from '../config/database.js';
+import { validatePost, validateComment, validateId } from '../middleware/validation.js';
 
 const router = express.Router();
 
@@ -148,7 +149,7 @@ router.get('/', async (req, res) => {
 });
 
 // POST /api/posts - Create post
-router.post('/', async (req, res) => {
+router.post('/', validatePost, async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -192,7 +193,7 @@ router.post('/', async (req, res) => {
 });
 
 // POST /api/posts/:id/like - Toggle like on post
-router.post('/:id/like', async (req, res) => {
+router.post('/:id/like', validateId, async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -244,7 +245,7 @@ router.post('/:id/like', async (req, res) => {
 });
 
 // DELETE /api/posts/:id - Delete a post
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', validateId, async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -364,7 +365,7 @@ router.get('/:id/comments', async (req, res) => {
 });
 
 // POST /api/posts/:id/comments - Add comment
-router.post('/:id/comments', async (req, res) => {
+router.post('/:id/comments', validateId, validateComment, async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
