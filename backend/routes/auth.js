@@ -2,6 +2,7 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import supabase from '../config/database.js';
+import logger from '../utils/logger.js';
 
 const router = express.Router();
 
@@ -80,7 +81,7 @@ router.post('/signup', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Signup error:', error);
+    logger.error('Signup error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to create user'
@@ -106,15 +107,15 @@ router.post('/signin', async (req, res) => {
     const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
     
     if (!supabaseAnonKey) {
-      console.error('SUPABASE_ANON_KEY not found in environment variables');
+      logger.error('SUPABASE_ANON_KEY not found in environment variables');
       return res.status(500).json({
         success: false,
         error: 'Authentication service not configured'
       });
     }
 
-    console.log('Using Supabase URL:', supabaseUrl);
-    console.log('Anon key available:', !!supabaseAnonKey);
+    logger.debug('Using Supabase URL:', supabaseUrl);
+    logger.debug('Anon key available:', !!supabaseAnonKey);
 
     const authClient = createClient(supabaseUrl, supabaseAnonKey);
 
@@ -139,8 +140,10 @@ router.post('/signin', async (req, res) => {
       .single();
 
     if (profileError) {
-      console.error('Profile fetch error:', profileError);
+      logger.error('Profile fetch error:', profileError);
     }
+
+    logger.info('User signed in successfully:', { userId: data.user.id, username: profile?.username });
 
     res.json({
       success: true,
@@ -155,7 +158,7 @@ router.post('/signin', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Signin error:', error);
+    logger.error('Signin error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to sign in'
@@ -180,8 +183,10 @@ router.post('/signout', async (req, res) => {
     const { error } = await supabase.auth.admin.signOut(token);
 
     if (error) {
-      console.error('Signout error:', error);
+      logger.error('Signout error:', error);
     }
+
+    logger.info('User signed out successfully');
 
     res.json({
       success: true,
@@ -189,7 +194,7 @@ router.post('/signout', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Signout error:', error);
+    logger.error('Signout error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to sign out'
@@ -226,7 +231,7 @@ router.post('/refresh', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Refresh token error:', error);
+    logger.error('Refresh token error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to refresh token'
