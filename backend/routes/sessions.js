@@ -24,9 +24,13 @@ router.get('/', async (req, res) => {
           avatar_url
         ),
         cigars:cigar_id (
+          id,
           brand,
           line,
-          vitola
+          vitola,
+          strength,
+          wrapper,
+          image_url
         )
       `);
 
