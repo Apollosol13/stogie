@@ -345,6 +345,8 @@ export default function HomeScreen() {
             color: colors.textPrimary,
             fontSize: 28,
             fontFamily: 'LibreBodoni_700Bold',
+            flex: 1, // ensure the title can take available horizontal space
+            marginRight: 12, // give space before the search icon to avoid clipping
           }}
         >
           Stogie
