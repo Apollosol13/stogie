@@ -124,7 +124,7 @@ const createRateLimiter = (windowMinutes, maxRequests, message) => rateLimit({
 });
 
 // Specific rate limiters
-const authLimiter = createRateLimiter(15, 5, 'Too many authentication attempts. Please wait 15 minutes.');
+const authLimiter = createRateLimiter(15, 10, 'Too many authentication attempts. Please wait 15 minutes.');
 const scanLimiter = createRateLimiter(15, 10, 'Too many cigar scans. Please wait 15 minutes.');
 const uploadLimiter = createRateLimiter(15, 10, 'Too many uploads. Please wait 15 minutes.');
 const apiLimiter = createRateLimiter(15, 100, 'Too many requests. Please slow down.');
