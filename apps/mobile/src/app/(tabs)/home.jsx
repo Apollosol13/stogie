@@ -579,7 +579,7 @@ export default function HomeScreen() {
       <TouchableOpacity
         style={{
           position: "absolute",
-          bottom: insets.bottom + 100,
+          bottom: 90,
           right: 20,
           backgroundColor: colors.accentGold,
           borderRadius: 30,
@@ -592,6 +592,7 @@ export default function HomeScreen() {
           shadowOpacity: 0.3,
           shadowRadius: 5,
           elevation: 5,
+          zIndex: 999,
         }}
         onPress={() => setShowNewPost(true)}
       >
