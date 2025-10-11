@@ -7,10 +7,6 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "primaryColor": "#D4B896",
-    "contentRating": {
-      "level": "17+",
-      "reason": "This app contains tobacco-related content and is intended for adults aged 21 and older."
-    },
     "ios": {
       "bundleIdentifier": "com.stogie.app",
       "buildNumber": "1.0.0",
