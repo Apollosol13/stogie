@@ -69,7 +69,7 @@ We take reasonable steps to protect your data from unauthorized access or misuse
 
 ## 7. Children's Privacy
 
-Stogie is intended for adults aged 18 and older. We do not knowingly collect information from minors. If a child provides personal data, we will delete it promptly.
+Stogie is intended for adults aged 21 and older (or the legal age for tobacco use in your jurisdiction, whichever is greater). We do not knowingly collect information from minors. If we discover that a person under the required age has provided personal data, we will delete it promptly.
 
 ## 8. Changes to This Policy
 

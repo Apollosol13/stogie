@@ -15,7 +15,7 @@ Stogie is a social platform for cigar enthusiasts. Users can:
 
 ## 2. Eligibility
 
-You must be 18 years or older to use Stogie. By using the App, you confirm that you meet this requirement and that you are legally allowed to consume or discuss tobacco products in your jurisdiction.
+You must be at least 21 years old (or the legal age for tobacco use in your jurisdiction, whichever is greater) to use Stogie. By using the App, you confirm that you meet this age requirement and that you are legally allowed to purchase, consume, or discuss tobacco products in your jurisdiction.
 
 ## 3. Your Account
 
