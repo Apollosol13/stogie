@@ -579,7 +579,7 @@ export default function HomeScreen() {
       <TouchableOpacity
         style={{
           position: "absolute",
-          bottom: 90,
+          bottom: 50,
           right: 20,
           backgroundColor: colors.accentGold,
           borderRadius: 30,

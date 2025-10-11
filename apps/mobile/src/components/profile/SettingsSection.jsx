@@ -76,12 +76,6 @@ export default function SettingsSection({ onSignOut }) {
         />
 
         <SettingsItem
-          icon={<Shield size={20} color={colors.textSecondary} />}
-          title="Privacy & Security"
-          subtitle="Manage your account privacy"
-        />
-
-        <SettingsItem
           icon={<FileText size={20} color={colors.accentGold} />}
           title="Privacy Policy"
           subtitle="Read our privacy policy"

@@ -6,6 +6,11 @@
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "primaryColor": "#D4B896",
+    "contentRating": {
+      "level": "17+",
+      "reason": "This app contains tobacco-related content and is intended for adults aged 21 and older."
+    },
     "ios": {
       "bundleIdentifier": "com.stogie.app",
       "buildNumber": "1.0.0",
@@ -88,7 +93,11 @@
     },
     "extra": {
       "router": {
-        "origin": false
+        "origin": false,
+        "sitemap": false
+      },
+      "eas": {
+        "projectId": "37996e29-329d-4719-a054-4dac7c69f76d"
       }
     },
     "runtimeVersion": {
