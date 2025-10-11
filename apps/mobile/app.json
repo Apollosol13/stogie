@@ -71,7 +71,14 @@
         "expo-build-properties",
         {
           "ios": {
-            "useFrameworks": "static"
+            "useFrameworks": "static",
+            "extraPods": [
+              {
+                "name": "react-native-google-maps",
+                "configurations": ["Debug", "Release"],
+                "modular_headers": true
+              }
+            ]
           }
         }
       ],
