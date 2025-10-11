@@ -71,7 +71,8 @@
         "expo-build-properties",
         {
           "ios": {
-            "useFrameworks": "dynamic"
+            "newArchEnabled": false,
+            "deploymentTarget": "13.4"
           }
         }
       ],
