@@ -15,8 +15,7 @@
 			"autoIncrement": true,
 			"developmentClient": false,
 			"ios": {
-				"buildConfiguration": "Release",
-				"bundler": "metro"
+				"buildConfiguration": "Release"
 			}
 		}
 	},
