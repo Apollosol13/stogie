@@ -38,6 +38,7 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
   const [caption, setCaption] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [hasPermission, setHasPermission] = useState(false);
+  const [permissionInfo, setPermissionInfo] = useState(null);
 
   // Load recent photos when modal opens
   useEffect(() => {
@@ -54,19 +55,36 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
 
   const loadRecentPhotos = async () => {
     try {
-      const { status } = await MediaLibrary.requestPermissionsAsync();
-      setHasPermission(status === 'granted');
-      
-      if (status === 'granted') {
-        const album = await MediaLibrary.getAlbumAsync('Recent');
-        const media = await MediaLibrary.getAssetsAsync({
-          album: album,
-          first: 50,
-          mediaType: 'photo',
-          sortBy: MediaLibrary.SortBy.creationTime,
-        });
-        setRecentPhotos(media.assets);
+      // iOS 14+: accessPrivileges can be 'all' | 'limited' | 'none'
+      const perm = await MediaLibrary.requestPermissionsAsync();
+      setPermissionInfo(perm);
+      const granted = perm.status === 'granted' || perm.accessPrivileges === 'all' || perm.accessPrivileges === 'limited';
+      setHasPermission(granted);
+
+      if (!granted) return;
+
+      // Try fetching assets (no album filter – returns Recents/All Photos)
+      let result = await MediaLibrary.getAssetsAsync({
+        first: 80,
+        mediaType: MediaLibrary.MediaType.photo,
+        sortBy: MediaLibrary.SortBy.creationTime,
+      });
+
+      // If nothing returned, try to locate the "Recents/Recent/Camera Roll" smart album
+      if (!result.assets?.length) {
+        const albums = await MediaLibrary.getAlbumsAsync();
+        const recents = albums.find(a => ['Recents', 'Recent', 'Camera Roll', 'All Photos'].includes(a.title));
+        if (recents) {
+          result = await MediaLibrary.getAssetsAsync({
+            album: recents,
+            first: 80,
+            mediaType: MediaLibrary.MediaType.photo,
+            sortBy: MediaLibrary.SortBy.creationTime,
+          });
+        }
       }
+
+      setRecentPhotos(result.assets || []);
     } catch (error) {
       console.error('Error loading photos:', error);
     }
@@ -232,7 +250,13 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
                 Photo library access is needed to display recent photos
               </Text>
               <TouchableOpacity 
-                onPress={loadRecentPhotos}
+                onPress={async () => {
+                  if (permissionInfo?.accessPrivileges === 'limited') {
+                    // Allow user to pick more photos when permission is limited
+                    await MediaLibrary.presentLimitedLibraryPickerAsync();
+                  }
+                  await loadRecentPhotos();
+                }}
                 style={{
                   backgroundColor: colors.accentGold,
                   paddingHorizontal: 24,
@@ -241,7 +265,7 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
                 }}
               >
                 <Text style={{ color: colors.bgPrimary, fontWeight: '600' }}>
-                  Grant Permission
+                  {permissionInfo?.accessPrivileges === 'limited' ? 'Select Photos…' : 'Grant Permission'}
                 </Text>
               </TouchableOpacity>
             </View>
