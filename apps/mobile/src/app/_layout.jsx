@@ -55,12 +55,14 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    if (isReady) {
+    // Wait for BOTH auth AND fonts before hiding splash screen
+    if (isReady && fontsLoaded) {
       SplashScreen.hideAsync();
     }
-  }, [isReady]);
+  }, [isReady, fontsLoaded]);
 
-  if (!isReady) {
+  // Don't render until both auth AND fonts are ready
+  if (!isReady || !fontsLoaded) {
     return null;
   }
 
