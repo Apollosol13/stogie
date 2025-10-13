@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Stogie Cigar App",
+    "name": "Stogie Social",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -78,7 +78,8 @@
       "expo-video",
       "expo-secure-store",
       "expo-web-browser",
-      "expo-asset"
+      "expo-asset",
+      "expo-media-library"
     ],
     "web": {
       "bundler": "metro",
@@ -96,8 +97,6 @@
         "projectId": "37996e29-329d-4719-a054-4dac7c69f76d"
       }
     },
-    "runtimeVersion": {
-      "policy": "appVersion"
-    }
+    "runtimeVersion": "1.0.0"
   }
 }
