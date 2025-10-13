@@ -40,6 +40,9 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
   const [hasPermission, setHasPermission] = useState(false);
   const [permissionInfo, setPermissionInfo] = useState(null);
   const [pickerPermission, setPickerPermission] = useState(null);
+  const [endCursor, setEndCursor] = useState(null);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   // Load recent photos when modal opens
   useEffect(() => {
@@ -69,7 +72,7 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
 
       // Try fetching assets (no album filter – returns Recents/All Photos)
       let result = await MediaLibrary.getAssetsAsync({
-        first: 200,
+        first: 60,
         mediaType: MediaLibrary.MediaType.photo,
         sortBy: MediaLibrary.SortBy.modificationTime,
       });
@@ -81,7 +84,7 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
         if (recents) {
           result = await MediaLibrary.getAssetsAsync({
             album: recents,
-            first: 200,
+            first: 60,
             mediaType: MediaLibrary.MediaType.photo,
             sortBy: MediaLibrary.SortBy.modificationTime,
           });
@@ -89,8 +92,31 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
       }
 
       setRecentPhotos(result.assets || []);
+      // Save paging info if available
+      if (result.endCursor !== undefined) setEndCursor(result.endCursor);
+      if (result.hasNextPage !== undefined) setHasNextPage(result.hasNextPage);
     } catch (error) {
       console.error('Error loading photos:', error);
+    }
+  };
+
+  const loadMorePhotos = async () => {
+    if (!hasNextPage || loadingMore || !endCursor) return;
+    try {
+      setLoadingMore(true);
+      const more = await MediaLibrary.getAssetsAsync({
+        first: 60,
+        after: endCursor,
+        mediaType: MediaLibrary.MediaType.photo,
+        sortBy: MediaLibrary.SortBy.modificationTime,
+      });
+      setRecentPhotos((prev) => [...prev, ...(more.assets || [])]);
+      if (more.endCursor !== undefined) setEndCursor(more.endCursor);
+      if (more.hasNextPage !== undefined) setHasNextPage(more.hasNextPage);
+    } catch (e) {
+      console.error('Error loading more photos:', e);
+    } finally {
+      setLoadingMore(false);
     }
   };
 
@@ -321,6 +347,8 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
                   keyExtractor={(item) => item.id || item.uri}
                   numColumns={3}
                   contentContainerStyle={{ paddingBottom: 20 }}
+                  onEndReached={loadMorePhotos}
+                  onEndReachedThreshold={0.5}
                   renderItem={({ item }) => {
                     if (item.id === 'camera') {
                       return (
