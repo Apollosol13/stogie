@@ -2,6 +2,7 @@
   "expo": {
     "name": "Stogie Social",
     "slug": "stogie-cigar-app",
+    "scheme": "stogiesocial",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
