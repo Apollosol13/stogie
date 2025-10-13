@@ -69,9 +69,9 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
 
       // Try fetching assets (no album filter – returns Recents/All Photos)
       let result = await MediaLibrary.getAssetsAsync({
-        first: 80,
+        first: 200,
         mediaType: MediaLibrary.MediaType.photo,
-        sortBy: MediaLibrary.SortBy.creationTime,
+        sortBy: MediaLibrary.SortBy.modificationTime,
       });
 
       // If nothing returned, try to locate the "Recents/Recent/Camera Roll" smart album
@@ -81,9 +81,9 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
         if (recents) {
           result = await MediaLibrary.getAssetsAsync({
             album: recents,
-            first: 80,
+            first: 200,
             mediaType: MediaLibrary.MediaType.photo,
-            sortBy: MediaLibrary.SortBy.creationTime,
+            sortBy: MediaLibrary.SortBy.modificationTime,
           });
         }
       }
@@ -106,6 +106,8 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
         setSelectedImage({ uri: asset.uri, width: asset.width, height: asset.height });
         setStep(2);
       }
+      // Always refresh the grid after picker returns
+      await loadRecentPhotos();
     } catch (e) {
       console.error('Image picker error:', e);
     }
