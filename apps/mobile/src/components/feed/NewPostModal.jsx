@@ -39,6 +39,7 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
   const [submitting, setSubmitting] = useState(false);
   const [hasPermission, setHasPermission] = useState(false);
   const [permissionInfo, setPermissionInfo] = useState(null);
+  const [pickerPermission, setPickerPermission] = useState(null);
 
   // Load recent photos when modal opens
   useEffect(() => {
@@ -57,6 +58,9 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
     try {
       // iOS 14+: accessPrivileges can be 'all' | 'limited' | 'none'
       const perm = await MediaLibrary.requestPermissionsAsync();
+      // Also ask ImagePicker for media library permission as a fallback
+      const pickerPerm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      setPickerPermission(pickerPerm);
       setPermissionInfo(perm);
       const granted = perm.status === 'granted' || perm.accessPrivileges === 'all' || perm.accessPrivileges === 'limited';
       setHasPermission(granted);
@@ -87,6 +91,23 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
       setRecentPhotos(result.assets || []);
     } catch (error) {
       console.error('Error loading photos:', error);
+    }
+  };
+
+  const pickFromLibrary = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.9,
+        allowsEditing: false,
+      });
+      if (!result.canceled && result.assets?.length) {
+        const asset = result.assets[0];
+        setSelectedImage({ uri: asset.uri, width: asset.width, height: asset.height });
+        setStep(2);
+      }
+    } catch (e) {
+      console.error('Image picker error:', e);
     }
   };
 
@@ -276,53 +297,70 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
                   {permissionInfo?.accessPrivileges === 'limited' ? 'Select Photos…' : 'Grant Permission'}
                 </Text>
               </TouchableOpacity>
+              {/* Always offer a direct picker fallback */}
+              <TouchableOpacity
+                onPress={pickFromLibrary}
+                style={{ marginTop: 12, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 8, borderWidth: 1, borderColor: colors.surface }}
+              >
+                <Text style={{ color: colors.textPrimary }}>Choose from Library</Text>
+              </TouchableOpacity>
             </View>
           ) : (
-            <FlatList
-              data={[{ id: 'camera' }, ...recentPhotos]}
-              keyExtractor={(item) => item.id || item.uri}
-              numColumns={3}
-              contentContainerStyle={{ paddingBottom: 20 }}
-              renderItem={({ item }) => {
-                if (item.id === 'camera') {
-                  return (
-                    <TouchableOpacity
-                      onPress={openCamera}
-                      style={{
-                        width: IMAGE_SIZE,
-                        height: IMAGE_SIZE,
-                        margin: 2,
-                        backgroundColor: colors.surface,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <Camera size={32} color={colors.textSecondary} />
-                    </TouchableOpacity>
-                  );
-                }
-
-                const isSelected = selectedImage?.uri === item.uri;
-                return (
-                  <TouchableOpacity
-                    onPress={() => selectPhoto(item)}
-                    style={{
-                      width: IMAGE_SIZE,
-                      height: IMAGE_SIZE,
-                      margin: 2,
-                      borderWidth: isSelected ? 3 : 0,
-                      borderColor: colors.accentGold,
-                    }}
-                  >
-                    <Image 
-                      source={{ uri: item.uri }} 
-                      style={{ width: '100%', height: '100%' }}
-                      resizeMode="cover"
-                    />
+            <>
+              {recentPhotos.length === 0 ? (
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                  <TouchableOpacity onPress={pickFromLibrary} style={{ paddingHorizontal: 24, paddingVertical: 12, borderRadius: 8, borderWidth: 1, borderColor: colors.surface }}>
+                    <Text style={{ color: colors.textPrimary }}>Choose from Library</Text>
                   </TouchableOpacity>
-                );
-              }}
-            />
+                </View>
+              ) : (
+                <FlatList
+                  data={[{ id: 'camera' }, ...recentPhotos]}
+                  keyExtractor={(item) => item.id || item.uri}
+                  numColumns={3}
+                  contentContainerStyle={{ paddingBottom: 20 }}
+                  renderItem={({ item }) => {
+                    if (item.id === 'camera') {
+                      return (
+                        <TouchableOpacity
+                          onPress={openCamera}
+                          style={{
+                            width: IMAGE_SIZE,
+                            height: IMAGE_SIZE,
+                            margin: 2,
+                            backgroundColor: colors.surface,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <Camera size={32} color={colors.textSecondary} />
+                        </TouchableOpacity>
+                      );
+                    }
+
+                    const isSelected = selectedImage?.uri === item.uri;
+                    return (
+                      <TouchableOpacity
+                        onPress={() => selectPhoto(item)}
+                        style={{
+                          width: IMAGE_SIZE,
+                          height: IMAGE_SIZE,
+                          margin: 2,
+                          borderWidth: isSelected ? 3 : 0,
+                          borderColor: colors.accentGold,
+                        }}
+                      >
+                        <Image 
+                          source={{ uri: item.uri }} 
+                          style={{ width: '100%', height: '100%' }}
+                          resizeMode="cover"
+                        />
+                      </TouchableOpacity>
+                    );
+                  }}
+                />
+              )}
+            </>
           )}
         </View>
       </Modal>
