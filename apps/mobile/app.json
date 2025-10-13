@@ -14,6 +14,7 @@
       "buildNumber": "1.0.0",
       "supportsTablet": true,
       "infoPlist": {
+        "CFBundleDisplayName": "Stogie Social",
         "ITSAppUsesNonExemptEncryption": false,
         "NSCameraUsageDescription": "Camera is used to scan cigars and take photos.",
         "NSPhotoLibraryUsageDescription": "Photos are used for posts and profile images.",
