@@ -61,8 +61,10 @@ export default function ProfileScreen() {
       const response = await apiRequest("/api/posts");
       if (response.ok) {
         const data = await response.json();
-        // Filter to only show current user's posts
-        const myPosts = data.posts.filter((post) => post.user_id === user?.id);
+        // Filter to only show current user's posts and sort newest first
+        const myPosts = data.posts
+          .filter((post) => post.user_id === user?.id)
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         setUserPosts(myPosts);
       }
     } catch (error) {
