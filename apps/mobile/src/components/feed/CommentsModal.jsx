@@ -12,6 +12,8 @@ import {
   Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Swipeable } from 'react-native-gesture-handler';
+import useUser from '@/utils/auth/useUser';
 import { X, Send, Heart } from 'lucide-react-native';
 import { apiRequest } from '@/utils/api';
 import { formatTimeAgo } from '@/utils/timeAgo';
@@ -29,6 +31,7 @@ const colors = {
 
 export default function CommentsModal({ visible, onClose, postId }) {
   const insets = useSafeAreaInsets();
+  const { data: currentUser } = useUser();
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [commentText, setCommentText] = useState('');
@@ -116,6 +119,41 @@ export default function CommentsModal({ visible, onClose, postId }) {
     }
   };
 
+  const handleDeleteComment = async (commentId) => {
+    try {
+      // Optimistic remove
+      setComments((prev) => prev.filter((c) => c.id !== commentId));
+      const res = await apiRequest(`/api/posts/${postId}/comments/${commentId}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        // Revert on failure
+        await loadComments();
+      }
+    } catch (e) {
+      console.error('Failed to delete comment:', e);
+      await loadComments();
+    }
+  };
+
+  const renderRightActions = (comment) => (
+    <TouchableOpacity
+      onPress={() => handleDeleteComment(comment.id)}
+      style={{
+        width: 72,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: colors.accentRed,
+        marginLeft: 8,
+        borderRadius: 8,
+      }}
+      accessibilityLabel="Delete comment"
+      accessibilityHint="Double tap to confirm deletion"
+    >
+      <X size={22} color="#fff" />
+    </TouchableOpacity>
+  );
+
   return (
     <Modal
       visible={visible}
@@ -164,16 +202,21 @@ export default function CommentsModal({ visible, onClose, postId }) {
               </Text>
             </View>
           ) : (
-            comments.map((comment) => (
-              <View
-                key={comment.id}
-                style={{
-                  marginBottom: 16,
-                  flexDirection: 'row',
-                  alignItems: 'flex-start',
-                  marginLeft: comment.parent_comment_id ? 40 : 0,
-                }}
-              >
+            comments.map((comment) => {
+              const canDelete =
+                comment.user_id === currentUser?.id ||
+                comment.profiles?.id === currentUser?.id;
+
+              const CommentRow = (
+                <View
+                  key={comment.id}
+                  style={{
+                    marginBottom: 16,
+                    flexDirection: 'row',
+                    alignItems: 'flex-start',
+                    marginLeft: comment.parent_comment_id ? 40 : 0,
+                  }}
+                >
                 {comment.profiles?.avatar_url ? (
                   <Image
                     source={{ uri: comment.profiles.avatar_url }}
@@ -223,8 +266,21 @@ export default function CommentsModal({ visible, onClose, postId }) {
                     fill={comment.liked_by_me ? colors.accentRed : 'transparent'}
                   />
                 </TouchableOpacity>
-              </View>
-            ))
+                </View>
+              );
+
+              return canDelete ? (
+                <Swipeable
+                  key={comment.id}
+                  overshootRight={false}
+                  renderRightActions={() => renderRightActions(comment)}
+                >
+                  {CommentRow}
+                </Swipeable>
+              ) : (
+                <View key={comment.id}>{CommentRow}</View>
+              );
+            })
           )}
         </ScrollView>
 
