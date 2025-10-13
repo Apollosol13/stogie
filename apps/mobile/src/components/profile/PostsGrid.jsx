@@ -42,6 +42,8 @@ export default function PostsGrid({ posts, onPostPress }) {
         width: "33.33%",
         aspectRatio: 1,
         padding: 1,
+        overflow: "hidden",
+        borderRadius: 4,
       }}
       activeOpacity={0.9}
     >

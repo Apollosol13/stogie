@@ -220,13 +220,21 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
             </TouchableOpacity>
           </View>
 
-          {/* Selected Image Preview */}
+          {/* Selected Image Preview (Instagram-like center) */}
           {selectedImage && (
             <View style={{ width: '100%', aspectRatio: 1, backgroundColor: colors.surface }}>
+              {/* Background blur fills square for landscape images */}
+              <Image
+                source={{ uri: selectedImage.uri }}
+                style={{ position: 'absolute', width: '100%', height: '100%' }}
+                blurRadius={20}
+                resizeMode="cover"
+              />
+              {/* Foreground image centered; contain preserves full photo */}
               <Image 
                 source={{ uri: selectedImage.uri }} 
                 style={{ width: '100%', height: '100%' }}
-                resizeMode="cover"
+                resizeMode="contain"
               />
             </View>
           )}
