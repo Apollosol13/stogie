@@ -13,8 +13,10 @@
 		},
 		"production": {
 			"autoIncrement": true,
+			"developmentClient": false,
 			"ios": {
-				"buildConfiguration": "Release"
+				"buildConfiguration": "Release",
+				"bundler": "metro"
 			}
 		}
 	},
