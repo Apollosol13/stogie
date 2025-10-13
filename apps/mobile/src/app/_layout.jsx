@@ -2,10 +2,10 @@ import { useAuth } from "@/utils/auth/useAuth";
 import AuthModal from "@/components/auth/AuthModal";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useFonts, LibreBodoni_400Regular, LibreBodoni_700Bold } from "@expo-google-fonts/libre-bodoni";
+import * as Font from "expo-font";
 import { Text } from "react-native";
 SplashScreen.preventAutoHideAsync();
 
@@ -22,29 +22,37 @@ const queryClient = new QueryClient({
 
 export default function RootLayout() {
   const { initiate, isReady } = useAuth();
-  
-  // Load Libre Bodoni for entire app
-  const [fontsLoaded, fontError] = useFonts({
-    LibreBodoni_400Regular,
-    LibreBodoni_700Bold,
-  });
+  const [fontsLoaded, setFontsLoaded] = useState(false);
 
   useEffect(() => {
     initiate();
   }, [initiate]);
 
   useEffect(() => {
-    if (fontError) {
-      console.error('❌ Font loading error:', fontError);
+    async function loadFonts() {
+      try {
+        await Font.loadAsync({
+          LibreBodoni_400Regular: require('../../assets/fonts/LibreBodoni-Regular.ttf'),
+          LibreBodoni_700Bold: require('../../assets/fonts/LibreBodoni-Bold.ttf'),
+        });
+        console.log('✅ Libre Bodoni fonts loaded successfully from local files');
+        
+        // Set as default font for all Text components
+        const prev = Text.defaultProps?.style;
+        Text.defaultProps = Text.defaultProps || {};
+        Text.defaultProps.style = Array.isArray(prev)
+          ? [...prev, { fontFamily: 'LibreBodoni_400Regular' }]
+          : [prev || {}, { fontFamily: 'LibreBodoni_400Regular' }];
+        
+        setFontsLoaded(true);
+      } catch (error) {
+        console.error('❌ Font loading error:', error);
+        console.log('⚠️  App will use system font instead');
+        setFontsLoaded(true); // Continue anyway with system font
+      }
     }
-    if (fontsLoaded) {
-      const prev = Text.defaultProps?.style;
-      Text.defaultProps = Text.defaultProps || {};
-      Text.defaultProps.style = Array.isArray(prev)
-        ? [...prev, { fontFamily: 'LibreBodoni_400Regular' }]
-        : [prev || {}, { fontFamily: 'LibreBodoni_400Regular' }];
-    }
-  }, [fontsLoaded, fontError]);
+    loadFonts();
+  }, []);
 
   useEffect(() => {
     if (isReady) {
