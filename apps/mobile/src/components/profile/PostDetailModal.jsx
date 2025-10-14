@@ -430,7 +430,6 @@ export default function PostDetailModal({
                       />
                     </TouchableOpacity>
                   </View>
-                    </View>
                   );
 
                   return canDelete ? (
