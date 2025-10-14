@@ -12,6 +12,7 @@ import {
   Dimensions,
   ScrollView 
 } from 'react-native';
+import { AppState } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
 import { Camera } from 'lucide-react-native';
@@ -44,10 +45,16 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
   const [hasNextPage, setHasNextPage] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  // Load recent photos when modal opens
+  // Load recent photos when modal opens and when app comes back to foreground
   useEffect(() => {
     if (visible) {
       loadRecentPhotos();
+      const sub = AppState.addEventListener('change', (s) => {
+        if (s === 'active') {
+          loadRecentPhotos();
+        }
+      });
+      return () => sub.remove();
     } else {
       // Reset when modal closes
       setStep(1);
@@ -60,7 +67,7 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
   const loadRecentPhotos = async () => {
     try {
       // iOS 14+: accessPrivileges can be 'all' | 'limited' | 'none'
-      const perm = await MediaLibrary.requestPermissionsAsync();
+      const perm = await MediaLibrary.requestPermissionsAsync({ accessPrivileges: 'all' });
       // Also ask ImagePicker for media library permission as a fallback
       const pickerPerm = await ImagePicker.requestMediaLibraryPermissionsAsync();
       setPickerPermission(pickerPerm);
@@ -89,6 +96,17 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
             sortBy: MediaLibrary.SortBy.modificationTime,
           });
         }
+      }
+
+      // Final fallback: no filters, default sort
+      if (!result.assets?.length) {
+        result = await MediaLibrary.getAssetsAsync({ first: 60 });
+      }
+
+      // Retry once shortly after opening; some devices need a small delay
+      if (!result.assets?.length) {
+        await new Promise((r) => setTimeout(r, 300));
+        result = await MediaLibrary.getAssetsAsync({ first: 60, mediaType: MediaLibrary.MediaType.photo });
       }
 
       setRecentPhotos(result.assets || []);
