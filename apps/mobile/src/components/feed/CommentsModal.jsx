@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Swipeable } from 'react-native-gesture-handler';
-import useUser from '@/utils/auth/useUser';
+import { useUser } from '@/utils/auth/useUser';
 import { X, Send, Heart } from 'lucide-react-native';
 import { apiRequest } from '@/utils/api';
 import { formatTimeAgo } from '@/utils/timeAgo';

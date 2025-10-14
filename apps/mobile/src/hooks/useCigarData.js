@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Alert } from "react-native";
-import useUser from "@/utils/auth/useUser";
+import { useUser } from "@/utils/auth/useUser";
 import { apiRequest } from "../utils/api";
 
 export function useCigarData(id) {

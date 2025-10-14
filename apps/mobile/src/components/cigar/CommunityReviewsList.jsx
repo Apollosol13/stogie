@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text } from "react-native";
-import useUser from "@/utils/auth/useUser";
+import { useUser } from "@/utils/auth/useUser";
 import { colors } from "@/components/cigar/colors";
 import StarRating from "@/components/common/StarRating";
 

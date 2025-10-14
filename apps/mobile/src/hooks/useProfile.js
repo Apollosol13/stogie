@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useAuth } from "@/utils/auth/useAuth";
-import useUser from "@/utils/auth/useUser";
+import { useUser } from "@/utils/auth/useUser";
 import { apiRequest, API_BASE_URL, getAuthToken } from "../utils/api";
 
 export default function useProfile() {

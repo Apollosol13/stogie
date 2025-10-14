@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { View, ActivityIndicator, Text } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useCameraPermissions } from "expo-camera";
-import useUser from "@/utils/auth/useUser";
+import { useUser } from "@/utils/auth/useUser";
 import AuthPrompt from "@/components/auth/AuthPrompt";
 import useCigarScanner from "@/hooks/useCigarScanner";
 import CameraMode from "@/components/scan/CameraMode";

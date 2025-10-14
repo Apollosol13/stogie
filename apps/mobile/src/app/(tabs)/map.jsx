@@ -4,7 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
 import { apiRequest } from "../../utils/api";
 
-import useUser from "../../utils/auth/useUser";
+import { useUser } from "../../utils/auth/useUser";
 import useLocationManager from "../../hooks/useLocationManager";
 import useMapData from "../../hooks/useMapData";
 

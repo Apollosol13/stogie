@@ -3,7 +3,7 @@ import { View, ScrollView, Alert, RefreshControl } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../utils/auth/useAuth";
-import useUser from "../../utils/auth/useUser";
+import { useUser } from "../../utils/auth/useUser";
 import useProfile from "../../hooks/useProfile";
 import { apiRequest } from "../../utils/api";
 

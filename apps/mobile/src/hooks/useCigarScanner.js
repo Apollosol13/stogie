@@ -4,7 +4,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as SecureStore from "expo-secure-store";
 import { useRouter } from "expo-router";
 import useHumidor from "@/hooks/useHumidor";
-import useUser from "@/utils/auth/useUser";
+import { useUser } from "@/utils/auth/useUser";
 import { apiRequest } from "../utils/api";
 
 export default function useCigarScanner() {

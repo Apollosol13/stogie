@@ -3,7 +3,7 @@ import { Modal, View, ScrollView } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
-import useUser from "@/utils/auth/useUser";
+import { useUser } from "@/utils/auth/useUser";
 import { useReviewForm } from "@/hooks/useReviewForm";
 import { colors } from "@/components/cigar/colors";
 import { ReviewModalHeader } from "./review/ReviewModalHeader";

@@ -27,7 +27,7 @@ import {
 } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import useHumidor from "../../hooks/useHumidor";
-import useUser from "../../utils/auth/useUser";
+import { useUser } from "../../utils/auth/useUser";
 import AuthPrompt from "../../components/auth/AuthPrompt";
 
 // Black color palette
