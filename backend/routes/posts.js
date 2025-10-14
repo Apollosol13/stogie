@@ -472,4 +472,50 @@ router.post('/:postId/comments/:commentId/like', async (req, res) => {
   }
 });
 
+// DELETE /api/posts/:postId/comments/:commentId - Delete own comment
+router.delete('/:postId/comments/:commentId', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) {
+      return res.status(401).json({ success: false, error: 'Invalid token' });
+    }
+
+    const commentId = Number(req.params.commentId);
+
+    // Verify comment belongs to current user
+    const { data: comment, error: fetchErr } = await supabase
+      .from('post_comments')
+      .select('id,user_id')
+      .eq('id', commentId)
+      .single();
+
+    if (fetchErr || !comment) {
+      return res.status(404).json({ success: false, error: 'Comment not found' });
+    }
+    if (comment.user_id !== user.id) {
+      return res.status(403).json({ success: false, error: 'Not allowed' });
+    }
+
+    const { error: delErr } = await supabase
+      .from('post_comments')
+      .delete()
+      .eq('id', commentId);
+
+    if (delErr) {
+      return res.status(500).json({ success: false, error: delErr.message });
+    }
+
+    return res.json({ success: true });
+  } catch (e) {
+    console.error('[Posts] Delete comment error:', e);
+    return res.status(500).json({ success: false, error: 'Failed to delete comment' });
+  }
+});
+
 export default router;
