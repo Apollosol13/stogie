@@ -21,7 +21,8 @@ import {
   MessageCircle,
 } from "lucide-react-native";
 import useFeed from "@/hooks/useFeed";
-import NewPostModal from "@/components/feed/NewPostModal";
+import NewPostBottomSheet from "@/components/feed/NewPostBottomSheet";
+import NewPostCaptionModal from "@/components/feed/NewPostCaptionModal";
 import CommentsModal from "@/components/feed/CommentsModal";
 import { apiRequest } from "@/utils/api";
 import { formatTimeAgo } from "@/utils/timeAgo";
@@ -45,7 +46,9 @@ export default function HomeScreen() {
   const filter = activeTab === "Following" ? "following" : null;
   const { posts, loading, load, toggleLike, removePost } = useFeed(filter);
   
-  const [showNewPost, setShowNewPost] = useState(false);
+  const [showBottomSheet, setShowBottomSheet] = useState(false);
+  const [showCaptionModal, setShowCaptionModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
   const [deletingPostId, setDeletingPostId] = useState(null);
   const [selectedPostId, setSelectedPostId] = useState(null);
   const [showComments, setShowComments] = useState(false);
@@ -104,6 +107,17 @@ export default function HomeScreen() {
   const handleCommentPress = (postId) => {
     setSelectedPostId(postId);
     setShowComments(true);
+  };
+
+  const handleImageSelected = (image) => {
+    setSelectedImage(image);
+    setShowCaptionModal(true);
+  };
+
+  const handlePostCreated = () => {
+    setShowCaptionModal(false);
+    setSelectedImage(null);
+    load(); // Reload feed
   };
 
   if (!isReady) {
@@ -594,18 +608,25 @@ export default function HomeScreen() {
           elevation: 5,
           zIndex: 999,
         }}
-        onPress={() => setShowNewPost(true)}
+        onPress={() => setShowBottomSheet(true)}
       >
         <Plus size={30} color={colors.bgPrimary} />
       </TouchableOpacity>
 
-      <NewPostModal
-        visible={showNewPost}
-        onClose={() => setShowNewPost(false)}
-        onPosted={() => {
-          load();
-          setShowNewPost(false);
+      <NewPostBottomSheet
+        visible={showBottomSheet}
+        onClose={() => setShowBottomSheet(false)}
+        onImageSelected={handleImageSelected}
+      />
+
+      <NewPostCaptionModal
+        visible={showCaptionModal}
+        onClose={() => {
+          setShowCaptionModal(false);
+          setSelectedImage(null);
         }}
+        selectedImage={selectedImage}
+        onPosted={handlePostCreated}
       />
 
       {selectedPostId && (
