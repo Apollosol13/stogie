@@ -68,7 +68,8 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
   const loadRecentPhotos = async () => {
     try {
       // iOS 14+: accessPrivileges can be 'all' | 'limited' | 'none'
-      const perm = await MediaLibrary.requestPermissionsAsync({ accessPrivileges: 'all' });
+      // Some SDK versions only accept a boolean param; call with no args for broad compatibility
+      const perm = await MediaLibrary.requestPermissionsAsync();
       // Also ask ImagePicker for media library permission as a fallback
       const pickerPerm = await ImagePicker.requestMediaLibraryPermissionsAsync();
       setPickerPermission(pickerPerm);
