@@ -44,6 +44,7 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
   const [endCursor, setEndCursor] = useState(null);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [debugInfo, setDebugInfo] = useState('');
 
   // Load recent photos when modal opens and when app comes back to foreground
   useEffect(() => {
@@ -80,7 +81,7 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
       // Try fetching assets (no album filter – returns Recents/All Photos)
       let result = await MediaLibrary.getAssetsAsync({
         first: 60,
-        mediaType: MediaLibrary.MediaType.photo,
+        mediaType: [MediaLibrary.MediaType.photo, MediaLibrary.MediaType.video],
         sortBy: MediaLibrary.SortBy.modificationTime,
       });
 
@@ -92,7 +93,7 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
           result = await MediaLibrary.getAssetsAsync({
             album: recents,
             first: 60,
-            mediaType: MediaLibrary.MediaType.photo,
+            mediaType: [MediaLibrary.MediaType.photo, MediaLibrary.MediaType.video],
             sortBy: MediaLibrary.SortBy.modificationTime,
           });
         }
@@ -113,8 +114,10 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
       // Save paging info if available
       if (result.endCursor !== undefined) setEndCursor(result.endCursor);
       if (result.hasNextPage !== undefined) setHasNextPage(result.hasNextPage);
+      setDebugInfo(`perm:${perm.status}/${perm.accessPrivileges ?? 'n/a'} picker:${pickerPerm.status} assets:${result.assets?.length ?? 0}`);
     } catch (error) {
       console.error('Error loading photos:', error);
+      setDebugInfo(`error:${String(error)}`);
     }
   };
 
@@ -125,7 +128,7 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
       const more = await MediaLibrary.getAssetsAsync({
         first: 60,
         after: endCursor,
-        mediaType: MediaLibrary.MediaType.photo,
+        mediaType: [MediaLibrary.MediaType.photo, MediaLibrary.MediaType.video],
         sortBy: MediaLibrary.SortBy.modificationTime,
       });
       setRecentPhotos((prev) => [...prev, ...(more.assets || [])]);
@@ -306,7 +309,7 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
             </View>
           )}
 
-          {/* Recent Label */}
+          {/* Recent Label + debug line (temporary) */}
           <View style={{ 
             flexDirection: 'row', 
             alignItems: 'center',
@@ -316,6 +319,11 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
             <Text style={{ color: colors.textPrimary, fontSize: 16, fontWeight: '600' }}>
               Recent
             </Text>
+            {!!debugInfo && (
+              <Text style={{ color: colors.textSecondary, fontSize: 10, marginLeft: 8 }}>
+                {debugInfo}
+              </Text>
+            )}
           </View>
 
           {/* Photo Grid */}
