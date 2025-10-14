@@ -49,10 +49,11 @@ router.get('/', async (req, res) => {
     console.log(`[Analytics] Current user followers count: ${followersCount}`);
 
     // Get following count - also fetch actual rows to debug
+    // Only count followings where the target profile still exists
     const { data: followingData, count: followingCount } = await supabase
       .from('follows')
-      .select('follower_id, following_id', { count: 'exact' })
-      .eq('follower_id', user.id);
+      .select('follower_id, following_id, profiles!inner(id)', { count: 'exact' })
+      .eq('follows.follower_id', user.id);
     
     console.log(`[Analytics] Current user following data:`, followingData);
     console.log(`[Analytics] Current user following count: ${followingCount}`);
@@ -235,8 +236,8 @@ router.get('/:userId', async (req, res) => {
     // Get following count - also fetch actual rows to debug
     const { data: followingData, count: followingCount, error: followingError } = await supabase
       .from('follows')
-      .select('follower_id, following_id', { count: 'exact' })
-      .eq('follower_id', targetUserId);
+      .select('follower_id, following_id, profiles!inner(id)', { count: 'exact' })
+      .eq('follows.follower_id', targetUserId);
     
     console.log(`[Analytics] Following data for ${targetUserId}:`, followingData);
     console.log(`[Analytics] Following count for ${targetUserId}: ${followingCount}`);
