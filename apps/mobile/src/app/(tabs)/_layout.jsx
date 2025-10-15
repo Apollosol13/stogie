@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { View, TouchableOpacity } from "react-native";
+import { View, TouchableOpacity, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MapPin, Camera, Archive, User } from "lucide-react-native";
 import CigarIcon from "../../components/icons/CigarIcon";
@@ -15,6 +15,9 @@ const colors = {
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
+  
+  // Detect if iPad - iPads need more margin to achieve same visual effect
+  const isIPad = Platform.isPad;
 
   return (
     <Tabs
@@ -67,28 +70,30 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, focused }) => (
             <View
               style={{
-                width: 56,
-                height: 56,
-                borderRadius: 28,
+                width: 60,
+                height: 60,
+                borderRadius: 30,
                 backgroundColor: colors.accentGold,
                 justifyContent: "center",
                 alignItems: "center",
-                marginTop: -32,
+                marginBottom: isIPad ? 65 : 30,
+                marginLeft: isIPad ? 90 : 0,
                 shadowColor: colors.accentGold,
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.4,
-                shadowRadius: 12,
-                elevation: 8,
+                shadowOffset: { width: 0, height: 8 },
+                shadowOpacity: 0.6,
+                shadowRadius: 20,
+                elevation: 12,
               }}
             >
-              <Camera size={26} color="#0F0F0F" strokeWidth={2.5} />
+              <Camera size={28} color="#0F0F0F" strokeWidth={2.5} />
             </View>
           ),
           tabBarLabelStyle: {
             fontFamily: "Inter_600SemiBold",
             fontSize: 11,
-            marginTop: 4,
+            marginTop: isIPad ? 8 : 4,
             letterSpacing: 0.5,
+            marginLeft: isIPad ? 90 : 0,
           },
         }}
       />
