@@ -518,4 +518,93 @@ router.delete('/:postId/comments/:commentId', async (req, res) => {
   }
 });
 
+// POST /api/posts/:id/report - Report a post
+router.post('/:id/report', validateId, async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      return res.status(401).json({ success: false, error: 'Invalid token' });
+    }
+
+    const postId = Number(req.params.id);
+    const { reason } = req.body || {};
+
+    if (!reason || !reason.trim()) {
+      return res.status(400).json({ success: false, error: 'Report reason required' });
+    }
+
+    // Insert report
+    const { error: insertError } = await supabase
+      .from('content_reports')
+      .insert([{
+        reporter_id: user.id,
+        content_type: 'post',
+        content_id: postId,
+        reason: reason.trim(),
+        status: 'pending'
+      }]);
+
+    if (insertError) throw insertError;
+
+    // Log for admin monitoring
+    console.log(`[MODERATION] Post ${postId} reported by user ${user.id} - Reason: ${reason}`);
+
+    res.json({ success: true, message: 'Report submitted. Our team will review it within 24 hours.' });
+  } catch (e) {
+    console.error('[Posts] Report post error:', e);
+    res.status(500).json({ success: false, error: 'Failed to submit report' });
+  }
+});
+
+// POST /api/posts/:postId/comments/:commentId/report - Report a comment
+router.post('/:postId/comments/:commentId/report', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      return res.status(401).json({ success: false, error: 'Invalid token' });
+    }
+
+    const commentId = Number(req.params.commentId);
+    const { reason } = req.body || {};
+
+    if (!reason || !reason.trim()) {
+      return res.status(400).json({ success: false, error: 'Report reason required' });
+    }
+
+    // Insert report
+    const { error: insertError } = await supabase
+      .from('content_reports')
+      .insert([{
+        reporter_id: user.id,
+        content_type: 'comment',
+        content_id: commentId,
+        reason: reason.trim(),
+        status: 'pending'
+      }]);
+
+    if (insertError) throw insertError;
+
+    console.log(`[MODERATION] Comment ${commentId} reported by user ${user.id} - Reason: ${reason}`);
+
+    res.json({ success: true, message: 'Report submitted. Our team will review it within 24 hours.' });
+  } catch (e) {
+    console.error('[Posts] Report comment error:', e);
+    res.status(500).json({ success: false, error: 'Failed to submit report' });
+  }
+});
+
 export default router;

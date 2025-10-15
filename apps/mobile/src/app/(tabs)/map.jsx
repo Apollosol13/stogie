@@ -193,7 +193,6 @@ export default function MapScreen() {
       <LocationPermissionModal
         isVisible={showLocationPermissionModal}
         onAllow={handleLocationPermissionAllow}
-        onDecline={handleLocationPermissionDecline}
       />
 
       {/* Bottom CTA - Smoking Session */}

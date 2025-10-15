@@ -281,4 +281,162 @@ router.post('/image', upload.single('image'), async (req, res) => {
   }
 });
 
+// DELETE /api/profiles/me - Delete current user's account
+router.delete('/me', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    
+    // Verify the JWT token
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
+    
+    if (authError || !user) {
+      return res.status(401).json({ success: false, error: 'Invalid token' });
+    }
+
+    console.log(`[Account Deletion] Starting deletion for user: ${user.id}`);
+
+    // Delete user's data in this order (to respect foreign key constraints):
+    // 1. Comments
+    await supabase.from('comments').delete().eq('user_id', user.id);
+    
+    // 2. Likes
+    await supabase.from('likes').delete().eq('user_id', user.id);
+    
+    // 3. Posts
+    await supabase.from('posts').delete().eq('user_id', user.id);
+    
+    // 4. Reviews
+    await supabase.from('reviews').delete().eq('user_id', user.id);
+    
+    // 5. Humidor entries
+    await supabase.from('humidor').delete().eq('user_id', user.id);
+    
+    // 6. Follows (both following and followers)
+    await supabase.from('follows').delete().eq('follower_id', user.id);
+    await supabase.from('follows').delete().eq('following_id', user.id);
+    
+    // 7. Profile
+    await supabase.from('profiles').delete().eq('id', user.id);
+    
+    // 8. Finally delete the auth user
+    const { error: deleteAuthError } = await supabaseAuth.auth.admin.deleteUser(user.id);
+    
+    if (deleteAuthError) {
+      console.error('[Account Deletion] Failed to delete auth user:', deleteAuthError);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Failed to delete account completely' 
+      });
+    }
+
+    console.log(`[Account Deletion] Successfully deleted user: ${user.id}`);
+    
+    res.json({
+      success: true,
+      message: 'Account deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('[Account Deletion] Error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// POST /api/profiles/:userId/block - Block a user
+router.post('/:userId/block', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
+    
+    if (authError || !user) {
+      return res.status(401).json({ success: false, error: 'Invalid token' });
+    }
+
+    const blockedUserId = req.params.userId;
+
+    if (user.id === blockedUserId) {
+      return res.status(400).json({ success: false, error: 'Cannot block yourself' });
+    }
+
+    // Check if already blocked
+    const { data: existing } = await supabase
+      .from('blocked_users')
+      .select('id')
+      .eq('blocker_id', user.id)
+      .eq('blocked_id', blockedUserId)
+      .maybeSingle();
+
+    if (existing) {
+      // Unblock
+      await supabase
+        .from('blocked_users')
+        .delete()
+        .eq('blocker_id', user.id)
+        .eq('blocked_id', blockedUserId);
+
+      console.log(`[MODERATION] User ${user.id} unblocked user ${blockedUserId}`);
+      return res.json({ success: true, blocked: false, message: 'User unblocked' });
+    } else {
+      // Block
+      await supabase
+        .from('blocked_users')
+        .insert([{
+          blocker_id: user.id,
+          blocked_id: blockedUserId
+        }]);
+
+      // Also remove any follow relationships
+      await supabase.from('follows').delete().eq('follower_id', user.id).eq('following_id', blockedUserId);
+      await supabase.from('follows').delete().eq('follower_id', blockedUserId).eq('following_id', user.id);
+
+      console.log(`[MODERATION] User ${user.id} blocked user ${blockedUserId}`);
+      return res.json({ success: true, blocked: true, message: 'User blocked' });
+    }
+  } catch (error) {
+    console.error('[Profiles] Block user error:', error);
+    res.status(500).json({ success: false, error: 'Failed to block user' });
+  }
+});
+
+// GET /api/profiles/:userId/is-blocked - Check if a user is blocked
+router.get('/:userId/is-blocked', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.json({ success: true, blocked: false });
+    }
+
+    const token = authHeader.substring(7);
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
+    
+    if (authError || !user) {
+      return res.json({ success: true, blocked: false });
+    }
+
+    const targetUserId = req.params.userId;
+
+    const { data } = await supabase
+      .from('blocked_users')
+      .select('id')
+      .eq('blocker_id', user.id)
+      .eq('blocked_id', targetUserId)
+      .maybeSingle();
+
+    res.json({ success: true, blocked: !!data });
+  } catch (error) {
+    console.error('[Profiles] Check blocked error:', error);
+    res.status(500).json({ success: false, error: 'Failed to check block status' });
+  }
+});
+
 export default router;

@@ -70,6 +70,15 @@ export default function CommunityGuidelinesModal({ visible, onClose }) {
             Welcome to Stogie, a place built for people who appreciate good cigars, good company, and good conversation. These guidelines exist to keep the experience enjoyable, safe, and respectful for everyone.
           </Text>
 
+          <View style={{ backgroundColor: colors.surface, padding: 16, borderRadius: 12, marginBottom: 20, borderLeftWidth: 4, borderLeftColor: colors.accentRed }}>
+            <Text style={{ color: colors.accentRed, fontSize: 16, fontWeight: "700", marginBottom: 8 }}>
+              Zero Tolerance Policy
+            </Text>
+            <Text style={{ color: colors.textSecondary, lineHeight: 22 }}>
+              Stogie has absolutely no tolerance for objectionable content, abusive behavior, harassment, hate speech, or any content that violates these guidelines. Violations will result in immediate content removal and account suspension or permanent ban.
+            </Text>
+          </View>
+
           {/* Section 1 */}
           <Text style={{ color: colors.textPrimary, fontSize: 18, fontWeight: "700", marginTop: 20, marginBottom: 12 }}>
             1. Be Respectful
@@ -168,22 +177,36 @@ export default function CommunityGuidelinesModal({ visible, onClose }) {
             7. Moderation & Enforcement
           </Text>
           <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 4 }}>
-            • Our team may remove posts, comments, or accounts that violate these guidelines.
+            • Our moderation team reviews all reports within 24 hours.
           </Text>
           <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 4 }}>
-            • Repeat offenders or serious violations can result in permanent bans.
+            • Objectionable content will be removed immediately and the offending user will be ejected from the platform.
+          </Text>
+          <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 4 }}>
+            • Serious violations (hate speech, harassment, illegal content) result in immediate permanent bans.
+          </Text>
+          <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 4 }}>
+            • Repeat offenders will be permanently banned without warning.
           </Text>
           <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 12 }}>
-            • We reserve the right to moderate at our discretion to keep Stogie welcoming and authentic.
+            • We reserve the right to moderate at our discretion to keep Stogie safe, welcoming, and authentic.
           </Text>
 
           {/* Section 8 */}
           <Text style={{ color: colors.textPrimary, fontSize: 18, fontWeight: "700", marginTop: 20, marginBottom: 12 }}>
-            8. See Something? Say Something.
+            8. Report & Block Features
           </Text>
-          <Text style={{ color: colors.textSecondary, lineHeight: 22, marginBottom: 12 }}>
-            If you encounter behavior or content that breaks these guidelines, report it directly in the app or contact us at{" "}
-            <Text style={{ color: colors.accentGold }}>Brennen@invictusreserve.com</Text>.
+          <Text style={{ color: colors.textSecondary, lineHeight: 22, marginBottom: 8 }}>
+            Stogie provides in-app tools to keep your experience safe:
+          </Text>
+          <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 4 }}>
+            • <Text style={{ fontWeight: "600" }}>Report:</Text> Tap the flag icon on any post or the "Report" option on any comment to report objectionable content. Our team will review within 24 hours.
+          </Text>
+          <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 4 }}>
+            • <Text style={{ fontWeight: "600" }}>Block:</Text> Block users from their profile to prevent them from seeing your content or interacting with you.
+          </Text>
+          <Text style={{ color: colors.textSecondary, lineHeight: 22, marginBottom: 12, marginTop: 8 }}>
+            You can also contact us directly at <Text style={{ color: colors.accentGold }}>Brennen@invictusreserve.com</Text> for urgent matters.
           </Text>
 
           {/* Section 9 */}

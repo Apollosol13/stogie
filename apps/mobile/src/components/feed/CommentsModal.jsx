@@ -14,9 +14,10 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Swipeable } from 'react-native-gesture-handler';
 import { useUser } from '@/utils/auth/useUser';
-import { X, Send, Heart } from 'lucide-react-native';
+import { X, Send, Heart, Flag } from 'lucide-react-native';
 import { apiRequest } from '@/utils/api';
 import { formatTimeAgo } from '@/utils/timeAgo';
+import ReportModal from './ReportModal';
 
 const colors = {
   bgPrimary: '#0F0F0F',
@@ -37,6 +38,8 @@ export default function CommentsModal({ visible, onClose, postId }) {
   const [commentText, setCommentText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [replyingTo, setReplyingTo] = useState(null); // { id, username }
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportTarget, setReportTarget] = useState(null);
 
   useEffect(() => {
     if (visible && postId) {
@@ -254,6 +257,16 @@ export default function CommentsModal({ visible, onClose, postId }) {
                         Reply
                       </Text>
                     </TouchableOpacity>
+                    {comment.user_id !== currentUser?.id && (
+                      <TouchableOpacity onPress={() => {
+                        setReportTarget({ type: 'comment', id: comment.id, postId });
+                        setShowReportModal(true);
+                      }}>
+                        <Text style={{ color: colors.textSecondary, fontSize: 12, fontWeight: '600' }}>
+                          Report
+                        </Text>
+                      </TouchableOpacity>
+                    )}
                   </View>
                 </View>
                 <TouchableOpacity 
@@ -361,6 +374,17 @@ export default function CommentsModal({ visible, onClose, postId }) {
           </View>
         </View>
       </KeyboardAvoidingView>
+
+      <ReportModal
+        visible={showReportModal}
+        onClose={() => {
+          setShowReportModal(false);
+          setReportTarget(null);
+        }}
+        contentType={reportTarget?.type}
+        contentId={reportTarget?.id}
+        postId={reportTarget?.postId}
+      />
     </Modal>
   );
 }

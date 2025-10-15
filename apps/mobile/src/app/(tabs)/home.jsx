@@ -19,11 +19,13 @@ import {
   MoreVertical,
   Heart,
   MessageCircle,
+  Flag,
 } from "lucide-react-native";
 import useFeed from "@/hooks/useFeed";
 import NewPostBottomSheet from "@/components/feed/NewPostBottomSheet";
 import NewPostCaptionModal from "@/components/feed/NewPostCaptionModal";
 import CommentsModal from "@/components/feed/CommentsModal";
+import ReportModal from "@/components/feed/ReportModal";
 import { apiRequest } from "@/utils/api";
 import { formatTimeAgo } from "@/utils/timeAgo";
 
@@ -51,6 +53,8 @@ export default function HomeScreen() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [deletingPostId, setDeletingPostId] = useState(null);
   const [selectedPostId, setSelectedPostId] = useState(null);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportTarget, setReportTarget] = useState(null); // { type, id, postId }
   const [showComments, setShowComments] = useState(false);
 
   const handleDeletePost = async (postId, postUserId) => {
@@ -496,8 +500,8 @@ export default function HomeScreen() {
                   </View>
                 </TouchableOpacity>
 
-                {/* Three-dot menu (only for post owner) */}
-                {p.user_id === user?.id && (
+                {/* Three-dot menu or report button */}
+                {p.user_id === user?.id ? (
                   <TouchableOpacity
                     onPress={() => handleDeletePost(p.id, p.user_id)}
                     disabled={deletingPostId === p.id}
@@ -510,6 +514,15 @@ export default function HomeScreen() {
                     ) : (
                       <MoreVertical size={20} color={colors.textSecondary} />
                     )}
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setReportTarget({ type: 'post', id: p.id });
+                      setShowReportModal(true);
+                    }}
+                  >
+                    <Flag size={20} color={colors.textSecondary} />
                   </TouchableOpacity>
                 )}
               </View>
@@ -640,6 +653,17 @@ export default function HomeScreen() {
           }}
         />
       )}
+
+      <ReportModal
+        visible={showReportModal}
+        onClose={() => {
+          setShowReportModal(false);
+          setReportTarget(null);
+        }}
+        contentType={reportTarget?.type}
+        contentId={reportTarget?.id}
+        postId={reportTarget?.postId}
+      />
     </View>
   );
 }

@@ -3,7 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator, Ale
 import { useLocalSearchParams, Stack, router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ArrowLeft, UserPlus, UserMinus } from "lucide-react-native";
+import { ArrowLeft, UserPlus, UserMinus, Shield } from "lucide-react-native";
 import { apiRequest } from "@/utils/api";
 import { useUser } from "@/utils/auth/useUser";
 import StatsView from "@/components/profile/StatsView";
@@ -32,10 +32,13 @@ export default function UserProfileScreen() {
   const [followLoading, setFollowLoading] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [showPostDetail, setShowPostDetail] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [blockLoading, setBlockLoading] = useState(false);
 
   useEffect(() => {
     loadUserProfile();
     checkFollowStatus();
+    checkBlockStatus();
   }, [userId]);
 
   const loadUserProfile = async () => {
@@ -84,6 +87,57 @@ export default function UserProfileScreen() {
     } catch (error) {
       console.error("Error checking follow status:", error);
     }
+  };
+
+  const checkBlockStatus = async () => {
+    try {
+      const res = await apiRequest(`/api/profiles/${userId}/is-blocked`);
+      if (res.ok) {
+        const data = await res.json();
+        setIsBlocked(data.blocked);
+      }
+    } catch (error) {
+      console.error("Error checking block status:", error);
+    }
+  };
+
+  const handleBlockToggle = async () => {
+    const action = isBlocked ? 'Unblock' : 'Block';
+    Alert.alert(
+      `${action} User`,
+      `Are you sure you want to ${action.toLowerCase()} this user?${!isBlocked ? ' You will no longer see their posts or be able to interact with them.' : ''}`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: action,
+          style: isBlocked ? "default" : "destructive",
+          onPress: async () => {
+            try {
+              setBlockLoading(true);
+              const res = await apiRequest(`/api/profiles/${userId}/block`, {
+                method: "POST",
+              });
+
+              if (res.ok) {
+                const data = await res.json();
+                setIsBlocked(data.blocked);
+                if (data.blocked) {
+                  setIsFollowing(false);
+                }
+                Alert.alert("Success", data.message);
+              } else {
+                Alert.alert("Error", "Failed to update block status");
+              }
+            } catch (error) {
+              console.error("Error toggling block:", error);
+              Alert.alert("Error", "Failed to update block status");
+            } finally {
+              setBlockLoading(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleFollowToggle = async () => {
@@ -245,43 +299,66 @@ export default function UserProfileScreen() {
 
           {/* Follow/Unfollow Button */}
           {!isOwnProfile && (
-            <TouchableOpacity
-              onPress={handleFollowToggle}
-              disabled={followLoading}
-              style={{
-                backgroundColor: isFollowing ? colors.surface : colors.accentGold,
-                paddingHorizontal: 32,
-                paddingVertical: 12,
-                borderRadius: 24,
-                flexDirection: "row",
-                alignItems: "center",
-                marginTop: 12,
-                borderWidth: isFollowing ? 1 : 0,
-                borderColor: colors.textSecondary,
-              }}
-            >
-              {followLoading ? (
-                <ActivityIndicator size="small" color={isFollowing ? colors.textPrimary : colors.bgPrimary} />
-              ) : (
-                <>
-                  {isFollowing ? (
-                    <UserMinus size={16} color={colors.textPrimary} />
-                  ) : (
-                    <UserPlus size={16} color={colors.bgPrimary} />
-                  )}
-                  <Text
-                    style={{
-                      color: isFollowing ? colors.textPrimary : colors.bgPrimary,
-                      fontSize: 16,
-                      fontWeight: "600",
-                      marginLeft: 8,
-                    }}
-                  >
-                    {isFollowing ? "Following" : "Follow"}
-                  </Text>
-                </>
-              )}
-            </TouchableOpacity>
+            <View style={{ flexDirection: "row", gap: 12, marginTop: 12 }}>
+              <TouchableOpacity
+                onPress={handleFollowToggle}
+                disabled={followLoading || isBlocked}
+                style={{
+                  backgroundColor: isFollowing ? colors.surface : colors.accentGold,
+                  paddingHorizontal: 32,
+                  paddingVertical: 12,
+                  borderRadius: 24,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  borderWidth: isFollowing ? 1 : 0,
+                  borderColor: colors.textSecondary,
+                  flex: 1,
+                }}
+              >
+                {followLoading ? (
+                  <ActivityIndicator size="small" color={isFollowing ? colors.textPrimary : colors.bgPrimary} />
+                ) : (
+                  <>
+                    {isFollowing ? (
+                      <UserMinus size={16} color={colors.textPrimary} />
+                    ) : (
+                      <UserPlus size={16} color={colors.bgPrimary} />
+                    )}
+                    <Text
+                      style={{
+                        color: isFollowing ? colors.textPrimary : colors.bgPrimary,
+                        fontSize: 16,
+                        fontWeight: "600",
+                        marginLeft: 8,
+                      }}
+                    >
+                      {isFollowing ? "Following" : "Follow"}
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleBlockToggle}
+                disabled={blockLoading}
+                style={{
+                  backgroundColor: isBlocked ? colors.accentGold : colors.surface,
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  borderRadius: 24,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  borderWidth: 1,
+                  borderColor: isBlocked ? colors.accentGold : colors.textSecondary,
+                }}
+              >
+                {blockLoading ? (
+                  <ActivityIndicator size="small" color={isBlocked ? colors.bgPrimary : colors.textPrimary} />
+                ) : (
+                  <Shield size={16} color={isBlocked ? colors.bgPrimary : colors.textPrimary} />
+                )}
+              </TouchableOpacity>
+            </View>
           )}
         </View>
 

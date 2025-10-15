@@ -14,10 +14,11 @@ import {
   FileText,
   ScrollText,
   Users,
+  Trash2,
 } from "lucide-react-native";
 import { colors } from "@/constants/colors";
 
-export default function SettingsSection({ onSignOut }) {
+export default function SettingsSection({ onSignOut, onDeleteAccount }) {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [locationEnabled, setLocationEnabled] = useState(true);
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
@@ -107,6 +108,13 @@ export default function SettingsSection({ onSignOut }) {
           icon={<LogOut size={20} color={colors.accentRed} />}
           title="Sign Out"
           onPress={onSignOut}
+        />
+
+        <SettingsItem
+          icon={<Trash2 size={20} color={colors.accentRed} />}
+          title="Delete Account"
+          subtitle="Permanently delete your account and data"
+          onPress={onDeleteAccount}
         />
       </View>
 

@@ -5,7 +5,7 @@ import { X } from "lucide-react-native";
 import { colors } from "@/constants/colors";
 import SettingsSection from "./SettingsSection";
 
-export default function SettingsModal({ visible, onClose, onSignOut }) {
+export default function SettingsModal({ visible, onClose, onSignOut, onDeleteAccount }) {
   const insets = useSafeAreaInsets();
 
   return (
@@ -63,7 +63,7 @@ export default function SettingsModal({ visible, onClose, onSignOut }) {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingTop: 20 }}
         >
-          <SettingsSection onSignOut={onSignOut} />
+          <SettingsSection onSignOut={onSignOut} onDeleteAccount={onDeleteAccount} />
           <View style={{ height: insets.bottom + 20 }} />
         </ScrollView>
       </View>

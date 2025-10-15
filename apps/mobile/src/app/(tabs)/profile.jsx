@@ -54,6 +54,49 @@ export default function ProfileScreen() {
     ]);
   };
 
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      "Delete Account", 
+      "Are you sure you want to permanently delete your account? This action cannot be undone and will delete all your data including posts, reviews, and humidor entries.", 
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Delete", 
+          style: "destructive", 
+          onPress: async () => {
+            try {
+              const response = await apiRequest("/api/profiles/me", {
+                method: "DELETE",
+              });
+
+              if (response.ok) {
+                // Sign out the user after successful deletion
+                signOut();
+                setShowSettingsModal(false);
+                Alert.alert(
+                  "Account Deleted", 
+                  "Your account has been permanently deleted."
+                );
+              } else {
+                const error = await response.json();
+                Alert.alert(
+                  "Error", 
+                  error.error || "Failed to delete account. Please try again."
+                );
+              }
+            } catch (error) {
+              console.error("Error deleting account:", error);
+              Alert.alert(
+                "Error", 
+                "An error occurred while deleting your account. Please try again."
+              );
+            }
+          }
+        },
+      ]
+    );
+  };
+
   // Fetch user's posts
   const fetchUserPosts = async () => {
     try {
@@ -191,6 +234,7 @@ export default function ProfileScreen() {
         visible={showSettingsModal}
         onClose={() => setShowSettingsModal(false)}
         onSignOut={handleSignOut}
+        onDeleteAccount={handleDeleteAccount}
       />
 
       <PostDetailModal

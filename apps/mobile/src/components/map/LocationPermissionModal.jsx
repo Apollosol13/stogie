@@ -25,8 +25,7 @@ const colors = {
 
 export default function LocationPermissionModal({ 
   isVisible, 
-  onAllow, 
-  onDecline 
+  onAllow
 }) {
   const insets = useSafeAreaInsets();
 
@@ -35,6 +34,7 @@ export default function LocationPermissionModal({
       visible={isVisible}
       animationType="fade"
       transparent={true}
+      onRequestClose={() => {}} // Prevent Android back button from dismissing
     >
       <View style={{ flex: 1, backgroundColor: colors.overlay }}>
         <View
@@ -192,48 +192,27 @@ export default function LocationPermissionModal({
               </View>
             </View>
 
-            {/* Buttons */}
-            <View style={{ width: '100%', gap: 12 }}>
-              <TouchableOpacity
-                onPress={onAllow}
+            {/* Button */}
+            <TouchableOpacity
+              onPress={onAllow}
+              style={{
+                backgroundColor: colors.accentGold,
+                paddingVertical: 16,
+                borderRadius: 12,
+                alignItems: 'center',
+                width: '100%',
+              }}
+            >
+              <Text
                 style={{
-                  backgroundColor: colors.accentGold,
-                  paddingVertical: 16,
-                  borderRadius: 12,
-                  alignItems: 'center',
+                  color: colors.bgPrimary,
+                  fontSize: 16,
+                  fontWeight: '600',
                 }}
               >
-                <Text
-                  style={{
-                    color: colors.bgPrimary,
-                    fontSize: 16,
-                    fontWeight: '600',
-                  }}
-                >
-                  Allow Location Access
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={onDecline}
-                style={{
-                  backgroundColor: colors.surface2,
-                  paddingVertical: 16,
-                  borderRadius: 12,
-                  alignItems: 'center',
-                }}
-              >
-                <Text
-                  style={{
-                    color: colors.textSecondary,
-                    fontSize: 16,
-                    fontWeight: '500',
-                  }}
-                >
-                  Skip for Now
-                </Text>
-              </TouchableOpacity>
-            </View>
+                Continue
+              </Text>
+            </TouchableOpacity>
 
             {/* Small disclaimer */}
             <Text
@@ -245,7 +224,7 @@ export default function LocationPermissionModal({
                 lineHeight: 16,
               }}
             >
-              You can always change this in Settings later
+              You'll be able to allow or deny location access in the next step
             </Text>
           </View>
         </View>
