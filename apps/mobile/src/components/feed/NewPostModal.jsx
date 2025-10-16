@@ -9,6 +9,8 @@ import {
   ActivityIndicator,
   Alert,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -278,87 +280,89 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
       presentationStyle="fullScreen"
       onRequestClose={handleBack}
     >
-      <View style={{ flex: 1, backgroundColor: colors.bgPrimary, paddingTop: insets.top }}>
-        {/* Header */}
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            paddingHorizontal: 16,
-            paddingVertical: 12,
-            borderBottomWidth: 1,
-            borderBottomColor: colors.surface2,
-          }}
-        >
-          <TouchableOpacity onPress={handleBack}>
-            <Text style={{ color: colors.textPrimary, fontSize: 24 }}>‹</Text>
-          </TouchableOpacity>
-          <Text style={{ color: colors.textPrimary, fontSize: 18, fontWeight: '700' }}>
-            New Post
-          </Text>
-          <TouchableOpacity onPress={handleSubmit} disabled={submitting}>
-            {submitting ? (
-              <ActivityIndicator color={colors.accentGold} />
-            ) : (
-              <Text
-                style={{
-                  color: colors.accentGold,
-                  fontSize: 16,
-                  fontWeight: '700',
-                }}
-              >
-                Share
-              </Text>
-            )}
-          </TouchableOpacity>
-        </View>
-
-        <ScrollView contentContainerStyle={{ padding: 16 }}>
-          {/* Image Preview */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
+        <View style={{ flex: 1, backgroundColor: colors.bgPrimary, paddingTop: insets.top }}>
+          {/* Header */}
           <View
             style={{
-              width: '100%',
-              aspectRatio: 1,
-              backgroundColor: colors.surface,
-              borderRadius: 12,
-              overflow: 'hidden',
-              marginBottom: 20,
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              borderBottomWidth: 1,
+              borderBottomColor: colors.surface2,
             }}
           >
-            <Image
-              source={{ uri: selectedImage?.uri }}
-              style={{ width: '100%', height: '100%' }}
-              resizeMode="cover"
-            />
+            <TouchableOpacity onPress={handleBack}>
+              <Text style={{ color: colors.textPrimary, fontSize: 24 }}>‹</Text>
+            </TouchableOpacity>
+            <Text style={{ color: colors.textPrimary, fontSize: 18, fontWeight: '700' }}>
+              New Post
+            </Text>
+            <TouchableOpacity onPress={handleSubmit} disabled={submitting}>
+              {submitting ? (
+                <ActivityIndicator color={colors.accentGold} />
+              ) : (
+                <Text
+                  style={{
+                    color: colors.accentGold,
+                    fontSize: 16,
+                    fontWeight: '700',
+                  }}
+                >
+                  Share
+                </Text>
+              )}
+            </TouchableOpacity>
           </View>
 
-          {/* Caption Input */}
-          <View style={{ marginBottom: 20 }}>
-            <Text style={{ color: colors.textSecondary, fontSize: 14, marginBottom: 8 }}>
-              Add a caption...
-            </Text>
-            <TextInput
-              placeholder="Write a caption..."
-              placeholderTextColor={colors.textSecondary}
-              value={caption}
-              onChangeText={setCaption}
-              style={{
-                backgroundColor: colors.surface,
-                borderRadius: 12,
-                padding: 16,
-                minHeight: 100,
-                textAlignVertical: 'top',
-                color: colors.textPrimary,
-                fontSize: 16,
-              }}
-              multiline
-              maxLength={2000}
-              autoFocus
-            />
-          </View>
-        </ScrollView>
-      </View>
+          <ScrollView 
+            contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+            keyboardShouldPersistTaps="handled"
+          >
+            {/* Content Row - Image and Caption side by side */}
+            <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+              {/* Image Preview */}
+              {selectedImage && (
+                <Image
+                  source={{ uri: selectedImage.uri }}
+                  style={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: 8,
+                    backgroundColor: colors.surface,
+                    marginRight: 12,
+                  }}
+                  resizeMode="cover"
+                />
+              )}
+
+              {/* Caption Input */}
+              <View style={{ flex: 1 }}>
+                <TextInput
+                  placeholder="Write a caption..."
+                  placeholderTextColor={colors.textSecondary}
+                  value={caption}
+                  onChangeText={setCaption}
+                  style={{
+                    color: colors.textPrimary,
+                    fontSize: 16,
+                    minHeight: 80,
+                    textAlignVertical: 'top',
+                  }}
+                  multiline
+                  maxLength={2000}
+                  autoFocus
+                />
+              </View>
+            </View>
+          </ScrollView>
+        </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
