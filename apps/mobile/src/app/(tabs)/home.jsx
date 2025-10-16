@@ -49,8 +49,7 @@ export default function HomeScreen() {
   const filter = activeTab === "Following" ? "following" : null;
   const { posts, loading, load, toggleLike, removePost } = useFeed(filter);
   
-  const [showBottomSheet, setShowBottomSheet] = useState(false);
-  const [showCaptionModal, setShowCaptionModal] = useState(false);
+  const [postModalStep, setPostModalStep] = useState(null); // null, 'select', 'caption'
   const [selectedImage, setSelectedImage] = useState(null);
   const [deletingPostId, setDeletingPostId] = useState(null);
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -116,16 +115,20 @@ export default function HomeScreen() {
   };
 
   const handleImageSelected = (image) => {
-    console.log('handleImageSelected called with:', image);
+    console.log('Image selected:', image);
     setSelectedImage(image);
-    console.log('Setting showCaptionModal to true');
-    setShowCaptionModal(true);
+    setPostModalStep('caption');
   };
 
   const handlePostCreated = () => {
-    setShowCaptionModal(false);
+    setPostModalStep(null);
     setSelectedImage(null);
     load(); // Reload feed
+  };
+
+  const handleClosePostModal = () => {
+    setPostModalStep(null);
+    setSelectedImage(null);
   };
 
   if (!isReady) {
@@ -625,23 +628,20 @@ export default function HomeScreen() {
           elevation: 5,
           zIndex: 999,
         }}
-        onPress={() => setShowBottomSheet(true)}
+        onPress={() => setPostModalStep('select')}
       >
         <Plus size={30} color={colors.bgPrimary} />
       </TouchableOpacity>
 
       <NewPostBottomSheet
-        visible={showBottomSheet}
-        onClose={() => setShowBottomSheet(false)}
+        visible={postModalStep === 'select'}
+        onClose={handleClosePostModal}
         onImageSelected={handleImageSelected}
       />
 
       <NewPostCaptionModal
-        visible={showCaptionModal}
-        onClose={() => {
-          setShowCaptionModal(false);
-          setSelectedImage(null);
-        }}
+        visible={postModalStep === 'caption'}
+        onClose={handleClosePostModal}
         selectedImage={selectedImage}
         onPosted={handlePostCreated}
       />

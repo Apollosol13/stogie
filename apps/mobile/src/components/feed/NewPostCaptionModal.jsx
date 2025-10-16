@@ -30,6 +30,15 @@ export default function NewPostCaptionModal({ visible, onClose, selectedImage, o
   const [submitting, setSubmitting] = useState(false);
 
   console.log('NewPostCaptionModal render - visible:', visible, 'selectedImage:', selectedImage?.uri);
+  
+  // Debug: check if modal is being closed immediately
+  React.useEffect(() => {
+    if (visible) {
+      console.log('✅ Caption modal opened!');
+    } else {
+      console.log('❌ Caption modal closed');
+    }
+  }, [visible]);
 
   const handleSubmit = async () => {
     if (!selectedImage || submitting) return;
@@ -86,14 +95,14 @@ export default function NewPostCaptionModal({ visible, onClose, selectedImage, o
     <Modal
       visible={visible}
       animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={onClose}
+      presentationStyle="fullScreen"
+      onRequestClose={() => {
+        console.log('⚠️ Modal onRequestClose triggered');
+        onClose();
+      }}
+      statusBarTranslucent={false}
     >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1, backgroundColor: colors.bgPrimary }}
-      >
-        <View style={{ flex: 1, paddingTop: insets.top }}>
+      <View style={{ flex: 1, backgroundColor: colors.bgPrimary, paddingTop: insets.top }}>
           {/* Header */}
           <View
             style={{
@@ -161,8 +170,7 @@ export default function NewPostCaptionModal({ visible, onClose, selectedImage, o
               autoFocus
             />
           </View>
-        </View>
-      </KeyboardAvoidingView>
+      </View>
     </Modal>
   );
 }

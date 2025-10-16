@@ -40,7 +40,6 @@ export default function NewPostBottomSheet({ visible, onClose, onImageSelected }
       if (!result.canceled && result.assets?.length) {
         console.log('Camera image selected:', result.assets[0].uri);
         onImageSelected(result.assets[0]);
-        onClose();
       } else {
         console.log('Camera cancelled or no assets');
       }
@@ -69,7 +68,6 @@ export default function NewPostBottomSheet({ visible, onClose, onImageSelected }
       if (!result.canceled && result.assets?.length) {
         console.log('Gallery image selected:', result.assets[0].uri);
         onImageSelected(result.assets[0]);
-        onClose();
       } else {
         console.log('Gallery cancelled or no assets');
       }
@@ -84,7 +82,10 @@ export default function NewPostBottomSheet({ visible, onClose, onImageSelected }
       visible={visible}
       transparent
       animationType="slide"
-      onRequestClose={onClose}
+      onRequestClose={() => {
+        console.log('Bottom sheet onRequestClose');
+        onClose();
+      }}
     >
       <TouchableOpacity
         activeOpacity={1}
