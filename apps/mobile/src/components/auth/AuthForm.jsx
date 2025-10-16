@@ -12,6 +12,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { CheckSquare, Square } from 'lucide-react-native';
+import * as SecureStore from 'expo-secure-store';
 import { useAuthStore } from '../../utils/auth/store';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://stogie-production.up.railway.app';
@@ -79,6 +80,15 @@ export default function AuthForm({ mode = 'signin', onSuccess, onModeChange }) {
         };
         console.log('🔐 Storing auth data (signup):', authData);
         setAuth(authData);
+        
+        // Flag to show health warning on next launch (one-time after signup)
+        try {
+          await SecureStore.setItemAsync('showHealthWarningOnNextLaunch', 'true');
+          console.log('✅ Health warning scheduled for new user');
+        } catch (error) {
+          console.error('Error scheduling health warning:', error);
+        }
+        
         onSuccess?.();
       } else {
         // Debug what backend actually returns
@@ -171,21 +181,34 @@ export default function AuthForm({ mode = 'signin', onSuccess, onModeChange }) {
           />
           
           {mode === 'signup' && (
-            <TouchableOpacity
-              onPress={() => setTermsAccepted(!termsAccepted)}
-              style={styles.termsCheckbox}
-            >
+            <>
+              {/* Health Warning */}
+              <View style={styles.healthWarning}>
+                <Text style={styles.healthWarningTitle}>
+                  ⚠️ SURGEON GENERAL'S WARNING
+                </Text>
+                <Text style={styles.healthWarningText}>
+                  Cigar smoking can cause cancers of the mouth and throat, even if you do not inhale. 
+                  This app is for adults 21+ only and does not encourage tobacco use.
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                onPress={() => setTermsAccepted(!termsAccepted)}
+                style={styles.termsCheckbox}
+              >
               {termsAccepted ? (
                 <CheckSquare size={24} color="#D4B896" />
               ) : (
                 <Square size={24} color="#666" />
               )}
               <Text style={styles.termsText}>
-                I agree to the Terms of Service, including the{' '}
+                I am 21+ years old, I agree to the Terms of Service, including the{' '}
                 <Text style={styles.termsHighlight}>zero-tolerance policy</Text>
-                {' '}for objectionable content and abusive behavior
+                {' '}for objectionable content and abusive behavior, and I acknowledge the health risks of tobacco use
               </Text>
             </TouchableOpacity>
+            </>
           )}
           
           <TouchableOpacity 
@@ -270,6 +293,23 @@ const styles = StyleSheet.create({
   termsHighlight: {
     color: '#FF4444',
     fontWeight: '600',
+  },
+  healthWarning: {
+    backgroundColor: '#FF4444',
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  healthWarningTitle: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  healthWarningText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    marginTop: 8,
+    lineHeight: 18,
   },
   button: {
     backgroundColor: '#D4B896',
