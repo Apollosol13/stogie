@@ -162,20 +162,33 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
   };
 
   const openCamera = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission needed', 'Camera permission is required to take photos');
-      return;
-    }
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission needed', 'Camera permission is required to take photos');
+        return;
+      }
 
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      quality: 0.85,
-    });
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        quality: 0.85,
+      });
 
-    if (!result.canceled) {
-      setSelectedImage(result.assets[0]);
-      setStep(2);
+      console.log('Camera result:', result);
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
+        console.log('Setting camera image:', asset.uri);
+        setSelectedImage({
+          uri: asset.uri,
+          width: asset.width,
+          height: asset.height,
+        });
+        setStep(2);
+      }
+    } catch (error) {
+      console.error('Camera error:', error);
+      Alert.alert('Error', 'Failed to take photo');
     }
   };
 
