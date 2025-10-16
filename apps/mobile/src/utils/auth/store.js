@@ -43,7 +43,7 @@ export const useAuthStore = create((set) => ({
  */
 export const useAuthModal = create((set) => ({
   isOpen: false,
-  mode: 'signup',
-  open: (options) => set({ isOpen: true, mode: options?.mode || 'signup' }),
+  mode: 'signin',
+  open: (options) => set({ isOpen: true, mode: options?.mode || 'signin' }),
   close: () => set({ isOpen: false }),
 }));
