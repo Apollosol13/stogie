@@ -193,14 +193,18 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
   };
 
   const selectPhoto = (asset) => {
+    console.log('Selected photo from grid:', asset.uri);
     setSelectedImage({
       uri: asset.uri,
       width: asset.width,
       height: asset.height,
     });
+    // Auto-advance to caption screen (like camera does)
+    setStep(2);
   };
 
   const handleNext = () => {
+    console.log('Next button tapped, selectedImage:', selectedImage);
     if (selectedImage) {
       setStep(2);
     }
