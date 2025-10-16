@@ -128,24 +128,42 @@ export const validateReview = [
     .isInt({ min: 1, max: 5 })
     .withMessage('Rating must be between 1 and 5'),
   
-  body('review_text')
+  body('content')
     .optional()
     .trim()
     .customSanitizer(sanitizeText)
     .isLength({ max: 2000 })
-    .withMessage('Review must be under 2000 characters'),
+    .withMessage('Review content must be under 2000 characters'),
   
-  body('flavor_notes')
+  body('flavorNotes')
     .optional()
-    .trim()
     .customSanitizer(sanitizeText)
     .isLength({ max: 500 })
     .withMessage('Flavor notes must be under 500 characters'),
   
-  body('smoke_time_minutes')
+  body('smokingDuration')
     .optional()
     .isInt({ min: 1, max: 300 })
-    .withMessage('Smoke time must be between 1 and 300 minutes'),
+    .withMessage('Smoking duration must be between 1 and 300 minutes'),
+  
+  body('title')
+    .optional()
+    .trim()
+    .customSanitizer(sanitizeText)
+    .isLength({ max: 200 })
+    .withMessage('Title must be under 200 characters'),
+  
+  body('smokingDate')
+    .optional()
+    .isISO8601()
+    .withMessage('Smoking date must be a valid date'),
+  
+  body('location')
+    .optional()
+    .trim()
+    .customSanitizer(sanitizeText)
+    .isLength({ max: 200 })
+    .withMessage('Location must be under 200 characters'),
   
   validate
 ];

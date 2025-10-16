@@ -83,7 +83,8 @@
       "expo-secure-store",
       "expo-web-browser",
       "expo-asset",
-      "expo-media-library"
+      "expo-media-library",
+      "expo-localization"
     ],
     "web": {
       "bundler": "metro",

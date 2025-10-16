@@ -24,7 +24,6 @@ export function ReviewModal({ visible, onClose, userReview, onSuccess }) {
     reviewForm,
     setReviewForm,
     isSubmittingReview,
-    toggleFlavorNote,
     handleSubmitReview,
   } = useReviewForm(userReview, cigarId, user, handleSuccess);
 
@@ -57,7 +56,6 @@ export function ReviewModal({ visible, onClose, userReview, onSuccess }) {
           <ReviewForm
             form={reviewForm}
             onFormChange={setReviewForm}
-            onToggleFlavorNote={toggleFlavorNote}
           />
         </ScrollView>
       </KeyboardAvoidingAnimatedView>

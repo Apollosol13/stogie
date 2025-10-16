@@ -24,17 +24,23 @@ You must be at least 21 years old (or the legal age for tobacco use in your juri
 - You are responsible for all activities that occur under your account.
 - We reserve the right to suspend or terminate accounts that violate these Terms or engage in harmful or illegal activity.
 
-## 4. Content You Post
+## 4. Content You Post & Zero Tolerance Policy
 
 You retain ownership of any content you post to Stogie, including photos, comments, logs, and reviews ("User Content"). However, by posting, you grant us a non-exclusive, royalty-free, worldwide license to use, display, and distribute your content within the App for operational purposes (like showing your sessions on the map or your posts in the feed).
 
-You agree not to post content that:
-- Promotes hate, violence, or illegal activity.
-- Contains nudity, pornography, or explicit material.
-- Violates intellectual property rights.
-- Harasses or threatens others.
+**ZERO TOLERANCE POLICY:**
 
-We reserve the right to remove or moderate content at our discretion.
+Stogie has a strict zero-tolerance policy for objectionable content and abusive behavior. You agree not to post content or engage in behavior that:
+- Promotes hate speech, discrimination, violence, or illegal activity.
+- Contains nudity, pornography, or sexually explicit material.
+- Harasses, bullies, threatens, or intimidates others.
+- Violates intellectual property rights.
+- Promotes self-harm, suicide, or dangerous activities.
+- Contains spam, scams, or misleading information.
+
+**ANY violation of this policy will result in immediate content removal and may result in permanent account termination without warning.**
+
+We actively moderate content and encourage users to report violations. We reserve the right to remove or moderate any content at our sole discretion.
 
 ## 5. Location Features
 

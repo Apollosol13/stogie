@@ -10,7 +10,7 @@ const getInitialFormState = (review) => ({
   smokeDuration: review?.smoke_duration?.toString() || "",
   pairing: review?.pairing || "",
   environment: review?.environment || "",
-  flavorNotes: review?.flavor_notes || [],
+  flavorNotes: review?.flavor_notes || "", // Changed from [] to ""
   constructionRating: review?.construction_rating || 0,
   drawRating: review?.draw_rating || 0,
   burnRating: review?.burn_rating || 0,
@@ -26,15 +26,6 @@ export function useReviewForm(userReview, cigarId, user, onSuccess) {
   useEffect(() => {
     setReviewForm(getInitialFormState(userReview));
   }, [userReview]);
-
-  const toggleFlavorNote = (note) => {
-    setReviewForm((prev) => ({
-      ...prev,
-      flavorNotes: prev.flavorNotes.includes(note)
-        ? prev.flavorNotes.filter((n) => n !== note)
-        : [...prev.flavorNotes, note],
-    }));
-  };
 
   const handleSubmitReview = async () => {
     if (!user) {
@@ -54,21 +45,24 @@ export function useReviewForm(userReview, cigarId, user, onSuccess) {
 
     setIsSubmittingReview(true);
     try {
+      // Map frontend field names to backend field names
       const payload = {
-        ...reviewForm,
         cigarId,
-        smokeDuration: reviewForm.smokeDuration
-          ? parseInt(reviewForm.smokeDuration)
-          : null,
-        // Ensure rating values are either null or between 1-5 for database constraints
-        constructionRating:
-          reviewForm.constructionRating > 0
-            ? reviewForm.constructionRating
-            : null,
+        rating: reviewForm.rating,
+        title: reviewForm.title || null,
+        content: reviewForm.reviewText || null, // backend expects 'content' not 'reviewText'
+        flavorNotes: reviewForm.flavorNotes || null,
+        smokingDuration: reviewForm.smokeDuration ? parseInt(reviewForm.smokeDuration) : null,
+        smokingDate: reviewForm.smokeDate || null, // backend expects 'smokingDate' 
+        location: reviewForm.environment || null, // backend expects 'location' not 'environment'
+        // Additional ratings (if backend supports them)
+        constructionRating: reviewForm.constructionRating > 0 ? reviewForm.constructionRating : null,
         drawRating: reviewForm.drawRating > 0 ? reviewForm.drawRating : null,
         burnRating: reviewForm.burnRating > 0 ? reviewForm.burnRating : null,
-        flavorRating:
-          reviewForm.flavorRating > 0 ? reviewForm.flavorRating : null,
+        flavorRating: reviewForm.flavorRating > 0 ? reviewForm.flavorRating : null,
+        pairing: reviewForm.pairing || null,
+        wouldSmokeAgain: reviewForm.wouldSmokeAgain,
+        wouldRecommend: reviewForm.wouldRecommend,
       };
 
       console.log("Submitting review payload:", payload);
@@ -104,7 +98,6 @@ export function useReviewForm(userReview, cigarId, user, onSuccess) {
     reviewForm,
     setReviewForm,
     isSubmittingReview,
-    toggleFlavorNote,
     handleSubmitReview,
   };
 }

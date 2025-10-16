@@ -1,12 +1,13 @@
 import { useAuth } from "@/utils/auth/useAuth";
 import AuthModal from "@/components/auth/AuthModal";
-import { Stack } from "expo-router";
+import { Stack, usePathname, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as Font from "expo-font";
 import { Text } from "react-native";
+import { PostHogProvider, usePostHog } from 'posthog-react-native';
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient({
@@ -19,6 +20,30 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// PostHog Screen Tracking Component
+function PostHogScreenTracker() {
+  const pathname = usePathname();
+  const segments = useSegments();
+  const posthog = usePostHog();
+
+  useEffect(() => {
+    if (posthog && pathname) {
+      // Get a clean screen name
+      const screenName = pathname === '/' ? 'index' : pathname.replace(/^\//, '');
+      
+      // Capture screen view event
+      posthog.screen(screenName, {
+        pathname,
+        segments: segments.join('/'),
+      });
+      
+      console.log(`📊 PostHog: Screen viewed - ${screenName}`);
+    }
+  }, [pathname, posthog]);
+
+  return null;
+}
 
 export default function RootLayout() {
   const { initiate, isReady } = useAuth();
@@ -67,13 +92,21 @@ export default function RootLayout() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <Stack screenOptions={{ headerShown: false }} initialRouteName="index">
-          <Stack.Screen name="index" />
-        </Stack>
-        <AuthModal />
-      </GestureHandlerRootView>
-    </QueryClientProvider>
+    <PostHogProvider
+      apiKey="phc_TbCqACccxwu8A8pA89IAMKIi54oKEZ6BJ83Y6iEDFD3"
+      options={{
+        host: "https://us.i.posthog.com",
+      }}
+    >
+      <QueryClientProvider client={queryClient}>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <PostHogScreenTracker />
+          <Stack screenOptions={{ headerShown: false }} initialRouteName="index">
+            <Stack.Screen name="index" />
+          </Stack>
+          <AuthModal />
+        </GestureHandlerRootView>
+      </QueryClientProvider>
+    </PostHogProvider>
   );
 }

@@ -9,7 +9,9 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
 } from 'react-native';
+import { CheckSquare, Square } from 'lucide-react-native';
 import { useAuthStore } from '../../utils/auth/store';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://stogie-production.up.railway.app';
@@ -20,6 +22,7 @@ export default function AuthForm({ mode = 'signin', onSuccess, onModeChange }) {
   const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const { setAuth } = useAuthStore();
 
   const handleSubmit = async () => {
@@ -30,6 +33,11 @@ export default function AuthForm({ mode = 'signin', onSuccess, onModeChange }) {
 
     if (mode === 'signup' && password.length < 6) {
       Alert.alert('Error', 'Password must be at least 6 characters');
+      return;
+    }
+
+    if (mode === 'signup' && !termsAccepted) {
+      Alert.alert('Terms Required', 'You must accept the Terms of Service to create an account');
       return;
     }
 
@@ -111,79 +119,105 @@ export default function AuthForm({ mode = 'signin', onSuccess, onModeChange }) {
       style={styles.container} 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <View style={styles.form}>
-        <Text style={styles.title}>
-          {mode === 'signup' ? 'Create Account' : 'Sign In'}
-        </Text>
-        
-        {mode === 'signup' && (
-          <>
-            <TextInput
-              style={styles.input}
-              placeholder="Full Name"
-              placeholderTextColor="#FFFFFF"
-              value={fullName}
-              onChangeText={setFullName}
-              autoCapitalize="words"
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Username"
-              placeholderTextColor="#FFFFFF"
-              value={username}
-              onChangeText={setUsername}
-              autoCapitalize="none"
-            />
-          </>
-        )}
-        
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor="#FFFFFF"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoComplete="email"
-        />
-        
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor="#FFFFFF"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          autoComplete="password"
-        />
-        
-        <TouchableOpacity 
-          style={[styles.button, loading && styles.buttonDisabled]}
-          onPress={handleSubmit}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>
-              {mode === 'signup' ? 'Create Account' : 'Sign In'}
-            </Text>
-          )}
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.switchButton}
-          onPress={() => onModeChange?.(mode === 'signup' ? 'signin' : 'signup')}
-        >
-          <Text style={styles.switchText}>
-            {mode === 'signup' 
-              ? 'Already have an account? Sign In' 
-              : "Don't have an account? Sign Up"
-            }
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.form}>
+          <Text style={styles.title}>
+            {mode === 'signup' ? 'Create Account' : 'Sign In'}
           </Text>
-        </TouchableOpacity>
-      </View>
+          
+          {mode === 'signup' && (
+            <>
+              <TextInput
+                style={styles.input}
+                placeholder="Full Name"
+                placeholderTextColor="#666"
+                value={fullName}
+                onChangeText={setFullName}
+                autoCapitalize="words"
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Username"
+                placeholderTextColor="#666"
+                value={username}
+                onChangeText={setUsername}
+                autoCapitalize="none"
+              />
+            </>
+          )}
+          
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            placeholderTextColor="#666"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoComplete="email"
+          />
+          
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            placeholderTextColor="#666"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            autoComplete="password"
+          />
+          
+          {mode === 'signup' && (
+            <TouchableOpacity
+              onPress={() => setTermsAccepted(!termsAccepted)}
+              style={styles.termsCheckbox}
+            >
+              {termsAccepted ? (
+                <CheckSquare size={24} color="#D4B896" />
+              ) : (
+                <Square size={24} color="#666" />
+              )}
+              <Text style={styles.termsText}>
+                I agree to the Terms of Service, including the{' '}
+                <Text style={styles.termsHighlight}>zero-tolerance policy</Text>
+                {' '}for objectionable content and abusive behavior
+              </Text>
+            </TouchableOpacity>
+          )}
+          
+          <TouchableOpacity 
+            style={[styles.button, loading && styles.buttonDisabled]}
+            onPress={handleSubmit}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>
+                {mode === 'signup' ? 'Create Account' : 'Sign In'}
+              </Text>
+            )}
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.switchButton}
+            onPress={() => {
+              onModeChange?.(mode === 'signup' ? 'signin' : 'signup');
+              setTermsAccepted(false); // Reset terms when switching modes
+            }}
+          >
+            <Text style={styles.switchText}>
+              {mode === 'signup' 
+                ? 'Already have an account? Sign In' 
+                : "Don't have an account? Sign Up"
+              }
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
@@ -191,9 +225,12 @@ export default function AuthForm({ mode = 'signin', onSuccess, onModeChange }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#000',
+  },
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: 'center',
     padding: 20,
-    backgroundColor: '#000',
   },
   form: {
     width: '100%',
@@ -209,13 +246,30 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#FFFFFF',
+    borderColor: '#333',
     borderRadius: 8,
     padding: 15,
     marginBottom: 15,
     fontSize: 16,
-    backgroundColor: '#000000',
+    backgroundColor: '#1A1A1A',
     color: '#fff',
+  },
+  termsCheckbox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 20,
+    marginTop: 10,
+  },
+  termsText: {
+    color: '#B0B0B0',
+    fontSize: 14,
+    marginLeft: 12,
+    flex: 1,
+    lineHeight: 20,
+  },
+  termsHighlight: {
+    color: '#FF4444',
+    fontWeight: '600',
   },
   button: {
     backgroundColor: '#D4B896',
@@ -228,7 +282,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   buttonText: {
-    color: '#fff',
+    color: '#000',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -237,7 +291,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   switchText: {
-    color: '#fff',
+    color: '#D4B896',
     fontSize: 16,
   },
 });

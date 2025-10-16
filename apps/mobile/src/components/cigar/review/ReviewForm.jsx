@@ -29,7 +29,7 @@ const DetailedRatingRow = ({ label, rating, onRate }) => (
   </View>
 );
 
-export function ReviewForm({ form, onFormChange, onToggleFlavorNote }) {
+export function ReviewForm({ form, onFormChange }) {
   const handleInputChange = (field, value) => {
     onFormChange((prev) => ({ ...prev, [field]: value }));
   };
@@ -79,7 +79,7 @@ export function ReviewForm({ form, onFormChange, onToggleFlavorNote }) {
 
       <FlavorNotesSelector
         selectedNotes={form.flavorNotes}
-        onToggle={onToggleFlavorNote}
+        onToggle={(notes) => handleInputChange("flavorNotes", notes)}
       />
 
       <FormSection title="Detailed Ratings">
