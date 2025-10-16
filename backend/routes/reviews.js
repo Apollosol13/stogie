@@ -211,13 +211,26 @@ router.post('/', authenticateToken, validateReview, async (req, res) => {
       });
     }
 
+    // Convert flavorNotes string to array if it's a string
+    let flavorNotesArray = null;
+    if (flavorNotes) {
+      if (typeof flavorNotes === 'string') {
+        // Split by comma and trim, or create single-element array
+        flavorNotesArray = flavorNotes.includes(',') 
+          ? flavorNotes.split(',').map(note => note.trim()).filter(note => note.length > 0)
+          : [flavorNotes.trim()];
+      } else if (Array.isArray(flavorNotes)) {
+        flavorNotesArray = flavorNotes;
+      }
+    }
+
     const reviewData = {
       user_id: req.user.id,
       cigar_id: cigarId,
       rating: parseInt(rating),
       title: title?.trim() || null,
       content: content?.trim() || null,
-      flavor_notes: flavorNotes || null,
+      flavor_notes: flavorNotesArray,
       smoking_duration: smokingDuration ? parseInt(smokingDuration) : null,
       smoking_date: smokingDate || null,
       location: location?.trim() || null
