@@ -22,8 +22,7 @@ import {
   Flag,
 } from "lucide-react-native";
 import useFeed from "@/hooks/useFeed";
-import NewPostBottomSheet from "@/components/feed/NewPostBottomSheet";
-import NewPostCaptionModal from "@/components/feed/NewPostCaptionModal";
+import NewPostModal from "@/components/feed/NewPostModal";
 import CommentsModal from "@/components/feed/CommentsModal";
 import ReportModal from "@/components/feed/ReportModal";
 import UserSearchModal from "@/components/profile/UserSearchModal";
@@ -49,8 +48,7 @@ export default function HomeScreen() {
   const filter = activeTab === "Following" ? "following" : null;
   const { posts, loading, load, toggleLike, removePost } = useFeed(filter);
   
-  const [postModalStep, setPostModalStep] = useState(null); // null, 'select', 'caption'
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [showNewPostModal, setShowNewPostModal] = useState(false);
   const [deletingPostId, setDeletingPostId] = useState(null);
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState(null);
@@ -114,21 +112,9 @@ export default function HomeScreen() {
     setShowComments(true);
   };
 
-  const handleImageSelected = (image) => {
-    console.log('Image selected:', image);
-    setSelectedImage(image);
-    setPostModalStep('caption');
-  };
-
   const handlePostCreated = () => {
-    setPostModalStep(null);
-    setSelectedImage(null);
+    setShowNewPostModal(false);
     load(); // Reload feed
-  };
-
-  const handleClosePostModal = () => {
-    setPostModalStep(null);
-    setSelectedImage(null);
   };
 
   if (!isReady) {
@@ -628,21 +614,14 @@ export default function HomeScreen() {
           elevation: 5,
           zIndex: 999,
         }}
-        onPress={() => setPostModalStep('select')}
+        onPress={() => setShowNewPostModal(true)}
       >
         <Plus size={30} color={colors.bgPrimary} />
       </TouchableOpacity>
 
-      <NewPostBottomSheet
-        visible={postModalStep === 'select'}
-        onClose={handleClosePostModal}
-        onImageSelected={handleImageSelected}
-      />
-
-      <NewPostCaptionModal
-        visible={postModalStep === 'caption'}
-        onClose={handleClosePostModal}
-        selectedImage={selectedImage}
+      <NewPostModal
+        visible={showNewPostModal}
+        onClose={() => setShowNewPostModal(false)}
         onPosted={handlePostCreated}
       />
 
