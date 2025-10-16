@@ -29,6 +29,8 @@ export default function NewPostCaptionModal({ visible, onClose, selectedImage, o
   const [caption, setCaption] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  console.log('NewPostCaptionModal render - visible:', visible, 'selectedImage:', selectedImage?.uri);
+
   const handleSubmit = async () => {
     if (!selectedImage || submitting) return;
 

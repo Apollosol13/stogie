@@ -116,7 +116,9 @@ export default function HomeScreen() {
   };
 
   const handleImageSelected = (image) => {
+    console.log('handleImageSelected called with:', image);
     setSelectedImage(image);
+    console.log('Setting showCaptionModal to true');
     setShowCaptionModal(true);
   };
 

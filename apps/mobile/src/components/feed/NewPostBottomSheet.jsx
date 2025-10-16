@@ -36,9 +36,13 @@ export default function NewPostBottomSheet({ visible, onClose, onImageSelected }
         quality: 0.85,
       });
 
+      console.log('Camera result:', result);
       if (!result.canceled && result.assets?.length) {
+        console.log('Camera image selected:', result.assets[0].uri);
         onImageSelected(result.assets[0]);
         onClose();
+      } else {
+        console.log('Camera cancelled or no assets');
       }
     } catch (error) {
       console.error('Camera error:', error);
@@ -61,9 +65,13 @@ export default function NewPostBottomSheet({ visible, onClose, onImageSelected }
         quality: 0.9,
       });
 
+      console.log('Gallery result:', result);
       if (!result.canceled && result.assets?.length) {
+        console.log('Gallery image selected:', result.assets[0].uri);
         onImageSelected(result.assets[0]);
         onClose();
+      } else {
+        console.log('Gallery cancelled or no assets');
       }
     } catch (error) {
       console.error('Gallery error:', error);
