@@ -65,7 +65,7 @@ export function useReviewForm(userReview, cigarId, user, onSuccess) {
         wouldRecommend: reviewForm.wouldRecommend,
       };
 
-      console.log("Submitting review payload:", payload);
+      console.log("Submitting review payload:", JSON.stringify(payload, null, 2));
 
       const response = await apiRequest("/api/reviews", {
         method: "POST",
@@ -74,7 +74,8 @@ export function useReviewForm(userReview, cigarId, user, onSuccess) {
       });
 
       const data = await response.json();
-      console.log("Review API response:", data);
+      console.log("Review API response:", JSON.stringify(data, null, 2));
+      console.log("Response status:", response.status);
 
       if (data.success) {
         Alert.alert(
@@ -84,7 +85,14 @@ export function useReviewForm(userReview, cigarId, user, onSuccess) {
         );
       } else {
         console.error("Review submission failed:", data.error);
-        Alert.alert("Error", data.error || "Failed to submit review");
+        console.error("Full error response:", JSON.stringify(data, null, 2));
+        
+        // Show more detailed error if available
+        const errorMessage = data.details 
+          ? `${data.error}\n\nDetails: ${JSON.stringify(data.details)}`
+          : data.error || "Failed to submit review";
+        
+        Alert.alert("Error", errorMessage);
       }
     } catch (error) {
       console.error("Error submitting review:", error);

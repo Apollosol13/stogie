@@ -26,6 +26,7 @@ import NewPostBottomSheet from "@/components/feed/NewPostBottomSheet";
 import NewPostCaptionModal from "@/components/feed/NewPostCaptionModal";
 import CommentsModal from "@/components/feed/CommentsModal";
 import ReportModal from "@/components/feed/ReportModal";
+import UserSearchModal from "@/components/profile/UserSearchModal";
 import { apiRequest } from "@/utils/api";
 import { formatTimeAgo } from "@/utils/timeAgo";
 
@@ -52,6 +53,7 @@ export default function HomeScreen() {
   const [showCaptionModal, setShowCaptionModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [deletingPostId, setDeletingPostId] = useState(null);
+  const [showSearchModal, setShowSearchModal] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState(null);
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportTarget, setReportTarget] = useState(null); // { type, id, postId }
@@ -370,7 +372,7 @@ export default function HomeScreen() {
           Stogie
         </Text>
 
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => setShowSearchModal(true)}>
           <Search size={24} color={colors.textPrimary} />
         </TouchableOpacity>
       </View>
@@ -663,6 +665,11 @@ export default function HomeScreen() {
         contentType={reportTarget?.type}
         contentId={reportTarget?.id}
         postId={reportTarget?.postId}
+      />
+
+      <UserSearchModal
+        visible={showSearchModal}
+        onClose={() => setShowSearchModal(false)}
       />
     </View>
   );

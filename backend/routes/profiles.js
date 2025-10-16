@@ -439,4 +439,43 @@ router.get('/:userId/is-blocked', async (req, res) => {
   }
 });
 
+// GET /api/profiles/search - Search for users by username or full name
+router.get('/search', async (req, res) => {
+  try {
+    const { q } = req.query;
+    
+    if (!q || q.trim().length < 2) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Search query must be at least 2 characters' 
+      });
+    }
+
+    const searchTerm = `%${q.trim()}%`;
+
+    const { data: profiles, error } = await supabase
+      .from('profiles')
+      .select('id, username, full_name, avatar_url, bio')
+      .or(`username.ilike.${searchTerm},full_name.ilike.${searchTerm}`)
+      .limit(20);
+
+    if (error) {
+      console.error('[Profiles] Search error:', error);
+      throw error;
+    }
+
+    res.json({
+      success: true,
+      profiles: profiles || []
+    });
+
+  } catch (error) {
+    console.error('[Profiles] User search error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to search users' 
+    });
+  }
+});
+
 export default router;
