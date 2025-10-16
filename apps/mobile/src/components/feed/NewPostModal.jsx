@@ -345,14 +345,16 @@ export default function NewPostModal({ visible, onClose, onPosted }) {
               onChangeText={setCaption}
               style={{
                 backgroundColor: colors.surface,
-                color: colors.textPrimary,
                 borderRadius: 12,
                 padding: 16,
                 minHeight: 100,
                 textAlignVertical: 'top',
+                color: colors.textPrimary,
+                fontSize: 16,
               }}
               multiline
               maxLength={2000}
+              autoFocus
             />
           </View>
         </ScrollView>
