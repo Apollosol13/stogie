@@ -444,7 +444,27 @@ router.get('/search', async (req, res) => {
   try {
     const { q } = req.query;
     
-    if (!q || q.trim().length < 2) {
+    // If no query, return suggested users (recently active or popular)
+    if (!q || q.trim().length === 0) {
+      const { data: profiles, error } = await supabase
+        .from('profiles')
+        .select('id, username, full_name, avatar_url, bio')
+        .order('created_at', { ascending: false })
+        .limit(15);
+
+      if (error) {
+        console.error('[Profiles] Suggested users error:', error);
+        throw error;
+      }
+
+      return res.json({
+        success: true,
+        profiles: profiles || [],
+        suggested: true
+      });
+    }
+
+    if (q.trim().length < 2) {
       return res.status(400).json({ 
         success: false, 
         error: 'Search query must be at least 2 characters' 

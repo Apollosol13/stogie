@@ -30,10 +30,43 @@ export default function UserSearchModal({ visible, onClose }) {
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [isSuggested, setIsSuggested] = useState(false);
+
+  // Load suggested users when modal opens
+  React.useEffect(() => {
+    if (visible && searchResults.length === 0 && !searchQuery) {
+      loadSuggestedUsers();
+    }
+  }, [visible]);
+
+  const loadSuggestedUsers = async () => {
+    setLoading(true);
+    try {
+      const response = await apiRequest('/api/profiles/search');
+      const data = await response.json();
+      
+      if (data.success) {
+        setSearchResults(data.profiles || []);
+        setIsSuggested(true);
+      }
+    } catch (error) {
+      console.error('Load suggested users error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSearch = async (query) => {
     setSearchQuery(query);
+    setIsSuggested(false);
     
+    if (query.trim().length === 0) {
+      // Load suggested users when query is cleared
+      loadSuggestedUsers();
+      setSearched(false);
+      return;
+    }
+
     if (query.trim().length < 2) {
       setSearchResults([]);
       setSearched(false);
@@ -72,6 +105,7 @@ export default function UserSearchModal({ visible, onClose }) {
     setSearchQuery('');
     setSearchResults([]);
     setSearched(false);
+    setIsSuggested(false);
     onClose();
   };
 
@@ -218,24 +252,23 @@ export default function UserSearchModal({ visible, onClose }) {
           </View>
         )}
 
-        {!searched && !loading && (
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 }}>
-            <SearchIcon size={48} color={colors.textSecondary} />
-            <Text style={{ color: colors.textSecondary, fontSize: 16, marginTop: 16, textAlign: 'center' }}>
-              Search for users
-            </Text>
-            <Text style={{ color: colors.textSecondary, fontSize: 14, marginTop: 8, textAlign: 'center' }}>
-              Find friends by username or name
-            </Text>
-          </View>
+        {searchResults.length > 0 && (
+          <>
+            {isSuggested && (
+              <View style={{ paddingHorizontal: 20, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.divider }}>
+                <Text style={{ color: colors.textSecondary, fontSize: 14, fontWeight: '600' }}>
+                  SUGGESTED USERS
+                </Text>
+              </View>
+            )}
+            <FlatList
+              data={searchResults}
+              renderItem={renderUserItem}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={{ paddingBottom: insets.bottom }}
+            />
+          </>
         )}
-
-        <FlatList
-          data={searchResults}
-          renderItem={renderUserItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingBottom: insets.bottom }}
-        />
       </View>
     </Modal>
   );
