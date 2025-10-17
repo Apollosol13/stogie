@@ -173,19 +173,6 @@ export default function PostDetailModal({
 
   if (!post) return null;
 
-  // Add console log to debug
-  React.useEffect(() => {
-    if (visible && post) {
-      console.log('[PostDetailModal] Opening post:', {
-        id: post.id,
-        hasProfiles: !!post.profiles,
-        profilesData: post.profiles,
-        image_url: post.image_url,
-        created_at: post.created_at
-      });
-    }
-  }, [visible, post]);
-
   return (
     <Modal
       visible={visible}
@@ -232,7 +219,7 @@ export default function PostDetailModal({
 
             <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
               <Image
-                source={{ uri: post.profiles?.avatar_url || 'https://via.placeholder.com/32' }}
+                source={{ uri: post.profiles?.avatar_url }}
                 style={{
                   width: 32,
                   height: 32,
