@@ -317,19 +317,6 @@ export default function HomeScreen() {
             </Text>
           </TouchableOpacity>
         </ScrollView>
-
-        <View style={{ alignItems: "center", marginBottom: insets.bottom + 20 }}>
-          <Text
-            style={{
-              color: colors.textPrimary,
-              fontSize: 24,
-              fontWeight: "600",
-              textAlign: "center",
-            }}
-          >
-            Popular Cigars in Our Database
-          </Text>
-        </View>
       </View>
     );
   }
