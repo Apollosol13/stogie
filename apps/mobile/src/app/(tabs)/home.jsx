@@ -196,7 +196,7 @@ export default function HomeScreen() {
                 marginBottom: 16,
               }}
             >
-              Your Digital{"\n"}Cigar Companion
+              Product Information{"\n"}& Collection Tracker
             </Text>
             <Text
               style={{
@@ -205,8 +205,7 @@ export default function HomeScreen() {
                 lineHeight: 26,
               }}
             >
-              Track your collection, discover new cigars, and connect with
-              fellow enthusiasts.
+              Document your existing collection, access product information, and connect with the community. For adults 21+. Not intended to encourage tobacco use.
             </Text>
           </View>
 
@@ -227,7 +226,7 @@ export default function HomeScreen() {
                   marginBottom: 8,
                 }}
               >
-                🔍 AI-Powered Scanner
+                🔍 Product Identification
               </Text>
               <Text
                 style={{
@@ -236,7 +235,7 @@ export default function HomeScreen() {
                   lineHeight: 24,
                 }}
               >
-                Instantly identify any cigar with your camera
+                Identify and document products for informational purposes
               </Text>
             </View>
 
@@ -284,7 +283,7 @@ export default function HomeScreen() {
                   marginBottom: 8,
                 }}
               >
-                🗺️ Find Nearby Shops
+                🗺️ Retailer Locator
               </Text>
               <Text
                 style={{
@@ -293,7 +292,7 @@ export default function HomeScreen() {
                   lineHeight: 24,
                 }}
               >
-                Discover cigar lounges and retailers near you
+                Locate authorized retailers and licensed establishments
               </Text>
             </View>
           </View>
