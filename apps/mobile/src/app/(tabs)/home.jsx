@@ -226,7 +226,7 @@ export default function HomeScreen() {
                   marginBottom: 8,
                 }}
               >
-                🔍 Product Identification
+                📸 Manual Documentation
               </Text>
               <Text
                 style={{
@@ -235,7 +235,7 @@ export default function HomeScreen() {
                   lineHeight: 24,
                 }}
               >
-                Identify and document products for informational purposes
+                Photograph and manually catalog your collection
               </Text>
             </View>
 

@@ -66,7 +66,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="scan"
         options={{
-          title: "IDENTIFY",
+          title: "CAPTURE",
           tabBarIcon: ({ color, focused }) => (
             <View
               style={{
