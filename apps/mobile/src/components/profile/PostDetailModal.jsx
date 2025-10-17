@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -10,8 +10,6 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  PanResponder,
-  Animated,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useUser } from "@/utils/auth/useUser";
@@ -39,42 +37,6 @@ export default function PostDetailModal({
   const [replyingTo, setReplyingTo] = useState(null); // { id, username }
 
   const isMyPost = post?.user_id === currentUserId;
-
-  // Swipe gesture handling
-  const pan = useRef(new Animated.Value(0)).current;
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (evt, gestureState) => {
-        // Only respond to horizontal swipes (left)
-        return Math.abs(gestureState.dx) > 20 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
-      },
-      onPanResponderMove: (evt, gestureState) => {
-        // Only allow swiping to the right (dismissing to the left visually means negative dx)
-        if (gestureState.dx < 0) {
-          pan.setValue(gestureState.dx);
-        }
-      },
-      onPanResponderRelease: (evt, gestureState) => {
-        // If swiped more than 100px to the left, close the modal
-        if (gestureState.dx < -100) {
-          Animated.timing(pan, {
-            toValue: -500,
-            duration: 200,
-            useNativeDriver: true,
-          }).start(() => {
-            pan.setValue(0);
-            onClose();
-          });
-        } else {
-          // Snap back
-          Animated.spring(pan, {
-            toValue: 0,
-            useNativeDriver: true,
-          }).start();
-        }
-      },
-    })
-  ).current;
 
   // Fetch comments when modal opens
   React.useEffect(() => {
@@ -234,13 +196,11 @@ export default function PostDetailModal({
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1, backgroundColor: colors.bgPrimary }}
       >
-        <Animated.View
-          {...panResponder.panHandlers}
+        <View
           style={{
             flex: 1,
             backgroundColor: colors.bgPrimary,
             paddingTop: insets.top,
-            transform: [{ translateX: pan }],
           }}
         >
           {/* Header */}
@@ -576,7 +536,7 @@ export default function PostDetailModal({
               </TouchableOpacity>
             </View>
           </View>
-        </Animated.View>
+        </View>
       </KeyboardAvoidingView>
     </Modal>
   );
