@@ -14,6 +14,7 @@ import { CigarInfo } from "@/components/cigar/CigarInfo";
 import { MyReview } from "@/components/cigar/MyReview";
 import { CommunityReviewsList } from "@/components/cigar/CommunityReviewsList";
 import { ReviewModal } from "@/components/cigar/ReviewModal";
+import { EditCigarModal } from "@/components/cigar/EditCigarModal";
 
 export default function CigarDetailScreen() {
   const insets = useSafeAreaInsets();
@@ -29,6 +30,7 @@ export default function CigarDetailScreen() {
   } = useCigarData(id);
 
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const handleReviewSuccess = () => {
     fetchReviews();
@@ -46,7 +48,7 @@ export default function CigarDetailScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
       <StatusBar style="light" />
-      <CigarDetailHeader onWriteReview={() => setShowReviewModal(true)} />
+      <CigarDetailHeader onEdit={() => setShowEditModal(true)} />
 
       <ScrollView
         style={{ flex: 1 }}
@@ -68,6 +70,16 @@ export default function CigarDetailScreen() {
         onClose={() => setShowReviewModal(false)}
         userReview={userReview}
         onSuccess={handleReviewSuccess}
+      />
+
+      <EditCigarModal
+        visible={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        cigar={cigar}
+        onSuccess={() => {
+          fetchCigarDetails();
+          setShowEditModal(false);
+        }}
       />
     </View>
   );

@@ -66,7 +66,7 @@ export function useCigarData(id) {
 
   const fetchReviews = async () => {
     try {
-      const response = await apiRequest(`/api/reviews?cigarId=${id}`);
+      const response = await apiRequest(`/api/reviews/cigar/${id}`);
       const data = await response.json();
 
       if (response.ok && data.success) {

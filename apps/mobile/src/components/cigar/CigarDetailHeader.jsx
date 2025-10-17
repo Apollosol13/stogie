@@ -5,7 +5,7 @@ import { useRouter } from "expo-router";
 import { ArrowLeft, Edit3 } from "lucide-react-native";
 import { colors } from "@/components/cigar/colors";
 
-export function CigarDetailHeader({ onWriteReview }) {
+export function CigarDetailHeader({ onEdit }) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
@@ -28,7 +28,7 @@ export function CigarDetailHeader({ onWriteReview }) {
       <Text style={{ color: colors.textPrimary, fontSize: 18, fontWeight: "600" }}>
         Cigar Details
       </Text>
-      <TouchableOpacity onPress={onWriteReview}>
+      <TouchableOpacity onPress={onEdit}>
         <Edit3 size={24} color={colors.accentGold} />
       </TouchableOpacity>
     </View>
