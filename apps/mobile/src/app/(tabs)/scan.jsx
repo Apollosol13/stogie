@@ -55,7 +55,7 @@ export default function CaptureScreen() {
     setShowPostForm(false);
     setCaption("");
     setAddToHumidor(false);
-    setShowBottomSheet(true);
+    setShowBottomSheet(false); // Don't show after posting
   };
 
   const handleCloseBottomSheet = () => {
@@ -177,7 +177,8 @@ export default function CaptureScreen() {
 
       Alert.alert("Success", addToHumidor ? "Post created and added to humidor!" : "Post created!");
       resetForm();
-      router.push("/(tabs)/home");
+      // Navigate to home without showing bottom sheet
+      router.replace("/(tabs)/home");
     } catch (error) {
       console.error("Share error:", error);
       Alert.alert("Error", error.message || "Failed to create post");
