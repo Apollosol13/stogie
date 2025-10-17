@@ -270,19 +270,15 @@ export default function PostDetailModal({
             </TouchableOpacity>
 
             <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
-              {(post.profiles?.avatar_url || post.avatar_url) && (
-                <Image
-                  source={{ uri: post.profiles?.avatar_url || post.avatar_url || 'https://via.placeholder.com/32' }}
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 16,
-                    marginRight: 8,
-                    backgroundColor: colors.surface,
-                  }}
-                  defaultSource={{ uri: 'https://via.placeholder.com/32' }}
-                />
-              )}
+              <Image
+                source={{ uri: post.profiles?.avatar_url || 'https://via.placeholder.com/32' }}
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  marginRight: 8,
+                }}
+              />
               <View>
                 <Text
                   style={{
@@ -291,7 +287,7 @@ export default function PostDetailModal({
                     fontWeight: "600",
                   }}
                 >
-                  {post.profiles?.username || post.username || "User"}
+                  {post.profiles?.username || "User"}
                 </Text>
                 <Text
                   style={{
@@ -300,7 +296,7 @@ export default function PostDetailModal({
                     marginTop: 2,
                   }}
                 >
-                  {post.created_at ? formatTimeAgo(post.created_at) : 'Recently'}
+                  {formatTimeAgo(post.created_at)}
                 </Text>
               </View>
             </View>
@@ -324,30 +320,16 @@ export default function PostDetailModal({
 
           <ScrollView showsVerticalScrollIndicator={false}>
             {/* Image */}
-            {post.image_url ? (
-              <Image
-                source={{ uri: post.image_url }}
-                style={{
-                  width: "100%",
-                  minHeight: 300,
-                  maxHeight: 600,
-                  backgroundColor: colors.surface,
-                }}
-                resizeMode="contain"
-              />
-            ) : (
-              <View
-                style={{
-                  width: "100%",
-                  minHeight: 300,
-                  backgroundColor: colors.surface,
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{ color: colors.textSecondary }}>Image not available</Text>
-              </View>
-            )}
+            <Image
+              source={{ uri: post.image_url }}
+              style={{
+                width: "100%",
+                minHeight: 300,
+                maxHeight: 600,
+                backgroundColor: colors.surface,
+              }}
+              resizeMode="contain"
+            />
 
             {/* Like & Comment Buttons */}
             <View
