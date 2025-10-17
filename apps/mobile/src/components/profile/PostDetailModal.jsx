@@ -210,6 +210,19 @@ export default function PostDetailModal({
 
   if (!post) return null;
 
+  // Add console log to debug
+  React.useEffect(() => {
+    if (visible && post) {
+      console.log('[PostDetailModal] Opening post:', {
+        id: post.id,
+        hasProfiles: !!post.profiles,
+        profilesData: post.profiles,
+        image_url: post.image_url,
+        created_at: post.created_at
+      });
+    }
+  }, [visible, post]);
+
   return (
     <Modal
       visible={visible}
@@ -257,15 +270,19 @@ export default function PostDetailModal({
             </TouchableOpacity>
 
             <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
-              <Image
-                source={{ uri: post.profiles?.avatar_url }}
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 16,
-                  marginRight: 8,
-                }}
-              />
+              {(post.profiles?.avatar_url || post.avatar_url) && (
+                <Image
+                  source={{ uri: post.profiles?.avatar_url || post.avatar_url || 'https://via.placeholder.com/32' }}
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 16,
+                    marginRight: 8,
+                    backgroundColor: colors.surface,
+                  }}
+                  defaultSource={{ uri: 'https://via.placeholder.com/32' }}
+                />
+              )}
               <View>
                 <Text
                   style={{
@@ -274,7 +291,7 @@ export default function PostDetailModal({
                     fontWeight: "600",
                   }}
                 >
-                  {post.profiles?.username || "User"}
+                  {post.profiles?.username || post.username || "User"}
                 </Text>
                 <Text
                   style={{
@@ -283,7 +300,7 @@ export default function PostDetailModal({
                     marginTop: 2,
                   }}
                 >
-                  {formatTimeAgo(post.created_at)}
+                  {post.created_at ? formatTimeAgo(post.created_at) : 'Recently'}
                 </Text>
               </View>
             </View>
@@ -307,16 +324,30 @@ export default function PostDetailModal({
 
           <ScrollView showsVerticalScrollIndicator={false}>
             {/* Image */}
-            <Image
-              source={{ uri: post.image_url }}
-              style={{
-                width: "100%",
-                minHeight: 300,
-                maxHeight: 600,
-                backgroundColor: colors.surface,
-              }}
-              resizeMode="contain"
-            />
+            {post.image_url ? (
+              <Image
+                source={{ uri: post.image_url }}
+                style={{
+                  width: "100%",
+                  minHeight: 300,
+                  maxHeight: 600,
+                  backgroundColor: colors.surface,
+                }}
+                resizeMode="contain"
+              />
+            ) : (
+              <View
+                style={{
+                  width: "100%",
+                  minHeight: 300,
+                  backgroundColor: colors.surface,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ color: colors.textSecondary }}>Image not available</Text>
+              </View>
+            )}
 
             {/* Like & Comment Buttons */}
             <View
