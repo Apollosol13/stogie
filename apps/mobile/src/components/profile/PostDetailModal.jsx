@@ -12,6 +12,7 @@ import {
   Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Swipeable } from 'react-native-gesture-handler';
 import { useUser } from "@/utils/auth/useUser";
 import { X, Heart, MessageCircle, MoreVertical, Send, Reply } from "lucide-react-native";
 import { colors } from "@/constants/colors";
