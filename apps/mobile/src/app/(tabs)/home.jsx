@@ -515,7 +515,7 @@ export default function HomeScreen() {
                   aspectRatio: 1,
                   backgroundColor: colors.bgPrimary,
                 }}
-                resizeMode="cover"
+                resizeMode="contain"
               />
 
               {/* Like & Comment Buttons */}

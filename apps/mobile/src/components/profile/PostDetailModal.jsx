@@ -275,7 +275,7 @@ export default function PostDetailModal({
                 aspectRatio: 1,
                 backgroundColor: colors.surface,
               }}
-              resizeMode="cover"
+              resizeMode="contain"
             />
 
             {/* Like & Comment Buttons */}

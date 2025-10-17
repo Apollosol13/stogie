@@ -54,7 +54,7 @@ export default function PostsGrid({ posts, onPostPress }) {
           height: "100%",
           backgroundColor: colors.surface,
         }}
-        resizeMode="cover"
+        resizeMode="contain"
       />
     </TouchableOpacity>
   );

@@ -129,14 +129,9 @@ router.get('/', async (req, res) => {
       };
     });
 
-    // Sort by trending score for "For You" feed, chronological for "Following"
-    if (filterType === 'following') {
-      // Following feed: chronological order (already sorted by created_at)
-      enrichedPosts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-    } else {
-      // For You feed: sort by trending score
-      enrichedPosts.sort((a, b) => b.trending_score - a.trending_score);
-    }
+    // Sort by newest first for both feeds
+    // Users want to see their latest posts immediately
+    enrichedPosts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     // Return top 50 posts
     const topPosts = enrichedPosts.slice(0, 50);
