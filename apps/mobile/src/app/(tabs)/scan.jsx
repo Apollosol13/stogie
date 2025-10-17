@@ -18,6 +18,7 @@ import * as ImagePicker from "expo-image-picker";
 import { Camera, Image as ImageIcon, X } from "lucide-react-native";
 import { apiRequest } from "@/utils/api";
 import { useFocusEffect } from "@react-navigation/native";
+import { router } from "expo-router";
 
 const colors = {
   bgPrimary: "#0F0F0F",
@@ -61,6 +62,12 @@ export default function CaptureScreen() {
     setVitola("");
     setNotes("");
     setShowBottomSheet(true); // Show bottom sheet again
+  };
+
+  const handleCloseBottomSheet = () => {
+    setShowBottomSheet(false);
+    // Navigate back to home tab to avoid black screen
+    router.push("/(tabs)/home");
   };
 
   const handleCamera = async () => {
@@ -463,11 +470,11 @@ export default function CaptureScreen() {
         visible={showBottomSheet}
         transparent
         animationType="slide"
-        onRequestClose={() => setShowBottomSheet(false)}
+        onRequestClose={handleCloseBottomSheet}
       >
         <TouchableOpacity
           activeOpacity={1}
-          onPress={() => setShowBottomSheet(false)}
+          onPress={handleCloseBottomSheet}
           style={{
             flex: 1,
             backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -498,7 +505,7 @@ export default function CaptureScreen() {
                 <Text style={{ color: colors.textPrimary, fontSize: 18, fontWeight: "700" }}>
                   Choose Photo
                 </Text>
-                <TouchableOpacity onPress={() => setShowBottomSheet(false)}>
+                <TouchableOpacity onPress={handleCloseBottomSheet}>
                   <X size={24} color={colors.textSecondary} />
                 </TouchableOpacity>
               </View>
