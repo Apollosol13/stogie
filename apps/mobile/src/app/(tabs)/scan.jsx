@@ -157,18 +157,22 @@ export default function CaptureScreen() {
       if (addToHumidor) {
         const humidorData = {
           brand: "Unknown",
-          name: caption.trim() || "New Cigar",
-          vitola: null,
+          line: caption.trim() || "New Cigar",
+          vitola: "Unknown", // Required field
           image_url: url,
-          personal_notes: caption.trim() || null,
-          status: "collection",
+          notes: caption.trim() || null,
+          status: "owned", // Must be: owned, wishlist, or smoked
         };
 
-        await apiRequest("/api/humidor", {
+        const humidorRes = await apiRequest("/api/humidor", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(humidorData),
         });
+
+        if (!humidorRes.ok) {
+          console.error("Failed to add to humidor:", await humidorRes.text());
+        }
       }
 
       Alert.alert("Success", addToHumidor ? "Post created and added to humidor!" : "Post created!");
