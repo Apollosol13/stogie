@@ -272,7 +272,8 @@ export default function PostDetailModal({
               source={{ uri: post.image_url }}
               style={{
                 width: "100%",
-                aspectRatio: 1,
+                minHeight: 300,
+                maxHeight: 600,
                 backgroundColor: colors.surface,
               }}
               resizeMode="contain"

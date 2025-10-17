@@ -512,7 +512,8 @@ export default function HomeScreen() {
                 source={{ uri: p.image_url }}
                 style={{
                   width: "100%",
-                  aspectRatio: 1,
+                  minHeight: 300,
+                  maxHeight: 600,
                   backgroundColor: colors.bgPrimary,
                 }}
                 resizeMode="contain"
