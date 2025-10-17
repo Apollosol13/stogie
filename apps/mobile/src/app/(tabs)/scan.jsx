@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import AuthPrompt from "@/components/auth/AuthPrompt";
 import * as ImagePicker from "expo-image-picker";
 import { Camera, Image as ImageIcon, X } from "lucide-react-native";
 import { apiRequest } from "@/utils/api";
+import { useFocusEffect } from "@react-navigation/native";
 
 const colors = {
   bgPrimary: "#0F0F0F",
@@ -31,7 +32,7 @@ export default function CaptureScreen() {
   const insets = useSafeAreaInsets();
   const { data: user, loading: userLoading } = useUser();
   
-  const [showBottomSheet, setShowBottomSheet] = useState(false);
+  const [showBottomSheet, setShowBottomSheet] = useState(true); // Show immediately
   const [selectedImage, setSelectedImage] = useState(null);
   const [showEntryForm, setShowEntryForm] = useState(false);
   const [showHumidorModal, setShowHumidorModal] = useState(false);
@@ -43,6 +44,15 @@ export default function CaptureScreen() {
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  // Show bottom sheet when tab is focused (user returns to this tab)
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!showEntryForm) {
+        setShowBottomSheet(true);
+      }
+    }, [showEntryForm])
+  );
+
   const resetForm = () => {
     setSelectedImage(null);
     setShowEntryForm(false);
@@ -50,6 +60,7 @@ export default function CaptureScreen() {
     setLineName("");
     setVitola("");
     setNotes("");
+    setShowBottomSheet(true); // Show bottom sheet again
   };
 
   const handleCamera = async () => {
@@ -442,90 +453,10 @@ export default function CaptureScreen() {
     );
   }
 
-  // Main Screen - Camera/Gallery Selection
+  // Main Screen - Just show the modal
   return (
     <View style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
       <StatusBar style="light" />
-      
-      <View style={{ flex: 1, paddingTop: insets.top }}>
-        {/* Header */}
-        <View
-          style={{
-            paddingHorizontal: 20,
-            paddingVertical: 16,
-            borderBottomWidth: 1,
-            borderBottomColor: colors.surface2,
-          }}
-        >
-          <Text style={{ color: colors.textPrimary, fontSize: 24, fontWeight: "700" }}>
-            Capture
-          </Text>
-          <Text style={{ color: colors.textSecondary, fontSize: 14, marginTop: 4 }}>
-            Take a photo and add to your collection
-          </Text>
-        </View>
-
-        {/* Center Content */}
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: 40 }}>
-          <View
-            style={{
-              width: 120,
-              height: 120,
-              borderRadius: 60,
-              backgroundColor: colors.surface,
-              justifyContent: "center",
-              alignItems: "center",
-              marginBottom: 24,
-            }}
-          >
-            <Camera size={48} color={colors.accentGold} />
-          </View>
-
-          <Text
-            style={{
-              color: colors.textPrimary,
-              fontSize: 20,
-              fontWeight: "600",
-              textAlign: "center",
-              marginBottom: 12,
-            }}
-          >
-            Document Your Cigars
-          </Text>
-
-          <Text
-            style={{
-              color: colors.textSecondary,
-              fontSize: 16,
-              textAlign: "center",
-              lineHeight: 24,
-              marginBottom: 32,
-            }}
-          >
-            Take a photo or choose from your library to add cigars to your collection
-          </Text>
-
-          <TouchableOpacity
-            onPress={() => setShowBottomSheet(true)}
-            style={{
-              backgroundColor: colors.accentGold,
-              paddingHorizontal: 32,
-              paddingVertical: 16,
-              borderRadius: 12,
-            }}
-          >
-            <Text
-              style={{
-                color: colors.bgPrimary,
-                fontSize: 18,
-                fontWeight: "700",
-              }}
-            >
-              Get Started
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
 
       {/* Bottom Sheet */}
       <Modal
