@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -15,14 +16,12 @@ import { useUser } from "@/utils/auth/useUser";
 import { router } from "expo-router";
 import {
   Search,
-  Plus,
   MoreVertical,
   Heart,
   MessageCircle,
   Flag,
 } from "lucide-react-native";
 import useFeed from "@/hooks/useFeed";
-import NewPostModal from "@/components/feed/NewPostModal";
 import CommentsModal from "@/components/feed/CommentsModal";
 import ReportModal from "@/components/feed/ReportModal";
 import UserSearchModal from "@/components/profile/UserSearchModal";
@@ -48,7 +47,6 @@ export default function HomeScreen() {
   const filter = activeTab === "Following" ? "following" : null;
   const { posts, loading, load, toggleLike, removePost } = useFeed(filter);
   
-  const [showNewPostModal, setShowNewPostModal] = useState(false);
   const [deletingPostId, setDeletingPostId] = useState(null);
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState(null);
@@ -112,10 +110,13 @@ export default function HomeScreen() {
     setShowComments(true);
   };
 
-  const handlePostCreated = () => {
-    setShowNewPostModal(false);
-    load(); // Reload feed
-  };
+  // Reload feed when tab is focused (e.g., after creating a post)
+  useFocusEffect(
+    React.useCallback(() => {
+      load();
+    }, [])
+  );
+
 
   if (!isReady) {
     return (
@@ -226,7 +227,7 @@ export default function HomeScreen() {
                   marginBottom: 8,
                 }}
               >
-                📸 Manual Documentation
+                📸 Share Your Experience
               </Text>
               <Text
                 style={{
@@ -235,7 +236,7 @@ export default function HomeScreen() {
                   lineHeight: 24,
                 }}
               >
-                Photograph and manually catalog your collection
+                Post photos and optionally save to your collection
               </Text>
             </View>
 
@@ -580,36 +581,6 @@ export default function HomeScreen() {
           ))
         )}
       </ScrollView>
-
-      {/* Floating Action Button */}
-      <TouchableOpacity
-        style={{
-          position: "absolute",
-          bottom: 50,
-          right: 20,
-          backgroundColor: colors.accentGold,
-          borderRadius: 30,
-          width: 60,
-          height: 60,
-          justifyContent: "center",
-          alignItems: "center",
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.3,
-          shadowRadius: 5,
-          elevation: 5,
-          zIndex: 999,
-        }}
-        onPress={() => setShowNewPostModal(true)}
-      >
-        <Plus size={30} color={colors.bgPrimary} />
-      </TouchableOpacity>
-
-      <NewPostModal
-        visible={showNewPostModal}
-        onClose={() => setShowNewPostModal(false)}
-        onPosted={handlePostCreated}
-      />
 
       {selectedPostId && (
         <CommentsModal

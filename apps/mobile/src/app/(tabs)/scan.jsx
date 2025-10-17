@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   Alert,
   ActivityIndicator,
   Modal,
+  Switch,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -33,40 +34,32 @@ export default function CaptureScreen() {
   const insets = useSafeAreaInsets();
   const { data: user, loading: userLoading } = useUser();
   
-  const [showBottomSheet, setShowBottomSheet] = useState(true); // Show immediately
+  const [showBottomSheet, setShowBottomSheet] = useState(true);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [showEntryForm, setShowEntryForm] = useState(false);
-  const [showHumidorModal, setShowHumidorModal] = useState(false);
-  
-  // Form fields
-  const [brand, setBrand] = useState("");
-  const [lineName, setLineName] = useState("");
-  const [vitola, setVitola] = useState("");
-  const [notes, setNotes] = useState("");
+  const [showPostForm, setShowPostForm] = useState(false);
+  const [caption, setCaption] = useState("");
+  const [addToHumidor, setAddToHumidor] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Show bottom sheet when tab is focused (user returns to this tab)
+  // Show bottom sheet when tab is focused
   useFocusEffect(
     React.useCallback(() => {
-      if (!showEntryForm) {
+      if (!showPostForm) {
         setShowBottomSheet(true);
       }
-    }, [showEntryForm])
+    }, [showPostForm])
   );
 
   const resetForm = () => {
     setSelectedImage(null);
-    setShowEntryForm(false);
-    setBrand("");
-    setLineName("");
-    setVitola("");
-    setNotes("");
-    setShowBottomSheet(true); // Show bottom sheet again
+    setShowPostForm(false);
+    setCaption("");
+    setAddToHumidor(false);
+    setShowBottomSheet(true);
   };
 
   const handleCloseBottomSheet = () => {
     setShowBottomSheet(false);
-    // Navigate back to home tab to avoid black screen
     router.push("/(tabs)/home");
   };
 
@@ -80,14 +73,14 @@ export default function CaptureScreen() {
 
       const result = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
-        aspect: [4, 3],
+        aspect: [1, 1],
         quality: 0.85,
       });
 
       if (!result.canceled && result.assets?.length) {
         setSelectedImage(result.assets[0]);
         setShowBottomSheet(false);
-        setShowEntryForm(true);
+        setShowPostForm(true);
       }
     } catch (error) {
       console.error("Camera error:", error);
@@ -106,14 +99,14 @@ export default function CaptureScreen() {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
-        aspect: [4, 3],
+        aspect: [1, 1],
         quality: 0.9,
       });
 
       if (!result.canceled && result.assets?.length) {
         setSelectedImage(result.assets[0]);
         setShowBottomSheet(false);
-        setShowEntryForm(true);
+        setShowPostForm(true);
       }
     } catch (error) {
       console.error("Gallery error:", error);
@@ -121,62 +114,69 @@ export default function CaptureScreen() {
     }
   };
 
-  const handleAddToHumidor = async (status) => {
-    if (!brand.trim()) {
-      Alert.alert("Required", "Please enter a brand name");
-      return;
-    }
+  const handleShare = async () => {
+    if (!selectedImage || submitting) return;
 
     try {
       setSubmitting(true);
-      setShowHumidorModal(false);
 
-      // Upload image if available
-      let imageUrl = null;
-      if (selectedImage) {
-        const formData = new FormData();
-        formData.append("image", {
-          uri: selectedImage.uri,
-          name: `cigar-${Date.now()}.jpg`,
-          type: selectedImage.mimeType || "image/jpeg",
-        });
-
-        const uploadRes = await apiRequest("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (uploadRes.ok) {
-          const data = await uploadRes.json();
-          imageUrl = data.url;
-        }
-      }
-
-      // Create cigar entry
-      const entryData = {
-        brand: brand.trim(),
-        name: lineName.trim() || "Unknown",
-        vitola: vitola.trim() || null,
-        image_url: imageUrl,
-        personal_notes: notes.trim() || null,
-        status: status, // 'collection', 'wishlist', or 'smoked'
-      };
-
-      const res = await apiRequest("/api/humidor", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(entryData),
+      // Upload image
+      const formData = new FormData();
+      formData.append("image", {
+        uri: selectedImage.uri,
+        name: `post-${Date.now()}.jpg`,
+        type: selectedImage.mimeType || "image/jpeg",
       });
 
-      if (!res.ok) {
-        throw new Error("Failed to add to humidor");
+      const uploadRes = await apiRequest("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!uploadRes.ok) {
+        throw new Error("Failed to upload image");
       }
 
-      Alert.alert("Success", "Added to your humidor!");
+      const { url } = await uploadRes.json();
+
+      // Create post
+      const createRes = await apiRequest("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          image_url: url,
+          caption: caption.trim() || null,
+        }),
+      });
+
+      if (!createRes.ok) {
+        throw new Error("Failed to create post");
+      }
+
+      // Optionally add to humidor
+      if (addToHumidor) {
+        const humidorData = {
+          brand: "Unknown",
+          name: caption.trim() || "New Cigar",
+          vitola: null,
+          image_url: url,
+          personal_notes: caption.trim() || null,
+          status: "collection",
+        };
+
+        await apiRequest("/api/humidor", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(humidorData),
+        });
+      }
+
+      Alert.alert("Success", addToHumidor ? "Post created and added to humidor!" : "Post created!");
       resetForm();
+      router.push("/(tabs)/home");
     } catch (error) {
-      console.error("Error adding to humidor:", error);
-      Alert.alert("Error", error.message || "Failed to add to humidor");
+      console.error("Share error:", error);
+      Alert.alert("Error", error.message || "Failed to create post");
     } finally {
       setSubmitting(false);
     }
@@ -202,8 +202,8 @@ export default function CaptureScreen() {
     return <AuthPrompt />;
   }
 
-  // Entry Form Screen
-  if (showEntryForm) {
+  // Post Form Screen
+  if (showPostForm) {
     return (
       <View style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
         <StatusBar style="light" />
@@ -224,238 +224,91 @@ export default function CaptureScreen() {
               <Text style={{ color: colors.textPrimary, fontSize: 24 }}>‹</Text>
             </TouchableOpacity>
             <Text style={{ color: colors.textPrimary, fontSize: 18, fontWeight: "700" }}>
-              Add to Collection
+              New Post
             </Text>
-            <View style={{ width: 24 }} />
-          </View>
-
-          <ScrollView contentContainerStyle={{ padding: 16 }}>
-            {/* Image Preview */}
-            {selectedImage && (
-              <View
-                style={{
-                  width: "100%",
-                  aspectRatio: 4 / 3,
-                  backgroundColor: colors.surface,
-                  borderRadius: 12,
-                  overflow: "hidden",
-                  marginBottom: 24,
-                }}
-              >
-                <Image
-                  source={{ uri: selectedImage.uri }}
-                  style={{ width: "100%", height: "100%" }}
-                  resizeMode="cover"
-                />
-              </View>
-            )}
-
-            {/* Brand (Required) */}
-            <View style={{ marginBottom: 16 }}>
-              <Text style={{ color: colors.textPrimary, fontSize: 16, marginBottom: 8, fontWeight: "600" }}>
-                Brand <Text style={{ color: colors.accentGold }}>*</Text>
-              </Text>
-              <TextInput
-                placeholder="e.g., Arturo Fuente, Padron"
-                placeholderTextColor={colors.textSecondary}
-                value={brand}
-                onChangeText={setBrand}
-                style={{
-                  backgroundColor: colors.surface,
-                  color: colors.textPrimary,
-                  borderRadius: 8,
-                  padding: 12,
-                  fontSize: 16,
-                }}
-              />
-            </View>
-
-            {/* Line/Name */}
-            <View style={{ marginBottom: 16 }}>
-              <Text style={{ color: colors.textPrimary, fontSize: 16, marginBottom: 8, fontWeight: "600" }}>
-                Line / Name
-              </Text>
-              <TextInput
-                placeholder="e.g., Opus X, 1964 Anniversary"
-                placeholderTextColor={colors.textSecondary}
-                value={lineName}
-                onChangeText={setLineName}
-                style={{
-                  backgroundColor: colors.surface,
-                  color: colors.textPrimary,
-                  borderRadius: 8,
-                  padding: 12,
-                  fontSize: 16,
-                }}
-              />
-            </View>
-
-            {/* Vitola (Size) */}
-            <View style={{ marginBottom: 16 }}>
-              <Text style={{ color: colors.textPrimary, fontSize: 16, marginBottom: 8, fontWeight: "600" }}>
-                Vitola (Size)
-              </Text>
-              <TextInput
-                placeholder="e.g., Robusto, Toro, Churchill"
-                placeholderTextColor={colors.textSecondary}
-                value={vitola}
-                onChangeText={setVitola}
-                style={{
-                  backgroundColor: colors.surface,
-                  color: colors.textPrimary,
-                  borderRadius: 8,
-                  padding: 12,
-                  fontSize: 16,
-                }}
-              />
-            </View>
-
-            {/* Notes */}
-            <View style={{ marginBottom: 24 }}>
-              <Text style={{ color: colors.textPrimary, fontSize: 16, marginBottom: 8, fontWeight: "600" }}>
-                Notes
-              </Text>
-              <TextInput
-                placeholder="Add any personal notes..."
-                placeholderTextColor={colors.textSecondary}
-                value={notes}
-                onChangeText={setNotes}
-                style={{
-                  backgroundColor: colors.surface,
-                  color: colors.textPrimary,
-                  borderRadius: 8,
-                  padding: 12,
-                  fontSize: 16,
-                  minHeight: 100,
-                  textAlignVertical: "top",
-                }}
-                multiline
-              />
-            </View>
-
-            {/* Add to Humidor Button */}
-            <TouchableOpacity
-              onPress={() => setShowHumidorModal(true)}
-              disabled={submitting}
-              style={{
-                backgroundColor: colors.accentGold,
-                paddingVertical: 16,
-                borderRadius: 12,
-                alignItems: "center",
-              }}
-            >
+            <TouchableOpacity onPress={handleShare} disabled={submitting}>
               {submitting ? (
-                <ActivityIndicator color={colors.bgPrimary} />
+                <ActivityIndicator color={colors.accentGold} />
               ) : (
                 <Text
                   style={{
-                    color: colors.bgPrimary,
-                    fontSize: 18,
+                    color: colors.accentGold,
+                    fontSize: 16,
                     fontWeight: "700",
                   }}
                 >
-                  Add to Humidor
+                  Share
                 </Text>
               )}
             </TouchableOpacity>
+          </View>
+
+          <ScrollView contentContainerStyle={{ padding: 16 }}>
+            {/* Content Row - Image and Caption side by side */}
+            <View style={{ flexDirection: "row", alignItems: "flex-start", marginBottom: 24 }}>
+              {/* Image Preview */}
+              {selectedImage && (
+                <Image
+                  source={{ uri: selectedImage.uri }}
+                  style={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: 8,
+                    backgroundColor: colors.surface,
+                    marginRight: 12,
+                  }}
+                  resizeMode="cover"
+                />
+              )}
+
+              {/* Caption Input */}
+              <View style={{ flex: 1 }}>
+                <TextInput
+                  placeholder="Write a caption..."
+                  placeholderTextColor={colors.textSecondary}
+                  value={caption}
+                  onChangeText={setCaption}
+                  style={{
+                    color: colors.textPrimary,
+                    fontSize: 16,
+                    minHeight: 80,
+                    textAlignVertical: "top",
+                  }}
+                  multiline
+                  maxLength={2000}
+                  autoFocus
+                />
+              </View>
+            </View>
+
+            {/* Add to Humidor Toggle */}
+            <View
+              style={{
+                backgroundColor: colors.surface,
+                borderRadius: 12,
+                padding: 16,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <View style={{ flex: 1, marginRight: 12 }}>
+                <Text style={{ color: colors.textPrimary, fontSize: 16, fontWeight: "600", marginBottom: 4 }}>
+                  Add to Humidor
+                </Text>
+                <Text style={{ color: colors.textSecondary, fontSize: 14, lineHeight: 20 }}>
+                  Save this to your collection. You can edit details later in your humidor.
+                </Text>
+              </View>
+              <Switch
+                value={addToHumidor}
+                onValueChange={setAddToHumidor}
+                trackColor={{ false: colors.surface2, true: colors.accentGold }}
+                thumbColor={colors.textPrimary}
+              />
+            </View>
           </ScrollView>
         </View>
-
-        {/* Humidor Selection Modal */}
-        <Modal
-          visible={showHumidorModal}
-          transparent
-          animationType="slide"
-          onRequestClose={() => setShowHumidorModal(false)}
-        >
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => setShowHumidorModal(false)}
-            style={{
-              flex: 1,
-              backgroundColor: "rgba(0, 0, 0, 0.5)",
-              justifyContent: "flex-end",
-            }}
-          >
-            <TouchableOpacity activeOpacity={1}>
-              <View
-                style={{
-                  backgroundColor: colors.surface,
-                  borderTopLeftRadius: 20,
-                  borderTopRightRadius: 20,
-                  paddingBottom: insets.bottom + 20,
-                }}
-              >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    paddingHorizontal: 20,
-                    paddingTop: 20,
-                    paddingBottom: 16,
-                    borderBottomWidth: 1,
-                    borderBottomColor: colors.surface2,
-                  }}
-                >
-                  <Text style={{ color: colors.textPrimary, fontSize: 18, fontWeight: "700" }}>
-                    Add to...
-                  </Text>
-                  <TouchableOpacity onPress={() => setShowHumidorModal(false)}>
-                    <X size={24} color={colors.textSecondary} />
-                  </TouchableOpacity>
-                </View>
-
-                <View style={{ paddingTop: 8 }}>
-                  <TouchableOpacity
-                    onPress={() => handleAddToHumidor("collection")}
-                    style={{
-                      paddingHorizontal: 20,
-                      paddingVertical: 16,
-                    }}
-                  >
-                    <Text style={{ color: colors.textPrimary, fontSize: 16, fontWeight: "600" }}>
-                      📦 My Collection
-                    </Text>
-                    <Text style={{ color: colors.textSecondary, fontSize: 14, marginTop: 2 }}>
-                      Cigars I currently own
-                    </Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    onPress={() => handleAddToHumidor("wishlist")}
-                    style={{
-                      paddingHorizontal: 20,
-                      paddingVertical: 16,
-                    }}
-                  >
-                    <Text style={{ color: colors.textPrimary, fontSize: 16, fontWeight: "600" }}>
-                      ⭐ Wishlist
-                    </Text>
-                    <Text style={{ color: colors.textSecondary, fontSize: 14, marginTop: 2 }}>
-                      Cigars I want to try
-                    </Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    onPress={() => handleAddToHumidor("smoked")}
-                    style={{
-                      paddingHorizontal: 20,
-                      paddingVertical: 16,
-                    }}
-                  >
-                    <Text style={{ color: colors.textPrimary, fontSize: 16, fontWeight: "600" }}>
-                      ✅ Already Smoked
-                    </Text>
-                    <Text style={{ color: colors.textSecondary, fontSize: 14, marginTop: 2 }}>
-                      Cigars I've already enjoyed
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </TouchableOpacity>
-          </TouchableOpacity>
-        </Modal>
       </View>
     );
   }
