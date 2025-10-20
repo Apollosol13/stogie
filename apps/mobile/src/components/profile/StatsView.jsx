@@ -63,7 +63,7 @@ export default function StatsView({ analytics }) {
         <StatCard
           icon={<TrendingUp size={20} color={colors.accentGold} />}
           value={getStatValue("totalSmoked")}
-          label="Smoked"
+          label="Logged"
           color={colors.accentGold}
         />
         <StatCard
