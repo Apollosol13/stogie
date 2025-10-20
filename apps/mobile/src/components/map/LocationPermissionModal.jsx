@@ -94,7 +94,7 @@ export default function LocationPermissionModal({
                 marginBottom: 32,
               }}
             >
-              To help you discover nearby cigar lounges and tobacco shops, we'd like to access your location. This will enable features like:
+              To help you find venues and retailers near you, we'd like to access your location. This will enable features like:
             </Text>
 
             {/* Features List */}
@@ -157,7 +157,7 @@ export default function LocationPermissionModal({
                     flex: 1,
                   }}
                 >
-                  Post smoking sessions on the map
+                  Log venue visits on the map
                 </Text>
               </View>
 
