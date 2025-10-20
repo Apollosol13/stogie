@@ -75,7 +75,7 @@ export default function TermsOfServiceModal({ visible, onClose }) {
             1. About Stogie
           </Text>
           <Text style={{ color: colors.textSecondary, lineHeight: 22, marginBottom: 8 }}>
-            Stogie is a social platform for cigar enthusiasts. Users can:
+            Stogie is a social platform for product enthusiasts. Users can:
           </Text>
           <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 4 }}>
             • Post, like, and comment on content.
@@ -84,13 +84,10 @@ export default function TermsOfServiceModal({ visible, onClose }) {
             • Log products and sessions.
           </Text>
           <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 4 }}>
-            • Discover nearby cigar shops using Google Maps.
-          </Text>
-          <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 4 }}>
-            • Store cigars in a digital humidor.
+            • Discover nearby venues and retailers using Google Maps.
           </Text>
           <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 12 }}>
-            • Identify cigars through our AI-powered identification feature (powered by OpenAI).
+            • Store products in a digital library.
           </Text>
 
           {/* Section 2 */}
@@ -98,7 +95,7 @@ export default function TermsOfServiceModal({ visible, onClose }) {
             2. Eligibility
           </Text>
           <Text style={{ color: colors.textSecondary, lineHeight: 22, marginBottom: 12 }}>
-            You must be 18 years or older to use Stogie. By using the App, you confirm that you meet this requirement and that you are legally allowed to consume or discuss tobacco products in your jurisdiction.
+            You must be 21 years or older to use Stogie. By using the App, you confirm that you meet this requirement.
           </Text>
 
           {/* Section 3 */}
@@ -152,10 +149,10 @@ export default function TermsOfServiceModal({ visible, onClose }) {
             Stogie uses Google Maps and location data to:
           </Text>
           <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 4 }}>
-            • Show nearby cigar lounges and stores.
+            • Show nearby venues and retailers.
           </Text>
           <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 12 }}>
-            • Display community smoke sessions.
+            • Display community sessions.
           </Text>
           <Text style={{ color: colors.textSecondary, lineHeight: 22, marginBottom: 12 }}>
             By enabling location services, you consent to this use. You can disable location access anytime in your device settings, though some features will be limited.
@@ -163,24 +160,7 @@ export default function TermsOfServiceModal({ visible, onClose }) {
 
           {/* Section 6 */}
           <Text style={{ color: colors.textPrimary, fontSize: 18, fontWeight: "700", marginTop: 20, marginBottom: 12 }}>
-            6. AI Identification Feature
-          </Text>
-          <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 4 }}>
-            • When using the Identify button, images you upload are processed by OpenAI to detect the cigar type.
-          </Text>
-          <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 4 }}>
-            • You acknowledge that these images may be transmitted to third-party systems for processing.
-          </Text>
-          <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 4 }}>
-            • You retain ownership of your images, but you grant us permission to process them for this purpose.
-          </Text>
-          <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 12 }}>
-            • We do not guarantee accuracy of AI identifications.
-          </Text>
-
-          {/* Section 7 */}
-          <Text style={{ color: colors.textPrimary, fontSize: 18, fontWeight: "700", marginTop: 20, marginBottom: 12 }}>
-            7. Community Standards
+            6. Community Standards
           </Text>
           <Text style={{ color: colors.textSecondary, lineHeight: 22, marginBottom: 8 }}>
             Stogie is a place to connect, not to troll. Users are expected to:

@@ -89,7 +89,7 @@ export default function PrivacyPolicyModal({ visible, onClose }) {
             Stogie uses your location (with your permission) to:
           </Text>
           <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 4 }}>
-            • Show nearby cigar stores on Google Maps.
+            • Show nearby venues and retailers on Google Maps.
           </Text>
           <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 4 }}>
             • Display where users are logging sessions.
@@ -105,27 +105,20 @@ export default function PrivacyPolicyModal({ visible, onClose }) {
             c. User-Generated Content
           </Text>
           <Text style={{ color: colors.textSecondary, lineHeight: 22, marginBottom: 8 }}>
-            When you post, comment, like, or log a cigar session, this information may be visible to other users.
+            When you post, comment, like, or log a session, this information may be visible to other users.
           </Text>
           <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 4 }}>
-            • Posts and smoke logs may appear on the map.
+            • Posts and logs may appear on the map.
           </Text>
           <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 4 }}>
-            • Your digital humidor entries are stored under your account.
+            • Your digital library entries are stored under your account.
           </Text>
           <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 12 }}>
             • Do not share information you wouldn't want public.
           </Text>
 
           <Text style={{ color: colors.textPrimary, fontSize: 16, fontWeight: "600", marginTop: 12, marginBottom: 8 }}>
-            d. Cigar Identification
-          </Text>
-          <Text style={{ color: colors.textSecondary, lineHeight: 22, marginBottom: 12 }}>
-            When you use the Identify feature powered by OpenAI, uploaded images are processed by OpenAI's system to recognize the cigar. We do not store these images beyond what's necessary to complete the request.
-          </Text>
-
-          <Text style={{ color: colors.textPrimary, fontSize: 16, fontWeight: "600", marginTop: 12, marginBottom: 8 }}>
-            e. Usage Data
+            d. Usage Data
           </Text>
           <Text style={{ color: colors.textSecondary, lineHeight: 22, marginBottom: 12 }}>
             We collect basic analytics (such as app interactions, feature use, and session length) to improve performance and user experience.
@@ -145,7 +138,7 @@ export default function PrivacyPolicyModal({ visible, onClose }) {
             • Enable social features like posting, commenting, and liking.
           </Text>
           <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 4 }}>
-            • Display cigar stores and community smoke sessions on the map.
+            • Display venues and community sessions on the map.
           </Text>
           <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 4 }}>
             • Communicate updates and respond to support requests.
@@ -162,7 +155,7 @@ export default function PrivacyPolicyModal({ visible, onClose }) {
             We may share information in limited ways:
           </Text>
           <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 4 }}>
-            • With Service Providers: Including Google (for Maps and location data) and OpenAI (for cigar identification).
+            • With Service Providers: Including Google (for Maps and location data).
           </Text>
           <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 4 }}>
             • With Other Users: Posts, comments, likes, and sessions you choose to share are visible to others.
