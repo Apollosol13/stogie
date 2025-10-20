@@ -49,7 +49,7 @@ const colors = {
 
 const tabs = [
   { key: "owned", label: "OWNED", color: colors.accentGreen },
-  { key: "smoked", label: "SMOKED", color: colors.accentGold },
+  { key: "smoked", label: "LOGGED", color: colors.accentGold },
   { key: "wishlist", label: "WISHLIST", color: colors.accentRed },
 ];
 
@@ -425,7 +425,7 @@ export default function HumidorScreen() {
               marginTop: 2,
             }}
           >
-            SMOKED
+            LOGGED
           </Text>
         </View>
 
