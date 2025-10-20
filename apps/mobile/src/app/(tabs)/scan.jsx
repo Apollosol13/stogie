@@ -175,7 +175,7 @@ export default function CaptureScreen() {
         }
       }
 
-      Alert.alert("Success", addToHumidor ? "Post created and added to collection!" : "Post created!");
+      Alert.alert("Success", addToHumidor ? "Post created and added to library!" : "Post created!");
       resetForm();
       // Navigate to home without showing bottom sheet
       router.replace("/(tabs)/home");
@@ -286,7 +286,7 @@ export default function CaptureScreen() {
               </View>
             </View>
 
-            {/* Add to Collection Toggle */}
+            {/* Add to Library Toggle */}
             <View
               style={{
                 backgroundColor: colors.surface,
@@ -299,10 +299,10 @@ export default function CaptureScreen() {
             >
               <View style={{ flex: 1, marginRight: 12 }}>
                 <Text style={{ color: colors.textPrimary, fontSize: 16, fontWeight: "600", marginBottom: 4 }}>
-                  Add to Collection
+                  Add to Library
                 </Text>
                 <Text style={{ color: colors.textSecondary, fontSize: 14, lineHeight: 20 }}>
-                  Save this to your collection. You can edit details later.
+                  Save this to your library. You can edit details later.
                 </Text>
               </View>
               <Switch

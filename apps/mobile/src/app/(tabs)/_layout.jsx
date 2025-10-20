@@ -100,7 +100,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="humidor"
         options={{
-          title: "COLLECTION",
+          title: "LIBRARY",
           tabBarIcon: ({ color, focused }) => (
             <Archive size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
           ),
