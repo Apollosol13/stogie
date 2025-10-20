@@ -122,8 +122,8 @@ export default function HumidorScreen() {
 
   const handleDeleteEntry = (item) => {
     Alert.alert(
-      "Remove from Humidor",
-      `Are you sure you want to remove ${item.brand} ${item.line} from your humidor?`,
+      "Remove from Library",
+      `Are you sure you want to remove ${item.brand} ${item.line} from your library?`,
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -640,7 +640,7 @@ export default function HumidorScreen() {
               letterSpacing: -0.5,
             }}
           >
-            Humidor
+            Library
           </Text>
 
           <View style={{ flexDirection: "row", gap: 8 }}>
