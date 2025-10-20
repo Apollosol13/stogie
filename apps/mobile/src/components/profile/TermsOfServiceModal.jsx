@@ -81,7 +81,7 @@ export default function TermsOfServiceModal({ visible, onClose }) {
             • Post, like, and comment on content.
           </Text>
           <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 4 }}>
-            • Log cigars and smoking sessions.
+            • Log products and sessions.
           </Text>
           <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 4 }}>
             • Discover nearby cigar shops using Google Maps.

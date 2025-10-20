@@ -545,8 +545,8 @@ export default function HumidorScreen() {
               : activeTab === "owned"
                 ? "Start adding cigars to your collection"
                 : activeTab === "wishlist"
-                  ? "Add cigars you want to try someday"
-                  : "No smoking sessions recorded yet"}
+                  ? "Add items you want to try someday"
+                  : "No sessions recorded yet"}
           </Text>
           {!searchQuery && (
             <TouchableOpacity

@@ -108,7 +108,7 @@ const SmokingSessionModal = ({
       handleClose();
     } catch (error) {
       console.error('Error creating session:', error);
-      Alert.alert('Error', 'Failed to create smoking session. Please try again.');
+      Alert.alert('Error', 'Failed to create session. Please try again.');
     } finally {
       setCreating(false);
     }
@@ -203,7 +203,7 @@ const SmokingSessionModal = ({
                   fontWeight: '700',
                 }}
               >
-                New Smoking Session
+                New Session
               </Text>
               {location && (
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>

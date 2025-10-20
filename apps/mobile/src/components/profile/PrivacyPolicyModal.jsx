@@ -92,7 +92,7 @@ export default function PrivacyPolicyModal({ visible, onClose }) {
             • Show nearby cigar stores on Google Maps.
           </Text>
           <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 4 }}>
-            • Display where users are logging smoking sessions.
+            • Display where users are logging sessions.
           </Text>
           <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 12 }}>
             • Improve recommendations and mapping accuracy.
@@ -165,7 +165,7 @@ export default function PrivacyPolicyModal({ visible, onClose }) {
             • With Service Providers: Including Google (for Maps and location data) and OpenAI (for cigar identification).
           </Text>
           <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 4 }}>
-            • With Other Users: Posts, comments, likes, and smoking sessions you choose to share are visible to others.
+            • With Other Users: Posts, comments, likes, and sessions you choose to share are visible to others.
           </Text>
           <Text style={{ color: colors.textSecondary, lineHeight: 22, marginLeft: 16, marginBottom: 4 }}>
             • For Legal Reasons: If required by law, regulation, or court order.

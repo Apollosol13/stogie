@@ -53,7 +53,7 @@ export default function MapScreen() {
     if (!user) {
       Alert.alert(
         "Authentication Required",
-        "Please sign in to create smoking sessions.",
+        "Please sign in to create sessions.",
       );
       return;
     }
@@ -195,7 +195,7 @@ export default function MapScreen() {
         onAllow={handleLocationPermissionAllow}
       />
 
-      {/* Bottom CTA - Smoking Session */}
+      {/* Bottom CTA - Log Session */}
       <View
         style={{
           position: "absolute",
@@ -209,7 +209,7 @@ export default function MapScreen() {
           activeOpacity={0.9}
           onPress={() => {
             if (!user) {
-              Alert.alert("Authentication Required", "Please sign in to log a smoking session.");
+              Alert.alert("Authentication Required", "Please sign in to log a session.");
               return;
             }
             if (userLocation) {
@@ -238,7 +238,7 @@ export default function MapScreen() {
               letterSpacing: 0.3,
             }}
           >
-            Smoking Session
+            Log Session
           </Text>
         </TouchableOpacity>
       </View>

@@ -33,7 +33,7 @@ export default function ActivityTab() {
             textAlign: "center",
           }}
         >
-          Start by adding cigars to your humidor or logging a smoking session
+          Start by adding items to your library or logging a session
         </Text>
       </View>
     </View>
