@@ -17,10 +17,10 @@
         "CFBundleDisplayName": "Stogie Social",
         "CFBundleName": "Stogie Social",
         "ITSAppUsesNonExemptEncryption": false,
-        "NSCameraUsageDescription": "Camera is used to scan cigars and take photos.",
+        "NSCameraUsageDescription": "Camera is used to photograph and document products.",
         "NSPhotoLibraryUsageDescription": "Photos are used for posts and profile images.",
         "NSPhotoLibraryAddUsageDescription": "Allows saving images to your photo library.",
-        "NSLocationWhenInUseUsageDescription": "Location is used to show nearby lounges and sessions.",
+        "NSLocationWhenInUseUsageDescription": "Location is used to find nearby venues and retailers.",
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": false,
           "NSExceptionDomains": {
