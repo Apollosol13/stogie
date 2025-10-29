@@ -192,6 +192,7 @@ router.post('/:id/like', validateId, async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('[Posts] Like - No auth header');
       return res.status(401).json({ success: false, error: 'No token provided' });
     }
 
@@ -199,43 +200,71 @@ router.post('/:id/like', validateId, async (req, res) => {
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     
     if (authError || !user) {
+      console.log('[Posts] Like - Auth error:', authError?.message);
       return res.status(401).json({ success: false, error: 'Invalid token' });
     }
 
     const postId = Number(req.params.id);
+    console.log(`[Posts] Like toggle - User ${user.id} on post ${postId}`);
 
     // Check if already liked
-    const { data: existing } = await supabase
+    const { data: existing, error: checkError } = await supabase
       .from('post_likes')
       .select('id')
       .eq('user_id', user.id)
       .eq('post_id', postId)
       .maybeSingle();
 
+    if (checkError) {
+      console.error('[Posts] Like check error:', checkError);
+      throw checkError;
+    }
+
     if (existing) {
       // Unlike
+      console.log(`[Posts] Unliking post ${postId} by user ${user.id}`);
       const { error: deleteError } = await supabase
         .from('post_likes')
         .delete()
         .eq('user_id', user.id)
         .eq('post_id', postId);
 
-      if (deleteError) throw deleteError;
+      if (deleteError) {
+        console.error('[Posts] Unlike error:', deleteError);
+        throw deleteError;
+      }
       
+      console.log(`[Posts] Successfully unliked post ${postId}`);
       return res.json({ success: true, liked: false });
     } else {
       // Like
+      console.log(`[Posts] Liking post ${postId} by user ${user.id}`);
       const { error: insertError } = await supabase
         .from('post_likes')
         .insert([{ user_id: user.id, post_id: postId }]);
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error('[Posts] Like insert error:', insertError);
+        throw insertError;
+      }
       
+      console.log(`[Posts] Successfully liked post ${postId}`);
       return res.json({ success: true, liked: true });
     }
   } catch (e) {
-    console.error('[Posts] Like error:', e);
-    res.status(500).json({ success: false, error: 'Failed to like post' });
+    console.error('[Posts] Like error - Full error:', e);
+    console.error('[Posts] Like error - Message:', e.message);
+    console.error('[Posts] Like error - Stack:', e.stack);
+    
+    // Make sure we always send a response
+    if (!res.headersSent) {
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to like post', 
+        details: e.message,
+        errorType: e.name 
+      });
+    }
   }
 });
 
