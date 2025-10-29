@@ -223,18 +223,23 @@ router.post('/:id/like', validateId, async (req, res) => {
     if (existing) {
       // Unlike
       console.log(`[Posts] Unliking post ${postId} by user ${user.id}`);
-      const { error: deleteError } = await supabase
+      console.log(`[Posts] Deleting like with id: ${existing.id}`);
+      
+      const { data: deleteData, error: deleteError } = await supabase
         .from('post_likes')
         .delete()
-        .eq('user_id', user.id)
-        .eq('post_id', postId);
+        .eq('id', existing.id)
+        .eq('user_id', user.id);
 
       if (deleteError) {
-        console.error('[Posts] Unlike error:', deleteError);
+        console.error('[Posts] Unlike error:', JSON.stringify(deleteError, null, 2));
+        console.error('[Posts] Unlike error code:', deleteError.code);
+        console.error('[Posts] Unlike error message:', deleteError.message);
+        console.error('[Posts] Unlike error details:', deleteError.details);
         throw deleteError;
       }
       
-      console.log(`[Posts] Successfully unliked post ${postId}`);
+      console.log(`[Posts] Successfully unliked post ${postId}, delete result:`, deleteData);
       return res.json({ success: true, liked: false });
     } else {
       // Like
