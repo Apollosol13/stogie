@@ -39,9 +39,9 @@ export default function EditCigarModal({ isOpen, onClose, onSuccess, onDelete, e
       setSubmitting(true);
 
       const payload = {
-        quantity: parseInt(quantity) || 1,
+        quantity: quantity && quantity.trim() ? parseInt(quantity) : 1,
         personal_notes: notes?.trim() || null,
-        purchase_price: pricePaid ? parseFloat(pricePaid) : null,
+        purchase_price: pricePaid && pricePaid.trim() ? parseFloat(pricePaid) : null,
         status,
       };
 
