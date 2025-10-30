@@ -25,24 +25,30 @@ const upload = multer({
 // GET /api/profiles/me - Get current user's profile
 router.get('/me', async (req, res) => {
   try {
+    console.log('[Profiles/me] Starting request');
+    
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('[Profiles/me] No auth header');
       return res.status(401).json({ success: false, error: 'Authorization required' });
     }
 
     const token = authHeader.replace('Bearer ', '');
+    console.log('[Profiles/me] Token preview:', token.substring(0, 30) + '...');
     
     // Verify token and get user
-    const { data: { user }, error: authError } = await supabaseAuth.getUser(token);
+    console.log('[Profiles/me] Verifying token with Supabase...');
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
     
     if (authError || !user) {
-      console.error('[Profiles] Auth error:', authError);
+      console.error('[Profiles/me] Auth error:', authError);
       return res.status(401).json({ success: false, error: 'Invalid token' });
     }
 
-    console.log('[Profiles] Fetching profile for authenticated user:', user.id);
+    console.log('[Profiles/me] User authenticated:', user.id, user.email);
 
     // Get user profile from profiles table
+    console.log('[Profiles/me] Fetching profile from database...');
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('*')
@@ -50,28 +56,35 @@ router.get('/me', async (req, res) => {
       .single();
 
     if (profileError) {
-      console.error('[Profiles] Profile fetch error:', profileError);
+      console.error('[Profiles/me] Profile fetch error:', profileError);
       return res.status(404).json({ success: false, error: 'Profile not found' });
     }
 
-    console.log('[Profiles] Profile found:', profile.username);
+    console.log('[Profiles/me] Profile found:', profile.username);
 
-    res.json({
+    const response = {
       success: true,
       profile: {
         id: profile.id,
         full_name: profile.full_name,
         username: profile.username,
-        email: profile.email,
+        email: user.email,
         avatar_url: profile.avatar_url,
         bio: profile.bio,
         location: profile.location,
         created_at: profile.created_at,
       }
-    });
+    };
+    
+    console.log('[Profiles/me] Sending response:', response);
+    res.json(response);
   } catch (error) {
-    console.error('[Profiles] Error fetching own profile:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch profile' });
+    console.error('[Profiles/me] Caught exception:', error.message, error.stack);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch profile',
+      details: error.message 
+    });
   }
 });
 
