@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Navigation from '@/components/Navigation';
 import EditProfileModal from '@/components/profile/EditProfileModal';
@@ -18,6 +19,7 @@ export default function ProfilePage() {
 
 function ProfileContent() {
   const { user, signOut, jwt, setAuth } = useAuth();
+  const pathname = usePathname();
   const [activeTab, setActiveTab] = useState<'posts' | 'stats'>('posts');
   const [stats, setStats] = useState<any>(null);
   const [posts, setPosts] = useState<any[]>([]);
@@ -25,12 +27,24 @@ function ProfileContent() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [profileData, setProfileData] = useState<any>(null);
+  const lastPathRef = useRef<string | null>(null);
 
+  // Initial load
   useEffect(() => {
     if (jwt) {
+      console.log('[Profile] Initial load');
       loadProfileData();
     }
   }, [jwt]);
+
+  // Refresh when navigating to profile page
+  useEffect(() => {
+    if (pathname === '/profile' && jwt && lastPathRef.current !== null && lastPathRef.current !== '/profile') {
+      console.log('[Profile] Navigated to profile page, refreshing...');
+      loadProfileData();
+    }
+    lastPathRef.current = pathname;
+  }, [pathname, jwt]);
 
   // Reload profile data when page becomes visible (e.g., after navigating back from feed)
   useEffect(() => {
