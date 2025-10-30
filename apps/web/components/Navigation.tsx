@@ -31,7 +31,7 @@ export default function Navigation() {
                   href={item.href}
                   className="flex flex-col items-center justify-center relative"
                 >
-                  <div className="absolute -top-8 w-14 h-14 rounded-full bg-accentGold flex items-center justify-center shadow-lg shadow-accentGold/50">
+                  <div className="absolute -top-10 w-14 h-14 rounded-full bg-accentGold flex items-center justify-center shadow-lg shadow-accentGold/50">
                     <Icon size={24} className="text-bgPrimary" strokeWidth={2.5} />
                   </div>
                   <span className="text-xs mt-6 text-textSecondary font-semibold">
