@@ -24,6 +24,7 @@ router.get('/', async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
     const filterType = req.query.filter; // 'following' or undefined (all)
+    const userFilter = req.query.user; // 'me' to get current user's posts
     let userId = null;
     
     if (authHeader && authHeader.startsWith('Bearer ')) {
@@ -34,8 +35,25 @@ router.get('/', async (req, res) => {
     
     let posts;
     
-    // If filtering by following, get posts from followed users only
-    if (filterType === 'following' && userId) {
+    // If filtering by current user's posts
+    if (userFilter === 'me' && userId) {
+      console.log('[Posts] Fetching posts for user:', userId);
+      const { data: userPosts, error: postsError } = await supabase
+        .from('posts')
+        .select('id,image_url,caption,created_at,user_id')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(100);
+        
+      if (postsError) {
+        console.error('[Posts] Error fetching user posts:', postsError);
+        return res.status(500).json({ success: false, error: postsError.message });
+      }
+      
+      console.log('[Posts] Found', userPosts?.length || 0, 'posts for user', userId);
+      posts = userPosts;
+    } else if (filterType === 'following' && userId) {
+      // If filtering by following, get posts from followed users only
       // Get users that current user follows
       const { data: following } = await supabase
         .from('follows')
