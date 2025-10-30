@@ -24,9 +24,10 @@ export default function EditCigarModal({ isOpen, onClose, onSuccess, onDelete, e
 
   useEffect(() => {
     if (entry) {
+      console.log('[EditCigar] Loading entry:', entry);
       setQuantity(String(entry.quantity || 1));
-      setNotes(entry.notes || '');
-      setPricePaid(String(entry.price_paid || ''));
+      setNotes(entry.notes || entry.personal_notes || '');
+      setPricePaid(String(entry.price_paid || entry.purchase_price || ''));
       setStatus(entry.status || 'owned');
     }
   }, [entry]);
