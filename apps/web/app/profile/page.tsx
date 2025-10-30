@@ -21,7 +21,8 @@ function ProfileContent() {
   const [activeTab, setActiveTab] = useState<'posts' | 'stats'>('posts');
   const [stats, setStats] = useState<any>(null);
   const [posts, setPosts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [profileData, setProfileData] = useState<any>(null);
 
@@ -58,13 +59,14 @@ function ProfileContent() {
 
   const loadProfileData = async () => {
     // Prevent multiple simultaneous calls
-    if (loading) {
-      console.log('[Profile] Already loading, skipping...');
+    if (isRefreshing) {
+      console.log('[Profile] Already refreshing, skipping...');
       return;
     }
 
     try {
       setLoading(true);
+      setIsRefreshing(true);
       
       console.log('[Profile] ========================================');
       console.log('[Profile] Fetching profile data...');
@@ -120,6 +122,7 @@ function ProfileContent() {
       console.error('[Profile] Error loading profile data:', error);
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
     }
   };
   
@@ -163,8 +166,8 @@ function ProfileContent() {
             <div className="flex items-center gap-3">
               <button 
                 onClick={loadProfileData}
-                disabled={loading}
-                className={`text-textSecondary hover:text-accentGold transition-colors ${loading ? 'animate-spin' : ''}`}
+                disabled={isRefreshing}
+                className={`text-textSecondary hover:text-accentGold transition-colors ${isRefreshing ? 'animate-spin' : ''}`}
                 title="Refresh"
               >
                 <RefreshCw size={22} />
