@@ -45,11 +45,15 @@ export default function EditCigarModal({ isOpen, onClose, onSuccess, onDelete, e
       };
 
       console.log('[EditCigar] Submitting update payload:', payload);
+      console.log('[EditCigar] Entry ID:', entry.entry_id || entry.id);
 
-      await apiRequest(`/api/humidor/${entry.id}`, {
+      const entryId = entry.entry_id || entry.id;
+      const response = await apiRequest(`/api/humidor/${entryId}`, {
         method: 'PUT',
         body: JSON.stringify(payload),
       }, jwt);
+
+      console.log('[EditCigar] Update response:', response);
 
       onSuccess();
       onClose();
@@ -67,7 +71,10 @@ export default function EditCigarModal({ isOpen, onClose, onSuccess, onDelete, e
     try {
       setDeleting(true);
 
-      await apiRequest(`/api/humidor/${entry.id}`, {
+      const entryId = entry.entry_id || entry.id;
+      console.log('[EditCigar] Deleting entry ID:', entryId);
+
+      await apiRequest(`/api/humidor/${entryId}`, {
         method: 'DELETE',
       }, jwt);
 

@@ -49,22 +49,31 @@ function HumidorContent() {
           owned: data.entries.filter((e: any) => e.status === 'owned').map((e: any) => ({
             ...e,
             ...e.cigars,
-            id: e.cigar_id,
+            entry_id: e.id, // Keep the humidor entry ID
+            id: e.cigar_id, // Cigar ID for viewing details
+            cigar_id: e.cigar_id,
             price_paid: e.purchase_price,
             quantity: e.quantity || 1,
+            notes: e.personal_notes,
             image: e.cigars?.image_url
           })),
           smoked: data.entries.filter((e: any) => e.status === 'smoked').map((e: any) => ({
             ...e,
             ...e.cigars,
-            id: e.cigar_id,
+            entry_id: e.id, // Keep the humidor entry ID
+            id: e.cigar_id, // Cigar ID for viewing details
+            cigar_id: e.cigar_id,
             rating: e.rating,
+            notes: e.personal_notes,
             image: e.cigars?.image_url
           })),
           wishlist: data.entries.filter((e: any) => e.status === 'wishlist').map((e: any) => ({
             ...e,
             ...e.cigars,
-            id: e.cigar_id,
+            entry_id: e.id, // Keep the humidor entry ID
+            id: e.cigar_id, // Cigar ID for viewing details
+            cigar_id: e.cigar_id,
+            notes: e.personal_notes,
             image: e.cigars?.image_url
           }))
         };
