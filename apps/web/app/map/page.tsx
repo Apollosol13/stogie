@@ -236,31 +236,20 @@ function MapContent() {
   const getMarkerIcon = (type: string) => {
     switch (type) {
       case 'shop':
-        return {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: 8,
-          fillColor: '#60A5FA', // Blue
-          fillOpacity: 1,
-          strokeColor: '#FFFFFF',
-          strokeWeight: 2,
-        };
+        return 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png';
       case 'lounge':
-        return {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: 8,
-          fillColor: '#68D391', // Green
-          fillOpacity: 1,
-          strokeColor: '#FFFFFF',
-          strokeWeight: 2,
-        };
+        return 'http://maps.google.com/mapfiles/ms/icons/green-dot.png';
       case 'session':
+        // Custom gold marker using SVG data URL
         return {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: 8,
-          fillColor: '#D4B896', // Gold
-          fillOpacity: 1,
-          strokeColor: '#FFFFFF',
-          strokeWeight: 2,
+          url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="52" viewBox="0 0 32 52">
+              <path d="M16,0 C7.163,0 0,7.163 0,16 C0,27.703 16,52 16,52 C16,52 32,27.703 32,16 C32,7.163 24.837,0 16,0 Z" fill="#D4B896"/>
+              <circle cx="16" cy="16" r="6" fill="#FFFFFF"/>
+            </svg>
+          `),
+          scaledSize: new google.maps.Size(32, 52),
+          anchor: new google.maps.Point(16, 52),
         };
       default:
         return undefined;
