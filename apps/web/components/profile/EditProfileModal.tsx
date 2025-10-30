@@ -224,7 +224,22 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
     }
   };
 
-  if (!isOpen) return null;
+  // Add log when modal state changes
+  useEffect(() => {
+    console.log('[EditProfile] 🚪 Modal isOpen changed to:', isOpen);
+    if (isOpen) {
+      console.log('[EditProfile] Modal is now visible!');
+      console.log('[EditProfile] Current user:', user);
+      console.log('[EditProfile] Avatar URL:', user?.avatarUrl);
+    }
+  }, [isOpen, user]);
+
+  if (!isOpen) {
+    console.log('[EditProfile] Modal is closed, not rendering');
+    return null;
+  }
+
+  console.log('[EditProfile] Rendering modal...');
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

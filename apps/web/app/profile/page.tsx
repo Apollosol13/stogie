@@ -215,7 +215,11 @@ function ProfileContent() {
                 )}
               </div>
               <button 
-                onClick={() => setShowEditModal(true)}
+                onClick={() => {
+                  console.log('[Profile] ✏️ Edit button clicked!');
+                  console.log('[Profile] Opening edit modal...');
+                  setShowEditModal(true);
+                }}
                 className="absolute bottom-0 right-0 w-7 h-7 bg-accentGold rounded-full flex items-center justify-center border-2 border-bgPrimary hover:bg-opacity-90 transition-all"
               >
                 <Edit3 size={14} className="text-bgPrimary" />
