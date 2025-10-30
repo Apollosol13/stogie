@@ -102,9 +102,9 @@ export const validatePost = [
 // COMMENT VALIDATION
 // ==============================================
 export const validateComment = [
-  body('content')
+  body('text')
     .notEmpty()
-    .withMessage('Comment content is required')
+    .withMessage('Comment text is required')
     .trim()
     .customSanitizer(sanitizeText)
     .isLength({ min: 1, max: 1000 })
