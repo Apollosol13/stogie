@@ -31,28 +31,53 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
   }, [isOpen, user?.avatarUrl]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('[EditProfile] 🎯 handleAvatarChange triggered!');
+    console.log('[EditProfile] Event:', e);
+    console.log('[EditProfile] Files in event:', e.target.files);
+    
     const file = e.target.files?.[0];
-    if (!file) return;
+    console.log('[EditProfile] Selected file:', file);
+    
+    if (!file) {
+      console.log('[EditProfile] ❌ No file selected');
+      return;
+    }
+
+    console.log('[EditProfile] ✅ File details:', {
+      name: file.name,
+      type: file.type,
+      size: file.size
+    });
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
+      console.log('[EditProfile] ❌ Invalid file type:', file.type);
       alert('Please select an image file');
       return;
     }
 
     // Validate file size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
+      console.log('[EditProfile] ❌ File too large:', file.size);
       alert('Image size must be less than 5MB');
       return;
     }
 
+    console.log('[EditProfile] ✅ File validation passed');
+    console.log('[EditProfile] Setting selectedFile state...');
+    
     // Store file for later upload
     setSelectedFile(file);
 
+    console.log('[EditProfile] Creating preview...');
     // Create preview
     const reader = new FileReader();
     reader.onloadend = () => {
+      console.log('[EditProfile] ✅ Preview created');
       setAvatarPreview(reader.result as string);
+    };
+    reader.onerror = (error) => {
+      console.error('[EditProfile] ❌ FileReader error:', error);
     };
     reader.readAsDataURL(file);
   };
@@ -127,6 +152,10 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('[EditProfile] 💾 Form submitted!');
+    console.log('[EditProfile] selectedFile state:', selectedFile);
+    console.log('[EditProfile] selectedFile exists:', !!selectedFile);
+    
     try {
       setSubmitting(true);
       
@@ -134,9 +163,11 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
 
       // Upload avatar first if a new one was selected
       if (selectedFile) {
-        console.log('[EditProfile] Uploading new avatar before saving profile...');
+        console.log('[EditProfile] ✅ Selected file found, uploading avatar...');
         newAvatarUrl = await uploadAvatar();
         console.log('[EditProfile] Avatar upload complete:', newAvatarUrl);
+      } else {
+        console.log('[EditProfile] ⚠️ No selectedFile - skipping avatar upload');
       }
 
       // Update profile data
@@ -237,7 +268,16 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
                 </div>
                 <button
                   type="button"
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() => {
+                    console.log('[EditProfile] 📷 Camera button clicked!');
+                    console.log('[EditProfile] File input ref:', fileInputRef.current);
+                    if (fileInputRef.current) {
+                      console.log('[EditProfile] Triggering file input click...');
+                      fileInputRef.current.click();
+                    } else {
+                      console.error('[EditProfile] ❌ File input ref is null!');
+                    }
+                  }}
                   disabled={submitting}
                   className="absolute bottom-0 right-0 w-8 h-8 bg-accentGold rounded-full flex items-center justify-center border-2 border-bgPrimary hover:bg-opacity-90 transition-all disabled:opacity-50"
                 >
