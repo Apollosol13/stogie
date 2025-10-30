@@ -210,7 +210,7 @@ router.post('/:id/like', validateId, async (req, res) => {
     // Check if already liked
     const { data: existing, error: checkError } = await supabase
       .from('post_likes')
-      .select('id')
+      .select('*')
       .eq('user_id', user.id)
       .eq('post_id', postId)
       .maybeSingle();
@@ -223,13 +223,12 @@ router.post('/:id/like', validateId, async (req, res) => {
     if (existing) {
       // Unlike
       console.log(`[Posts] Unliking post ${postId} by user ${user.id}`);
-      console.log(`[Posts] Deleting like with id: ${existing.id}`);
       
       const { data: deleteData, error: deleteError } = await supabase
         .from('post_likes')
         .delete()
-        .eq('id', existing.id)
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .eq('post_id', postId);
 
       if (deleteError) {
         console.error('[Posts] Unlike error:', JSON.stringify(deleteError, null, 2));
