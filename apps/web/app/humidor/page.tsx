@@ -6,7 +6,8 @@ import { useAuth } from '@/lib/auth/hooks';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Navigation from '@/components/Navigation';
 import AddCigarModal from '@/components/humidor/AddCigarModal';
-import { Search, Grid3x3, List, Package, Star, TrendingUp } from 'lucide-react';
+import EditCigarModal from '@/components/humidor/EditCigarModal';
+import { Search, Grid3x3, List, Package, Star } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 import StarRating from '@/components/StarRating';
 
@@ -29,6 +30,8 @@ function HumidorContent() {
   const [humidorData, setHumidorData] = useState<any>({ owned: [], smoked: [], wishlist: [] });
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState<any>(null);
 
   useEffect(() => {
     loadHumidor();
@@ -94,10 +97,14 @@ function HumidorContent() {
   const stats = {
     totalOwned: humidorData.owned?.reduce((sum: number, c: any) => sum + (c.quantity || 1), 0) || 0,
     totalSmoked: humidorData.smoked?.length || 0,
-    totalValue: humidorData.owned?.reduce((sum: number, c: any) => sum + (c.price_paid || 0) * (c.quantity || 1), 0) || 0,
     avgRating: humidorData.smoked?.length > 0
       ? (humidorData.smoked.reduce((sum: number, c: any) => sum + (c.rating || 0), 0) / humidorData.smoked.length).toFixed(1)
       : 0,
+  };
+
+  const handleEditCigar = (item: any) => {
+    setSelectedEntry(item);
+    setShowEditModal(true);
   };
 
   return (
@@ -161,11 +168,10 @@ function HumidorContent() {
       {/* Stats Widget (for owned tab) */}
       {activeTab === 'owned' && (
         <div className="max-w-6xl mx-auto px-6 py-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <StatCard icon={Package} label="Cigars" value={stats.totalOwned} />
-            <StatCard icon={TrendingUp} label="Logged" value={stats.totalSmoked} />
+            <StatCard icon={Star} label="Logged" value={stats.totalSmoked} />
             <StatCard icon={Star} label="Avg Rating" value={stats.avgRating} />
-            <StatCard label="Value" value={`$${stats.totalValue.toFixed(0)}`} />
           </div>
         </div>
       )}
@@ -185,13 +191,13 @@ function HumidorContent() {
         ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredData.map((item: any) => (
-              <CigarCard key={item.id} item={item} viewMode="grid" />
+              <CigarCard key={item.id} item={item} viewMode="grid" onEdit={handleEditCigar} />
             ))}
           </div>
         ) : (
           <div className="space-y-4">
             {filteredData.map((item: any) => (
-              <CigarCard key={item.id} item={item} viewMode="list" />
+              <CigarCard key={item.id} item={item} viewMode="list" onEdit={handleEditCigar} />
             ))}
           </div>
         )}
@@ -206,6 +212,24 @@ function HumidorContent() {
           setShowAddModal(false);
         }}
         defaultStatus={activeTab}
+      />
+
+      {/* Edit Cigar Modal */}
+      <EditCigarModal
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false);
+          setSelectedEntry(null);
+        }}
+        onSuccess={() => {
+          loadHumidor();
+          setShowEditModal(false);
+        }}
+        onDelete={() => {
+          loadHumidor();
+          setShowEditModal(false);
+        }}
+        entry={selectedEntry}
       />
 
       <Navigation />
@@ -227,13 +251,12 @@ function StatCard({ icon: Icon, label, value }: any) {
   );
 }
 
-function CigarCard({ item, viewMode }: { item: any; viewMode: ViewMode }) {
+function CigarCard({ item, viewMode, onEdit }: { item: any; viewMode: ViewMode; onEdit: (item: any) => void }) {
   const isGrid = viewMode === 'grid';
-  const router = useRouter();
 
   return (
     <div 
-      onClick={() => router.push(`/cigar/${item.cigar_id || item.id}`)}
+      onClick={() => onEdit(item)}
       className={`bg-surface rounded-xl p-4 border border-white/[0.08] cursor-pointer hover:border-accentGold/30 transition-colors ${isGrid ? '' : 'flex gap-4'}`}
     >
       {/* Image */}
