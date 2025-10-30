@@ -50,10 +50,10 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
       return;
     }
 
-    console.log('[EditProfile] 🔌 Setting up file input event listener (modal opened)');
+    console.log('[EditProfile] 🔌 Setting up file input event listeners (modal opened)');
 
-    const handleChange = (e: Event) => {
-      console.log('[EditProfile] 🎯 File input change event (direct listener)!');
+    const handleFileSelection = (e: Event, eventType: string) => {
+      console.log(`[EditProfile] 🎯 File input ${eventType} event (direct listener)!`);
       const target = e.target as HTMLInputElement;
       const files = target.files;
       console.log('[EditProfile] Files from direct listener:', files);
@@ -70,12 +70,17 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
       }
     };
 
+    const handleChange = (e: Event) => handleFileSelection(e, 'change');
+    const handleInput = (e: Event) => handleFileSelection(e, 'input');
+
     fileInput.addEventListener('change', handleChange);
-    console.log('[EditProfile] ✅ Event listener attached successfully');
+    fileInput.addEventListener('input', handleInput);
+    console.log('[EditProfile] ✅ Both change and input event listeners attached');
     
     return () => {
-      console.log('[EditProfile] 🔌 Cleaning up file input event listener');
+      console.log('[EditProfile] 🔌 Cleaning up file input event listeners');
       fileInput.removeEventListener('change', handleChange);
+      fileInput.removeEventListener('input', handleInput);
     };
   }, [isOpen]);
 
@@ -364,13 +369,25 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"
+                  capture="environment"
                   onChange={(e) => {
                     console.log('[EditProfile] 🎯 Input onChange fired (React handler)!');
                     console.log('[EditProfile] Input element:', e.target);
                     console.log('[EditProfile] Input files:', e.target.files);
-                    handleAvatarChange(e);
-                    // Reset input value to allow selecting the same file again
-                    e.target.value = '';
+                    console.log('[EditProfile] Files length:', e.target.files?.length);
+                    if (e.target.files && e.target.files.length > 0) {
+                      handleAvatarChange(e);
+                    } else {
+                      console.log('[EditProfile] ❌ No files in onChange event');
+                    }
+                  }}
+                  onInput={(e) => {
+                    console.log('[EditProfile] 📥 Input onInput fired!');
+                    const target = e.target as HTMLInputElement;
+                    console.log('[EditProfile] Input files:', target.files);
+                    if (target.files && target.files.length > 0) {
+                      handleAvatarChange(e as any);
+                    }
                   }}
                   onClick={(e) => {
                     console.log('[EditProfile] 🖱️ Input onClick fired!');
