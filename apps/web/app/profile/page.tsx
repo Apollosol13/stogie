@@ -1,0 +1,249 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import Navigation from '@/components/Navigation';
+import EditProfileModal from '@/components/profile/EditProfileModal';
+import { useAuth } from '@/lib/auth/hooks';
+import { User, Mail, Calendar, Settings, Edit3, LogOut, Image as ImageIcon } from 'lucide-react';
+import { apiRequest } from '@/lib/api';
+
+export default function ProfilePage() {
+  return (
+    <ProtectedRoute>
+      <ProfileContent />
+    </ProtectedRoute>
+  );
+}
+
+function ProfileContent() {
+  const { user, signOut, jwt, setAuth } = useAuth();
+  const [activeTab, setActiveTab] = useState<'posts' | 'stats'>('posts');
+  const [stats, setStats] = useState<any>(null);
+  const [posts, setPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [profileData, setProfileData] = useState<any>(null);
+
+  useEffect(() => {
+    if (jwt) {
+      loadProfileData();
+    }
+  }, [jwt]);
+
+  const loadProfileData = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch fresh user profile data from backend
+      const [userProfileData, statsData, postsData] = await Promise.all([
+        apiRequest('/api/profiles/me', { method: 'GET' }, jwt),
+        apiRequest('/api/analytics', { method: 'GET' }, jwt),
+        apiRequest('/api/posts?user=me', { method: 'GET' }, jwt),
+      ]);
+      
+      console.log('[Profile] Loaded fresh user data:', userProfileData);
+      
+      // Update the profile data state
+      setProfileData(userProfileData);
+      
+      // Also update the auth store with fresh user data
+      if (userProfileData.profile) {
+        setAuth({
+          jwt: jwt,
+          user: {
+            id: userProfileData.profile.id,
+            email: userProfileData.profile.email,
+            name: userProfileData.profile.full_name,
+            username: userProfileData.profile.username,
+            avatarUrl: userProfileData.profile.avatar_url,
+          },
+        });
+      }
+      
+      setStats(statsData);
+      setPosts(postsData.posts || []);
+    } catch (error) {
+      console.error('Failed to load profile data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Use profileData if available, otherwise fall back to user from auth store
+  const displayUser = profileData?.profile || user;
+
+  return (
+    <div className="min-h-screen bg-bgPrimary pb-20">
+      {/* Header */}
+      <header className="bg-bgPrimary border-b border-white/[0.08]">
+        <div className="max-w-4xl mx-auto px-6 py-6">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl font-bold text-textPrimary">Profile</h1>
+            <button className="text-textSecondary hover:text-textPrimary">
+              <Settings size={24} />
+            </button>
+          </div>
+
+          {/* Profile Header */}
+          <div className="flex items-center gap-4 mb-6">
+            <div className="relative">
+              <div className="w-20 h-20 rounded-full bg-surface2 flex items-center justify-center border-2 border-white/[0.08]">
+                {displayUser?.avatar_url || displayUser?.avatarUrl ? (
+                  <img 
+                    src={displayUser.avatar_url || displayUser.avatarUrl} 
+                    alt={displayUser.full_name || displayUser.name || displayUser.email} 
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                ) : (
+                  <span className="text-2xl font-bold text-accentGold">
+                    {displayUser?.full_name?.[0]?.toUpperCase() || 
+                     displayUser?.name?.[0]?.toUpperCase() || 
+                     displayUser?.email?.[0]?.toUpperCase() || 'U'}
+                  </span>
+                )}
+              </div>
+              <button 
+                onClick={() => setShowEditModal(true)}
+                className="absolute bottom-0 right-0 w-7 h-7 bg-accentGold rounded-full flex items-center justify-center border-2 border-bgPrimary hover:bg-opacity-90 transition-all"
+              >
+                <Edit3 size={14} className="text-bgPrimary" />
+              </button>
+            </div>
+            
+            <div className="flex-1">
+              <h2 className="text-xl font-bold text-textPrimary">
+                {displayUser?.full_name || displayUser?.name || 'Stogie Enthusiast'}
+              </h2>
+              {displayUser?.username && (
+                <p className="text-textSecondary text-sm">@{displayUser.username}</p>
+              )}
+              <p className="text-textTertiary text-xs mt-1">{displayUser?.email}</p>
+            </div>
+          </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-4 mb-6">
+                <StatCard label="Posts" value={posts.length || 0} />
+                <StatCard label="Smoked" value={stats?.analytics?.sessionStats?.total_sessions || 0} />
+                <StatCard label="Following" value={stats?.analytics?.userStats?.following || 0} />
+              </div>
+
+          {/* Tabs */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setActiveTab('posts')}
+              className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${
+                activeTab === 'posts'
+                  ? 'bg-accentGold text-bgPrimary'
+                  : 'bg-surface text-textSecondary'
+              }`}
+            >
+              Posts
+            </button>
+            <button
+              onClick={() => setActiveTab('stats')}
+              className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${
+                activeTab === 'stats'
+                  ? 'bg-accentGold text-bgPrimary'
+                  : 'bg-surface text-textSecondary'
+              }`}
+            >
+              Activity
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Content */}
+      <main className="max-w-4xl mx-auto px-6 py-6">
+        {activeTab === 'posts' ? (
+          loading ? (
+            <div className="flex justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accentGold"></div>
+            </div>
+          ) : posts.length === 0 ? (
+            <div className="text-center py-16">
+              <ImageIcon size={48} className="text-textTertiary mx-auto mb-4" />
+              <p className="text-textPrimary font-semibold">No posts yet</p>
+              <p className="text-textSecondary text-sm mt-2">Share your first cigar experience!</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-2">
+              {posts.map((post) => (
+                <div key={post.id} className="aspect-square bg-surface rounded-lg overflow-hidden">
+                  {post.image_url && (
+                    <img 
+                      src={post.image_url} 
+                      alt="Post" 
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          )
+            ) : (
+              <div className="space-y-4">
+                <ActivityCard 
+                  title="Total Smoked"
+                  value={stats?.analytics?.sessionStats?.total_sessions || 0}
+                  subtitle="cigars logged"
+                />
+                <ActivityCard 
+                  title="Average Rating"
+                  value={stats?.analytics?.reviewStats?.avg_rating_given?.toFixed(1) || '0.0'}
+                  subtitle="out of 5 stars"
+                />
+                <ActivityCard 
+                  title="Followers"
+                  value={stats?.analytics?.userStats?.followers || 0}
+                  subtitle="people following you"
+                />
+              </div>
+            )}
+
+        {/* Sign Out Button */}
+        <button
+          onClick={signOut}
+          className="w-full mt-8 bg-surface text-accentRed py-3 rounded-full font-semibold hover:bg-opacity-80 transition-all border border-accentRed/30 flex items-center justify-center gap-2"
+        >
+          <LogOut size={20} />
+          Sign Out
+        </button>
+      </main>
+
+      {/* Edit Profile Modal */}
+      <EditProfileModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        onSuccess={() => {
+          loadProfileData();
+          setShowEditModal(false);
+        }}
+      />
+
+      <Navigation />
+    </div>
+  );
+}
+
+function StatCard({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="bg-surface rounded-lg p-3 text-center border border-white/[0.08]">
+      <div className="text-xl font-bold text-textPrimary">{value}</div>
+      <div className="text-xs text-textSecondary">{label}</div>
+    </div>
+  );
+}
+
+function ActivityCard({ title, value, subtitle }: { title: string; value: string | number; subtitle: string }) {
+  return (
+    <div className="bg-surface rounded-xl p-4 border border-white/[0.08]">
+      <h3 className="text-textSecondary text-sm mb-2">{title}</h3>
+      <div className="text-2xl font-bold text-textPrimary mb-1">{value}</div>
+      <p className="text-textTertiary text-xs">{subtitle}</p>
+    </div>
+  );
+}
+
