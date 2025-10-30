@@ -59,6 +59,7 @@ function ProfileContent() {
       
       // Update the profile data state if we got it
       if (userProfileData && userProfileData.profile) {
+        console.log('[Profile] Setting profile data for user:', userProfileData.profile.username);
         setProfileData(userProfileData);
         
         // Also update the auth store with fresh user data
@@ -72,6 +73,10 @@ function ProfileContent() {
             avatarUrl: userProfileData.profile.avatar_url,
           },
         });
+      } else {
+        console.error('[Profile] Failed to get profile data, clearing cached data');
+        // If we can't get fresh profile data, don't show stale data
+        setProfileData(null);
       }
       
       setStats(statsData);
@@ -83,8 +88,35 @@ function ProfileContent() {
     }
   };
   
-  // Use profileData if available, otherwise fall back to user from auth store
-  const displayUser = profileData?.profile || user;
+  // Use profileData - don't fall back to cached user to avoid showing wrong profile
+  const displayUser = profileData?.profile;
+
+  // If still loading, show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-bgPrimary pb-20 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accentGold"></div>
+      </div>
+    );
+  }
+
+  // If no profile data after loading, show error
+  if (!displayUser) {
+    return (
+      <div className="min-h-screen bg-bgPrimary pb-20 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-textPrimary font-semibold mb-2">Unable to load profile</p>
+          <p className="text-textSecondary text-sm">Please try refreshing the page</p>
+          <button
+            onClick={loadProfileData}
+            className="mt-4 px-6 py-2 bg-accentGold text-bgPrimary rounded-full font-semibold"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-bgPrimary pb-20">
@@ -171,11 +203,7 @@ function ProfileContent() {
       {/* Content */}
       <main className="max-w-4xl mx-auto px-6 py-6">
         {activeTab === 'posts' ? (
-          loading ? (
-            <div className="flex justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accentGold"></div>
-            </div>
-          ) : posts.length === 0 ? (
+          posts.length === 0 ? (
             <div className="text-center py-16">
               <ImageIcon size={48} className="text-textTertiary mx-auto mb-4" />
               <p className="text-textPrimary font-semibold">No posts yet</p>

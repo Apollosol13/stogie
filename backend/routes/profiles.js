@@ -38,7 +38,7 @@ router.get('/me', async (req, res) => {
     
     // Verify token and get user
     console.log('[Profiles/me] Verifying token with Supabase...');
-    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
+    const { data: { user }, error: authError } = await supabaseAuth.getUser(token);
     
     if (authError || !user) {
       console.error('[Profiles/me] Auth error:', authError);
