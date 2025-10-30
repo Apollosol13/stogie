@@ -123,16 +123,26 @@ export default function AddCigarModal({ isOpen, onClose, onSuccess, defaultStatu
         image_url: imageUrl,
       };
 
-      await apiRequest('/api/humidor', {
+      console.log('[AddCigar] Submitting payload:', payload);
+
+      const response = await apiRequest('/api/humidor', {
         method: 'POST',
         body: JSON.stringify(payload),
       }, jwt);
 
-      onSuccess();
-      handleClose();
+      console.log('[AddCigar] Response:', response);
+
+      if (response.success) {
+        console.log('[AddCigar] Successfully added cigar:', response.entry);
+        onSuccess();
+        handleClose();
+      } else {
+        throw new Error(response.error || 'Failed to add cigar');
+      }
     } catch (error: any) {
-      console.error('Failed to add cigar:', error);
-      alert(error.message || 'Failed to add cigar');
+      console.error('[AddCigar] Error:', error);
+      console.error('[AddCigar] Error message:', error.message);
+      alert(error.message || 'Failed to add cigar. Please check console for details.');
     } finally {
       setSubmitting(false);
     }
