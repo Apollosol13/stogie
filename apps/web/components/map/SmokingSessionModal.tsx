@@ -84,7 +84,7 @@ export default function SmokingSessionModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pb-24">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/80 backdrop-blur-sm"
@@ -92,7 +92,7 @@ export default function SmokingSessionModal({
       />
       
       {/* Modal */}
-      <div className="relative w-full max-w-2xl bg-surface rounded-t-3xl max-h-[85vh] flex flex-col animate-slide-up">
+      <div className="relative w-full max-w-2xl bg-surface rounded-3xl max-h-[80vh] flex flex-col animate-scale-up shadow-2xl">
         {/* Handle */}
         <div className="w-10 h-1 bg-textTertiary rounded-full mx-auto mt-3 mb-2" />
         
