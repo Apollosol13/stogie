@@ -5,7 +5,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import Navigation from '@/components/Navigation';
 import EditProfileModal from '@/components/profile/EditProfileModal';
 import { useAuth } from '@/lib/auth/hooks';
-import { User, Mail, Calendar, Settings, Edit3, LogOut, Image as ImageIcon } from 'lucide-react';
+import { User, Mail, Calendar, Settings, Edit3, LogOut, Image as ImageIcon, RefreshCw } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 
 export default function ProfilePage() {
@@ -31,7 +31,38 @@ function ProfileContent() {
     }
   }, [jwt]);
 
+  // Reload profile data when page becomes visible (e.g., after navigating back from feed)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && jwt) {
+        console.log('[Profile] Page visible, refreshing data...');
+        loadProfileData();
+      }
+    };
+
+    const handleFocus = () => {
+      if (jwt) {
+        console.log('[Profile] Window focused, refreshing data...');
+        loadProfileData();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [jwt]);
+
   const loadProfileData = async () => {
+    // Prevent multiple simultaneous calls
+    if (loading) {
+      console.log('[Profile] Already loading, skipping...');
+      return;
+    }
+
     try {
       setLoading(true);
       
@@ -129,9 +160,19 @@ function ProfileContent() {
         <div className="max-w-4xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl font-bold text-textPrimary">Profile</h1>
-            <button className="text-textSecondary hover:text-textPrimary">
-              <Settings size={24} />
-            </button>
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={loadProfileData}
+                disabled={loading}
+                className={`text-textSecondary hover:text-accentGold transition-colors ${loading ? 'animate-spin' : ''}`}
+                title="Refresh"
+              >
+                <RefreshCw size={22} />
+              </button>
+              <button className="text-textSecondary hover:text-textPrimary">
+                <Settings size={24} />
+              </button>
+            </div>
           </div>
 
           {/* Profile Header */}
