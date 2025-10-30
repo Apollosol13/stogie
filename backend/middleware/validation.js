@@ -274,6 +274,17 @@ export const validateId = [
   validate
 ];
 
+// Validate entryId parameter (for humidor routes)
+export const validateEntryId = [
+  param('entryId')
+    .notEmpty()
+    .withMessage('Entry ID is required')
+    .isInt({ min: 1 })
+    .withMessage('Entry ID must be a positive integer'),
+  
+  validate
+];
+
 export const validateUUID = [
   param('id')
     .notEmpty()

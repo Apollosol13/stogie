@@ -1,7 +1,7 @@
 import express from 'express';
 import supabase from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
-import { validateHumidorEntry, validateId } from '../middleware/validation.js';
+import { validateHumidorEntry, validateEntryId } from '../middleware/validation.js';
 
 const router = express.Router();
 
@@ -338,7 +338,7 @@ router.post('/', authenticateToken, validateHumidorEntry, async (req, res) => {
 });
 
 // Update humidor entry
-router.put('/:entryId', authenticateToken, validateId, validateHumidorEntry, async (req, res) => {
+router.put('/:entryId', authenticateToken, validateEntryId, validateHumidorEntry, async (req, res) => {
   try {
     const { entryId } = req.params;
     const updates = req.body;
@@ -414,7 +414,7 @@ router.put('/:entryId', authenticateToken, validateId, validateHumidorEntry, asy
 });
 
 // Delete humidor entry
-router.delete('/:entryId', authenticateToken, async (req, res) => {
+router.delete('/:entryId', authenticateToken, validateEntryId, async (req, res) => {
   try {
     const { entryId } = req.params;
 
