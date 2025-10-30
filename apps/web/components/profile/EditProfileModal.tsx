@@ -392,8 +392,16 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
                   onClick={(e) => {
                     console.log('[EditProfile] 🖱️ Input onClick fired!');
                   }}
-                  className="hidden"
-                  style={{ display: 'none' }}
+                  style={{ 
+                    position: 'absolute',
+                    opacity: 0,
+                    pointerEvents: 'none',
+                    width: '1px',
+                    height: '1px',
+                    overflow: 'hidden'
+                  }}
+                  tabIndex={-1}
+                  aria-hidden="true"
                 />
               </div>
               <p className="text-textTertiary text-xs mt-3 text-center">
