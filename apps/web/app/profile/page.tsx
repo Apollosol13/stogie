@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Navigation from '@/components/Navigation';
 import EditProfileModal from '@/components/profile/EditProfileModal';
@@ -18,6 +18,7 @@ export default function ProfilePage() {
 }
 
 function ProfileContent() {
+  const router = useRouter();
   const { user, signOut, jwt, setAuth } = useAuth();
   const pathname = usePathname();
   const [activeTab, setActiveTab] = useState<'posts' | 'stats'>('posts');
@@ -282,15 +283,23 @@ function ProfileContent() {
           ) : (
             <div className="grid grid-cols-3 gap-2">
               {posts.map((post) => (
-                <div key={post.id} className="aspect-square bg-surface rounded-lg overflow-hidden">
-                  {post.image_url && (
+                <button
+                  key={post.id}
+                  onClick={() => router.push('/feed')}
+                  className="aspect-square bg-surface rounded-lg overflow-hidden hover:opacity-80 transition-opacity cursor-pointer"
+                >
+                  {post.image_url ? (
                     <img 
                       src={post.image_url} 
                       alt="Post" 
                       className="w-full h-full object-cover"
                     />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-surface2">
+                      <ImageIcon size={32} className="text-textTertiary" />
+                    </div>
                   )}
-                </div>
+                </button>
               ))}
             </div>
           )
