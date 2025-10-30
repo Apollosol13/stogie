@@ -39,10 +39,12 @@ export default function EditCigarModal({ isOpen, onClose, onSuccess, onDelete, e
 
       const payload = {
         quantity: parseInt(quantity) || 1,
-        notes: notes?.trim() || null,
+        personal_notes: notes?.trim() || null,
         purchase_price: pricePaid ? parseFloat(pricePaid) : null,
         status,
       };
+
+      console.log('[EditCigar] Submitting update payload:', payload);
 
       await apiRequest(`/api/humidor/${entry.id}`, {
         method: 'PUT',
