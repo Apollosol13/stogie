@@ -22,6 +22,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(user?.avatarUrl || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const processingFileRef = useRef<boolean>(false);
 
   // Debug state changes
   useEffect(() => {
@@ -85,6 +86,12 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
   }, [isOpen]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Prevent duplicate processing
+    if (processingFileRef.current) {
+      console.log('[EditProfile] ⚠️ Already processing a file, skipping duplicate');
+      return;
+    }
+    
     console.log('[EditProfile] 🎯 handleAvatarChange triggered!');
     console.log('[EditProfile] Event:', e);
     console.log('[EditProfile] Files in event:', e.target.files);
@@ -96,6 +103,8 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
       console.log('[EditProfile] ❌ No file selected');
       return;
     }
+    
+    processingFileRef.current = true;
 
     console.log('[EditProfile] ✅ File details:', {
       name: file.name,
@@ -129,9 +138,11 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
     reader.onloadend = () => {
       console.log('[EditProfile] ✅ Preview created');
       setAvatarPreview(reader.result as string);
+      processingFileRef.current = false;
     };
     reader.onerror = (error) => {
       console.error('[EditProfile] ❌ FileReader error:', error);
+      processingFileRef.current = false;
     };
     reader.readAsDataURL(file);
   };
@@ -352,6 +363,23 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
                       console.log('[EditProfile] 🎬 Triggering file input click...');
                       input.click();
                       console.log('[EditProfile] ✅ Click triggered successfully');
+                      
+                      // Poll for file selection as fallback (for browsers where onChange doesn't fire)
+                      console.log('[EditProfile] 🔄 Starting file selection polling...');
+                      let pollCount = 0;
+                      const pollInterval = setInterval(() => {
+                        pollCount++;
+                        console.log(`[EditProfile] 📊 Poll #${pollCount} - Checking for files...`);
+                        
+                        if (input.files && input.files.length > 0) {
+                          console.log('[EditProfile] ✅ File detected via polling!');
+                          clearInterval(pollInterval);
+                          handleAvatarChange({ target: input } as any);
+                        } else if (pollCount >= 50) { // Stop after 10 seconds (50 * 200ms)
+                          console.log('[EditProfile] ⏱️ Polling timeout - no file selected');
+                          clearInterval(pollInterval);
+                        }
+                      }, 200);
                     } else {
                       console.error('[EditProfile] ❌ File input ref is null!');
                     }
