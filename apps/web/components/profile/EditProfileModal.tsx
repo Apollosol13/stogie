@@ -63,10 +63,10 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
     try {
       console.log('[EditProfile] Uploading avatar...');
       const formData = new FormData();
-      formData.append('avatar', selectedFile);
+      formData.append('image', selectedFile); // ✅ Changed from 'avatar' to 'image'
 
       const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://stogie-production.up.railway.app';
-      const response = await fetch(`${API_BASE_URL}/api/profiles/upload-avatar`, {
+      const response = await fetch(`${API_BASE_URL}/api/profiles/image`, { // ✅ Changed from '/upload-avatar' to '/image'
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${jwt}`,
@@ -80,7 +80,14 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
       }
 
       const result = await response.json();
-      console.log('[EditProfile] Avatar uploaded successfully:', result.avatar_url);
+      console.log('[EditProfile] Avatar uploaded successfully!');
+      console.log('[EditProfile] New avatar URL:', result.avatar_url);
+      
+      if (!result.avatar_url) {
+        console.error('[EditProfile] No avatar_url in response:', result);
+        throw new Error('Server did not return avatar URL');
+      }
+      
       return result.avatar_url;
     } catch (error: any) {
       console.error('[EditProfile] Failed to upload avatar:', error);
@@ -114,18 +121,27 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
 
       // Update local auth state with new data
       if (user && jwt) {
+        const updatedUser = {
+          ...user,
+          name: formData.full_name,
+          username: formData.username,
+          avatarUrl: newAvatarUrl || user.avatarUrl,
+        };
+        
+        console.log('[EditProfile] Updating local auth with new user data:', updatedUser);
+        
         setAuth({
           jwt,
-          user: {
-            ...user,
-            name: formData.full_name,
-            username: formData.username,
-            avatarUrl: newAvatarUrl || user.avatarUrl,
-          },
+          user: updatedUser,
         });
       }
 
+      // Clear selected file
+      setSelectedFile(null);
+      
       alert('Profile updated successfully!');
+      
+      // Trigger parent refresh (reloads profile data from server)
       onSuccess();
       onClose();
     } catch (error: any) {
