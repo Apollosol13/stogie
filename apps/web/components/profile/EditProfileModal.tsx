@@ -351,8 +351,12 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
                       console.error('[EditProfile] ❌ File input ref is null!');
                     }
                   }}
+                  onPointerDown={() => console.log('[EditProfile] 👆 Camera button POINTER DOWN')}
+                  onMouseDown={() => console.log('[EditProfile] 🖱️ Camera button MOUSE DOWN')}
+                  onTouchStart={() => console.log('[EditProfile] 👆 Camera button TOUCH START')}
                   disabled={submitting}
-                  className="absolute bottom-0 right-0 w-8 h-8 bg-accentGold rounded-full flex items-center justify-center border-2 border-bgPrimary hover:bg-opacity-90 transition-all disabled:opacity-50"
+                  className="absolute bottom-0 right-0 w-8 h-8 bg-accentGold rounded-full flex items-center justify-center border-2 border-bgPrimary hover:bg-opacity-90 transition-all disabled:opacity-50 cursor-pointer z-50"
+                  style={{ pointerEvents: 'auto' }}
                 >
                   <Camera size={16} className="text-bgPrimary" />
                 </button>
