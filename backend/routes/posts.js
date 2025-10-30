@@ -395,8 +395,11 @@ router.get('/:id/comments', async (req, res) => {
 // POST /api/posts/:id/comments - Add comment
 router.post('/:id/comments', validateId, validateComment, async (req, res) => {
   try {
+    console.log('[Posts] Add comment - Request body:', req.body);
+    
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('[Posts] Add comment - No auth header');
       return res.status(401).json({ success: false, error: 'No token provided' });
     }
 
@@ -404,11 +407,14 @@ router.post('/:id/comments', validateId, validateComment, async (req, res) => {
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     
     if (authError || !user) {
+      console.log('[Posts] Add comment - Auth error:', authError?.message);
       return res.status(401).json({ success: false, error: 'Invalid token' });
     }
 
     const postId = Number(req.params.id);
     const { text, parent_comment_id } = req.body || {};
+    
+    console.log(`[Posts] Add comment - User ${user.id} on post ${postId}, text: "${text}"`);
 
     if (!text?.trim()) {
       return res.status(400).json({ success: false, error: 'Comment text required' });
