@@ -19,7 +19,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
     bio: '',
   });
   const [submitting, setSubmitting] = useState(false);
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(user?.avatarUrl || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -30,7 +30,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
     }
   }, [isOpen, user?.avatarUrl]);
 
-  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -46,19 +46,24 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
       return;
     }
 
+    // Store file for later upload
+    setSelectedFile(file);
+
     // Create preview
     const reader = new FileReader();
     reader.onloadend = () => {
       setAvatarPreview(reader.result as string);
     };
     reader.readAsDataURL(file);
+  };
 
-    // Upload to server
+  const uploadAvatar = async (): Promise<string | null> => {
+    if (!selectedFile) return null;
+
     try {
-      setUploadingAvatar(true);
-
+      console.log('[EditProfile] Uploading avatar...');
       const formData = new FormData();
-      formData.append('avatar', file);
+      formData.append('avatar', selectedFile);
 
       const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://stogie-production.up.railway.app';
       const response = await fetch(`${API_BASE_URL}/api/profiles/upload-avatar`, {
@@ -70,29 +75,16 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
       });
 
       if (!response.ok) {
-        throw new Error('Failed to upload avatar');
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to upload avatar');
       }
 
       const result = await response.json();
-      console.log('Avatar uploaded:', result);
-
-      // Update local user state with new avatar URL
-      if (user && jwt && result.avatar_url) {
-        setAuth({
-          jwt,
-          user: {
-            ...user,
-            avatarUrl: result.avatar_url,
-          },
-        });
-      }
-
-      alert('Profile picture updated successfully!');
+      console.log('[EditProfile] Avatar uploaded successfully:', result.avatar_url);
+      return result.avatar_url;
     } catch (error: any) {
-      console.error('Failed to upload avatar:', error);
-      alert(error.message || 'Failed to upload profile picture');
-    } finally {
-      setUploadingAvatar(false);
+      console.error('[EditProfile] Failed to upload avatar:', error);
+      throw error;
     }
   };
 
@@ -102,12 +94,25 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
     try {
       setSubmitting(true);
       
+      let newAvatarUrl = user?.avatarUrl;
+
+      // Upload avatar first if a new one was selected
+      if (selectedFile) {
+        console.log('[EditProfile] Uploading new avatar before saving profile...');
+        newAvatarUrl = await uploadAvatar();
+        console.log('[EditProfile] Avatar upload complete:', newAvatarUrl);
+      }
+
+      // Update profile data
+      console.log('[EditProfile] Updating profile data...');
       const response = await apiRequest('/api/profiles', {
         method: 'PUT',
         body: JSON.stringify(formData),
       }, jwt);
 
-      // Update local auth state
+      console.log('[EditProfile] Profile updated successfully');
+
+      // Update local auth state with new data
       if (user && jwt) {
         setAuth({
           jwt,
@@ -115,14 +120,16 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
             ...user,
             name: formData.full_name,
             username: formData.username,
+            avatarUrl: newAvatarUrl || user.avatarUrl,
           },
         });
       }
 
+      alert('Profile updated successfully!');
       onSuccess();
       onClose();
     } catch (error: any) {
-      console.error('Failed to update profile:', error);
+      console.error('[EditProfile] Failed to update profile:', error);
       alert(error.message || 'Failed to update profile');
     } finally {
       setSubmitting(false);
@@ -174,14 +181,10 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={uploadingAvatar}
+                  disabled={submitting}
                   className="absolute bottom-0 right-0 w-8 h-8 bg-accentGold rounded-full flex items-center justify-center border-2 border-bgPrimary hover:bg-opacity-90 transition-all disabled:opacity-50"
                 >
-                  {uploadingAvatar ? (
-                    <div className="animate-spin w-4 h-4 border-2 border-bgPrimary border-t-transparent rounded-full" />
-                  ) : (
-                    <Camera size={16} className="text-bgPrimary" />
-                  )}
+                  <Camera size={16} className="text-bgPrimary" />
                 </button>
                 <input
                   ref={fileInputRef}
@@ -192,7 +195,11 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
                 />
               </div>
               <p className="text-textTertiary text-xs mt-3 text-center">
-                Click the camera icon to change your profile picture
+                {selectedFile ? (
+                  <span className="text-accentGold">New picture selected • Click Save to upload</span>
+                ) : (
+                  'Click the camera icon to change your profile picture'
+                )}
               </p>
             </div>
 
@@ -253,7 +260,11 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
               disabled={submitting}
               className="flex-1 bg-accentGold text-bgPrimary py-3 rounded-full font-semibold hover:bg-opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {submitting ? 'Saving...' : 'Save Changes'}
+              {submitting ? (
+                selectedFile ? 'Uploading...' : 'Saving...'
+              ) : (
+                selectedFile ? 'Save & Upload' : 'Save Changes'
+              )}
             </button>
           </div>
         </form>
