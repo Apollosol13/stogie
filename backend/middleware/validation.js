@@ -173,8 +173,7 @@ export const validateReview = [
 // ==============================================
 export const validateHumidorEntry = [
   body('status')
-    .notEmpty()
-    .withMessage('Status is required')
+    .optional()
     .isIn(['owned', 'wishlist', 'smoked'])
     .withMessage('Status must be owned, wishlist, or smoked'),
   
