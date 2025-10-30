@@ -23,6 +23,15 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
   const [avatarPreview, setAvatarPreview] = useState<string | null>(user?.avatarUrl || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Debug state changes
+  useEffect(() => {
+    console.log('[EditProfile] 📊 selectedFile state changed:', selectedFile ? selectedFile.name : 'null');
+  }, [selectedFile]);
+
+  useEffect(() => {
+    console.log('[EditProfile] 🖼️ avatarPreview state changed:', avatarPreview ? 'has preview' : 'null');
+  }, [avatarPreview]);
+
   // Update avatar preview when user changes
   useEffect(() => {
     if (isOpen && user?.avatarUrl) {
@@ -302,7 +311,15 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"
-                  onChange={handleAvatarChange}
+                  onChange={(e) => {
+                    console.log('[EditProfile] 🎯 Input onChange fired!');
+                    console.log('[EditProfile] Input element:', e.target);
+                    console.log('[EditProfile] Input files:', e.target.files);
+                    handleAvatarChange(e);
+                  }}
+                  onClick={(e) => {
+                    console.log('[EditProfile] 🖱️ Input onClick fired!');
+                  }}
                   className="hidden"
                 />
               </div>
