@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Navigation from '@/components/Navigation';
 import EditProfileModal from '@/components/profile/EditProfileModal';
+import PostDetailModal from '@/components/PostDetailModal';
 import { useAuth } from '@/lib/auth/hooks';
 import { User, Mail, Calendar, Settings, Edit3, LogOut, Image as ImageIcon, RefreshCw } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
@@ -18,7 +19,6 @@ export default function ProfilePage() {
 }
 
 function ProfileContent() {
-  const router = useRouter();
   const { user, signOut, jwt, setAuth } = useAuth();
   const pathname = usePathname();
   const [activeTab, setActiveTab] = useState<'posts' | 'stats'>('posts');
@@ -27,6 +27,8 @@ function ProfileContent() {
   const [loading, setLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showPostModal, setShowPostModal] = useState(false);
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [profileData, setProfileData] = useState<any>(null);
   const lastPathRef = useRef<string | null>(null);
 
@@ -285,7 +287,10 @@ function ProfileContent() {
               {posts.map((post) => (
                 <button
                   key={post.id}
-                  onClick={() => router.push('/feed')}
+                  onClick={() => {
+                    setSelectedPostId(post.id);
+                    setShowPostModal(true);
+                  }}
                   className="aspect-square bg-surface rounded-lg overflow-hidden hover:opacity-80 transition-opacity cursor-pointer"
                 >
                   {post.image_url ? (
@@ -342,6 +347,21 @@ function ProfileContent() {
           setShowEditModal(false);
         }}
       />
+
+      {/* Post Detail Modal */}
+      {selectedPostId && (
+        <PostDetailModal
+          isOpen={showPostModal}
+          onClose={() => {
+            setShowPostModal(false);
+            setSelectedPostId(null);
+          }}
+          postId={selectedPostId}
+          onDelete={() => {
+            loadProfileData(); // Reload to remove deleted post from grid
+          }}
+        />
+      )}
 
       <Navigation />
     </div>
