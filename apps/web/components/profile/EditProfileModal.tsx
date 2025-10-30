@@ -39,6 +39,32 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
     }
   }, [isOpen, user?.avatarUrl]);
 
+  // Add direct event listener to file input as fallback
+  useEffect(() => {
+    const fileInput = fileInputRef.current;
+    if (!fileInput) return;
+
+    console.log('[EditProfile] 🔌 Setting up file input event listener');
+
+    const handleChange = (e: Event) => {
+      console.log('[EditProfile] 🎯 File input change event (direct listener)!');
+      const target = e.target as HTMLInputElement;
+      const file = target.files?.[0];
+      console.log('[EditProfile] File from direct listener:', file);
+      
+      if (file) {
+        handleAvatarChange({ target } as any);
+      }
+    };
+
+    fileInput.addEventListener('change', handleChange);
+    
+    return () => {
+      console.log('[EditProfile] 🔌 Cleaning up file input event listener');
+      fileInput.removeEventListener('change', handleChange);
+    };
+  }, []);
+
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log('[EditProfile] 🎯 handleAvatarChange triggered!');
     console.log('[EditProfile] Event:', e);
@@ -312,15 +338,18 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
                   type="file"
                   accept="image/*"
                   onChange={(e) => {
-                    console.log('[EditProfile] 🎯 Input onChange fired!');
+                    console.log('[EditProfile] 🎯 Input onChange fired (React handler)!');
                     console.log('[EditProfile] Input element:', e.target);
                     console.log('[EditProfile] Input files:', e.target.files);
                     handleAvatarChange(e);
+                    // Reset input value to allow selecting the same file again
+                    e.target.value = '';
                   }}
                   onClick={(e) => {
                     console.log('[EditProfile] 🖱️ Input onClick fired!');
                   }}
                   className="hidden"
+                  style={{ display: 'none' }}
                 />
               </div>
               <p className="text-textTertiary text-xs mt-3 text-center">
