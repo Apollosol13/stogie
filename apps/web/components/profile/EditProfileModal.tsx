@@ -40,30 +40,44 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
   }, [isOpen, user?.avatarUrl]);
 
   // Add direct event listener to file input as fallback
+  // Re-setup whenever modal opens to ensure listener is active
   useEffect(() => {
+    if (!isOpen) return;
+    
     const fileInput = fileInputRef.current;
-    if (!fileInput) return;
+    if (!fileInput) {
+      console.log('[EditProfile] ⚠️ File input ref is null when trying to add listener');
+      return;
+    }
 
-    console.log('[EditProfile] 🔌 Setting up file input event listener');
+    console.log('[EditProfile] 🔌 Setting up file input event listener (modal opened)');
 
     const handleChange = (e: Event) => {
       console.log('[EditProfile] 🎯 File input change event (direct listener)!');
       const target = e.target as HTMLInputElement;
-      const file = target.files?.[0];
-      console.log('[EditProfile] File from direct listener:', file);
+      const files = target.files;
+      console.log('[EditProfile] Files from direct listener:', files);
+      console.log('[EditProfile] Number of files:', files?.length);
+      
+      const file = files?.[0];
+      console.log('[EditProfile] First file:', file);
       
       if (file) {
+        console.log('[EditProfile] ✅ File found, calling handleAvatarChange...');
         handleAvatarChange({ target } as any);
+      } else {
+        console.log('[EditProfile] ❌ No file found in event');
       }
     };
 
     fileInput.addEventListener('change', handleChange);
+    console.log('[EditProfile] ✅ Event listener attached successfully');
     
     return () => {
       console.log('[EditProfile] 🔌 Cleaning up file input event listener');
       fileInput.removeEventListener('change', handleChange);
     };
-  }, []);
+  }, [isOpen]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log('[EditProfile] 🎯 handleAvatarChange triggered!');
@@ -318,12 +332,21 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    console.log('[EditProfile] 📷 Camera button clicked!');
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('[EditProfile] ====================================');
+                    console.log('[EditProfile] 📷 Camera button CLICKED!');
+                    console.log('[EditProfile] ====================================');
                     console.log('[EditProfile] File input ref:', fileInputRef.current);
-                    if (fileInputRef.current) {
-                      console.log('[EditProfile] Triggering file input click...');
-                      fileInputRef.current.click();
+                    console.log('[EditProfile] Input element type:', fileInputRef.current?.type);
+                    console.log('[EditProfile] Input element accept:', fileInputRef.current?.accept);
+                    
+                    const input = fileInputRef.current;
+                    if (input) {
+                      console.log('[EditProfile] 🎬 Triggering file input click...');
+                      input.click();
+                      console.log('[EditProfile] ✅ Click triggered successfully');
                     } else {
                       console.error('[EditProfile] ❌ File input ref is null!');
                     }
