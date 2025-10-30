@@ -104,9 +104,13 @@ function ProfileContent() {
         }),
       ]);
       
+      console.log('[Profile] ========================================');
+      console.log('[Profile] API RESPONSES:');
       console.log('[Profile] User profile data:', userProfileData);
       console.log('[Profile] Stats data:', statsData);
+      console.log('[Profile] Following count from API:', statsData?.analytics?.userStats?.following);
       console.log('[Profile] Posts data:', postsData);
+      console.log('[Profile] ========================================');
       
       // Update the profile data state if we got it
       if (userProfileData && userProfileData.profile) {
