@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
+import { GoogleMap, useLoadScript, Marker } from '@react-google-maps/api';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Navigation from '@/components/Navigation';
 import SmokingSessionModal from '@/components/map/SmokingSessionModal';
@@ -128,6 +128,13 @@ function MapContent() {
   const [showSessionModal, setShowSessionModal] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
 
+  // Use NEXT_PUBLIC_GOOGLE_MAPS_API_KEY for the API key
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+  
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: apiKey,
+  });
+
   const onLoad = useCallback((map: google.maps.Map) => {
     setMap(map);
     
@@ -239,57 +246,73 @@ function MapContent() {
     }
   };
 
-  // Use NEXT_PUBLIC_GOOGLE_MAPS_API_KEY for the API key
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+  if (loadError) {
+    return (
+      <div className="h-screen bg-bgPrimary pb-20 relative flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-textPrimary text-lg mb-2">Error loading maps</p>
+          <p className="text-textSecondary">{loadError.message}</p>
+        </div>
+        <Navigation />
+      </div>
+    );
+  }
+
+  if (!isLoaded) {
+    return (
+      <div className="h-screen bg-bgPrimary pb-20 relative flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accentGold"></div>
+        <Navigation />
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen bg-bgPrimary pb-20 relative">
-      <LoadScript googleMapsApiKey={apiKey}>
-        <GoogleMap
-          mapContainerStyle={mapContainerStyle}
-          center={userLocation || defaultCenter}
-          zoom={13}
-          onLoad={onLoad}
-          onUnmount={onUnmount}
-          onClick={handleMapClick}
-          options={{
-            styles: darkMapStyles,
-            disableDefaultUI: true,
-            zoomControl: false,
-            mapTypeControl: false,
-            scaleControl: false,
-            streetViewControl: false,
-            rotateControl: false,
-            fullscreenControl: false,
-          }}
-        >
-          {/* User location marker */}
-          {userLocation && (
-            <Marker
-              position={userLocation}
-              icon={{
-                path: google.maps.SymbolPath.CIRCLE,
-                scale: 8,
-                fillColor: '#60A5FA',
-                fillOpacity: 1,
-                strokeColor: '#FFFFFF',
-                strokeWeight: 2,
-              }}
-            />
-          )}
+      <GoogleMap
+        mapContainerStyle={mapContainerStyle}
+        center={userLocation || defaultCenter}
+        zoom={13}
+        onLoad={onLoad}
+        onUnmount={onUnmount}
+        onClick={handleMapClick}
+        options={{
+          styles: darkMapStyles,
+          disableDefaultUI: true,
+          zoomControl: false,
+          mapTypeControl: false,
+          scaleControl: false,
+          streetViewControl: false,
+          rotateControl: false,
+          fullscreenControl: false,
+        }}
+      >
+        {/* User location marker */}
+        {userLocation && (
+          <Marker
+            position={userLocation}
+            icon={{
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: 8,
+              fillColor: '#60A5FA',
+              fillOpacity: 1,
+              strokeColor: '#FFFFFF',
+              strokeWeight: 2,
+            }}
+          />
+        )}
 
-          {/* Map markers */}
-          {filteredMarkers.map((marker) => (
-            <Marker
-              key={marker.id}
-              position={marker.position}
-              title={marker.title}
-              icon={getMarkerIcon(marker.type)}
-              onClick={() => setSelectedMarker(marker)}
-            />
-          ))}
-        </GoogleMap>
-      </LoadScript>
+        {/* Map markers */}
+        {filteredMarkers.map((marker) => (
+          <Marker
+            key={marker.id}
+            position={marker.position}
+            title={marker.title}
+            icon={getMarkerIcon(marker.type)}
+            onClick={() => setSelectedMarker(marker)}
+          />
+        ))}
+      </GoogleMap>
 
       {/* Header */}
       <header className="absolute top-0 left-0 right-0 bg-gradient-to-b from-bgPrimary/90 to-transparent z-10">
