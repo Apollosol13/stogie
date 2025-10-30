@@ -290,99 +290,6 @@ router.post('/:id/like', validateId, async (req, res) => {
   }
 });
 
-// GET /api/posts/:id - Get a single post by ID
-router.get('/:id', validateId, async (req, res) => {
-  try {
-    const authHeader = req.headers.authorization;
-    let userId = null;
-    
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.substring(7);
-      const { data: { user } } = await supabase.auth.getUser(token);
-      userId = user?.id || null;
-    }
-    
-    const postId = Number(req.params.id);
-    
-    // Get the post with all related data
-    const { data: post, error: postError } = await supabase
-      .from('posts')
-      .select(`
-        id,
-        image_url,
-        caption,
-        cigar_id,
-        rating,
-        location_name,
-        latitude,
-        longitude,
-        created_at,
-        user_id,
-        cigars (
-          id,
-          brand,
-          line,
-          vitola,
-          strength,
-          wrapper,
-          origin,
-          image_url
-        ),
-        profiles (
-          id,
-          username,
-          full_name,
-          avatar_url
-        )
-      `)
-      .eq('id', postId)
-      .single();
-    
-    if (postError || !post) {
-      return res.status(404).json({ success: false, error: 'Post not found' });
-    }
-    
-    // Get like count
-    const { count: likeCount } = await supabase
-      .from('post_likes')
-      .select('*', { count: 'exact', head: true })
-      .eq('post_id', postId);
-    
-    // Get comment count
-    const { count: commentCount } = await supabase
-      .from('post_comments')
-      .select('*', { count: 'exact', head: true })
-      .eq('post_id', postId);
-    
-    // Check if current user liked this post
-    let likedByMe = false;
-    if (userId) {
-      const { data: like } = await supabase
-        .from('post_likes')
-        .select('id')
-        .eq('post_id', postId)
-        .eq('user_id', userId)
-        .maybeSingle();
-      
-      likedByMe = !!like;
-    }
-    
-    res.json({
-      success: true,
-      post: {
-        ...post,
-        like_count: likeCount || 0,
-        comment_count: commentCount || 0,
-        liked_by_me: likedByMe
-      }
-    });
-    
-  } catch (e) {
-    console.error('[Posts] Error in GET /api/posts/:id:', e);
-    res.status(500).json({ success: false, error: 'Failed to fetch post' });
-  }
-});
-
 // DELETE /api/posts/:id - Delete a post
 router.delete('/:id', validateId, async (req, res) => {
   try {
@@ -749,6 +656,100 @@ router.post('/:postId/comments/:commentId/report', async (req, res) => {
   } catch (e) {
     console.error('[Posts] Report comment error:', e);
     res.status(500).json({ success: false, error: 'Failed to submit report' });
+  }
+});
+
+// GET /api/posts/:id - Get a single post by ID (must be last to not override specific routes)
+router.get('/:id', validateId, async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    let userId = null;
+    
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      const { data: { user } } = await supabase.auth.getUser(token);
+      userId = user?.id || null;
+    }
+    
+    const postId = Number(req.params.id);
+    
+    // Get the post with all related data
+    const { data: post, error: postError } = await supabase
+      .from('posts')
+      .select(`
+        id,
+        image_url,
+        caption,
+        cigar_id,
+        rating,
+        location_name,
+        latitude,
+        longitude,
+        created_at,
+        user_id,
+        cigars (
+          id,
+          brand,
+          line,
+          vitola,
+          strength,
+          wrapper,
+          origin,
+          image_url
+        ),
+        profiles (
+          id,
+          username,
+          full_name,
+          avatar_url
+        )
+      `)
+      .eq('id', postId)
+      .single();
+    
+    if (postError || !post) {
+      console.error('[Posts] Error fetching post:', postError);
+      return res.status(404).json({ success: false, error: 'Post not found' });
+    }
+    
+    // Get like count
+    const { count: likeCount } = await supabase
+      .from('post_likes')
+      .select('*', { count: 'exact', head: true })
+      .eq('post_id', postId);
+    
+    // Get comment count
+    const { count: commentCount } = await supabase
+      .from('post_comments')
+      .select('*', { count: 'exact', head: true })
+      .eq('post_id', postId);
+    
+    // Check if current user liked this post
+    let likedByMe = false;
+    if (userId) {
+      const { data: like } = await supabase
+        .from('post_likes')
+        .select('id')
+        .eq('post_id', postId)
+        .eq('user_id', userId)
+        .maybeSingle();
+      
+      likedByMe = !!like;
+    }
+    
+    res.json({
+      success: true,
+      post: {
+        ...post,
+        like_count: likeCount || 0,
+        comment_count: commentCount || 0,
+        liked_by_me: likedByMe
+      }
+    });
+    
+  } catch (e) {
+    console.error('[Posts] Error in GET /api/posts/:id:', e);
+    res.status(500).json({ success: false, error: 'Failed to fetch post' });
   }
 });
 
