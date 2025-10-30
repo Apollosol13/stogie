@@ -61,12 +61,23 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
     if (!selectedFile) return null;
 
     try {
-      console.log('[EditProfile] Uploading avatar...');
+      console.log('[EditProfile] ========================================');
+      console.log('[EditProfile] Starting avatar upload...');
+      console.log('[EditProfile] File name:', selectedFile.name);
+      console.log('[EditProfile] File type:', selectedFile.type);
+      console.log('[EditProfile] File size:', selectedFile.size, 'bytes');
+      
       const formData = new FormData();
-      formData.append('image', selectedFile); // ✅ Changed from 'avatar' to 'image'
+      formData.append('image', selectedFile);
 
       const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://stogie-production.up.railway.app';
-      const response = await fetch(`${API_BASE_URL}/api/profiles/image`, { // ✅ Changed from '/upload-avatar' to '/image'
+      const uploadUrl = `${API_BASE_URL}/api/profiles/image`;
+      
+      console.log('[EditProfile] Upload URL:', uploadUrl);
+      console.log('[EditProfile] JWT token exists:', !!jwt);
+      console.log('[EditProfile] JWT preview:', jwt?.substring(0, 30) + '...');
+
+      const response = await fetch(uploadUrl, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${jwt}`,
@@ -74,23 +85,41 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
         body: formData,
       });
 
+      console.log('[EditProfile] Upload response status:', response.status, response.statusText);
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to upload avatar');
+        const errorText = await response.text();
+        console.error('[EditProfile] Error response text:', errorText);
+        
+        let errorObj;
+        try {
+          errorObj = JSON.parse(errorText);
+        } catch {
+          errorObj = { error: errorText || 'Failed to upload avatar' };
+        }
+        
+        console.error('[EditProfile] Error object:', errorObj);
+        throw new Error(errorObj.error || `Upload failed with status ${response.status}`);
       }
 
       const result = await response.json();
-      console.log('[EditProfile] Avatar uploaded successfully!');
-      console.log('[EditProfile] New avatar URL:', result.avatar_url);
+      console.log('[EditProfile] Upload successful!');
+      console.log('[EditProfile] Full response:', result);
+      console.log('[EditProfile] Avatar URL:', result.avatar_url);
+      console.log('[EditProfile] ========================================');
       
       if (!result.avatar_url) {
-        console.error('[EditProfile] No avatar_url in response:', result);
+        console.error('[EditProfile] ERROR: No avatar_url in response!');
+        console.error('[EditProfile] Response keys:', Object.keys(result));
         throw new Error('Server did not return avatar URL');
       }
       
       return result.avatar_url;
     } catch (error: any) {
-      console.error('[EditProfile] Failed to upload avatar:', error);
+      console.error('[EditProfile] ========================================');
+      console.error('[EditProfile] Upload failed with error:', error.message);
+      console.error('[EditProfile] Full error:', error);
+      console.error('[EditProfile] ========================================');
       throw error;
     }
   };
@@ -139,14 +168,26 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
       // Clear selected file
       setSelectedFile(null);
       
-      alert('Profile updated successfully!');
+      // Show detailed success message
+      const successMsg = newAvatarUrl !== user?.avatarUrl 
+        ? 'Profile and picture updated successfully!' 
+        : 'Profile updated successfully!';
+      
+      alert(successMsg);
       
       // Trigger parent refresh (reloads profile data from server)
       onSuccess();
       onClose();
     } catch (error: any) {
-      console.error('[EditProfile] Failed to update profile:', error);
-      alert(error.message || 'Failed to update profile');
+      console.error('[EditProfile] ========================================');
+      console.error('[EditProfile] PROFILE UPDATE FAILED');
+      console.error('[EditProfile] Error message:', error.message);
+      console.error('[EditProfile] Error stack:', error.stack);
+      console.error('[EditProfile] ========================================');
+      
+      // Show detailed error to user
+      const errorMsg = error.message || 'Failed to update profile';
+      alert(`Error: ${errorMsg}\n\nCheck the console for more details.`);
     } finally {
       setSubmitting(false);
     }
