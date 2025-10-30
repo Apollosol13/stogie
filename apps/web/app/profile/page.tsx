@@ -35,20 +35,33 @@ function ProfileContent() {
     try {
       setLoading(true);
       
+      console.log('[Profile] Fetching profile data...');
+      
       // Fetch fresh user profile data from backend
       const [userProfileData, statsData, postsData] = await Promise.all([
-        apiRequest('/api/profiles/me', { method: 'GET' }, jwt),
-        apiRequest('/api/analytics', { method: 'GET' }, jwt),
-        apiRequest('/api/posts?user=me', { method: 'GET' }, jwt),
+        apiRequest('/api/profiles/me', { method: 'GET' }, jwt).catch(err => {
+          console.error('[Profile] Failed to fetch user profile:', err);
+          return null;
+        }),
+        apiRequest('/api/analytics', { method: 'GET' }, jwt).catch(err => {
+          console.error('[Profile] Failed to fetch analytics:', err);
+          return null;
+        }),
+        apiRequest('/api/posts?user=me', { method: 'GET' }, jwt).catch(err => {
+          console.error('[Profile] Failed to fetch posts:', err);
+          return { posts: [] };
+        }),
       ]);
       
-      console.log('[Profile] Loaded fresh user data:', userProfileData);
+      console.log('[Profile] User profile data:', userProfileData);
+      console.log('[Profile] Stats data:', statsData);
+      console.log('[Profile] Posts data:', postsData);
       
-      // Update the profile data state
-      setProfileData(userProfileData);
-      
-      // Also update the auth store with fresh user data
-      if (userProfileData.profile) {
+      // Update the profile data state if we got it
+      if (userProfileData && userProfileData.profile) {
+        setProfileData(userProfileData);
+        
+        // Also update the auth store with fresh user data
         setAuth({
           jwt: jwt,
           user: {
@@ -62,9 +75,9 @@ function ProfileContent() {
       }
       
       setStats(statsData);
-      setPosts(postsData.posts || []);
+      setPosts(postsData?.posts || []);
     } catch (error) {
-      console.error('Failed to load profile data:', error);
+      console.error('[Profile] Error loading profile data:', error);
     } finally {
       setLoading(false);
     }
