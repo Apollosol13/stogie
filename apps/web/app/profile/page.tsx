@@ -35,7 +35,11 @@ function ProfileContent() {
     try {
       setLoading(true);
       
+      console.log('[Profile] ========================================');
       console.log('[Profile] Fetching profile data...');
+      console.log('[Profile] Current cached user:', user);
+      console.log('[Profile] JWT preview:', jwt?.substring(0, 30) + '...');
+      console.log('[Profile] ========================================');
       
       // Fetch fresh user profile data from backend
       const [userProfileData, statsData, postsData] = await Promise.all([

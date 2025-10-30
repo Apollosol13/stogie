@@ -45,7 +45,11 @@ router.get('/me', async (req, res) => {
       return res.status(401).json({ success: false, error: 'Invalid token' });
     }
 
-    console.log('[Profiles/me] User authenticated:', user.id, user.email);
+    console.log('[Profiles/me] ========================================');
+    console.log('[Profiles/me] JWT TOKEN CONTAINS USER:');
+    console.log('[Profiles/me] - User ID:', user.id);
+    console.log('[Profiles/me] - User Email:', user.email);
+    console.log('[Profiles/me] ========================================');
 
     // Get user profile from profiles table
     console.log('[Profiles/me] Fetching profile from database...');
