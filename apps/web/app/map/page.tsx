@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Navigation from '@/components/Navigation';
+import SmokingSessionModal from '@/components/map/SmokingSessionModal';
 import { useAuth } from '@/lib/auth/hooks';
+import { apiRequest } from '@/lib/api';
 import { MapPin, Navigation2, Search } from 'lucide-react';
 import useMapData from '@/lib/hooks/useMapData';
 
@@ -118,11 +120,13 @@ export default function MapPage() {
 }
 
 function MapContent() {
-  const { user } = useAuth();
-  const { loading, filteredMarkers, activeFilter, setActiveFilter } = useMapData();
+  const { user, jwt } = useAuth();
+  const { loading, filteredMarkers, activeFilter, setActiveFilter, loadMapData, addSessionImmediate } = useMapData();
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [selectedMarker, setSelectedMarker] = useState<any>(null);
+  const [showSessionModal, setShowSessionModal] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
 
   const onLoad = useCallback((map: google.maps.Map) => {
     setMap(map);
@@ -176,11 +180,50 @@ function MapContent() {
   const handleMapClick = (e: google.maps.MapMouseEvent) => {
     if (!e.latLng) return;
     
-    console.log('Map clicked:', {
+    if (!user) {
+      alert('Please sign in to create sessions.');
+      return;
+    }
+    
+    const location = {
       lat: e.latLng.lat(),
       lng: e.latLng.lng(),
-    });
-    // TODO: Open session creation modal
+    };
+    
+    setSelectedLocation(location);
+    setShowSessionModal(true);
+  };
+
+  const handleCreateSession = async (sessionData: any) => {
+    // Optimistic marker: add immediately
+    const optimistic = {
+      id: `tmp-${Date.now()}`,
+      latitude: sessionData.latitude,
+      longitude: sessionData.longitude,
+      location_name: sessionData.location_name,
+      profiles: { username: user?.username || user?.name || 'You' },
+      cigars: {},
+      sticker: sessionData.sticker || null,
+    };
+    addSessionImmediate(optimistic);
+
+    // Close modal before network call for snappy UX
+    setShowSessionModal(false);
+    setSelectedLocation(null);
+
+    try {
+      await apiRequest('/api/smoking-sessions', {
+        method: 'POST',
+        body: JSON.stringify(sessionData),
+      }, jwt);
+
+      // Refresh from server to replace optimistic with real record
+      loadMapData();
+    } catch (e: any) {
+      alert(e.message || 'Failed to create session');
+      // On error, reload to drop optimistic item
+      loadMapData();
+    }
   };
 
   const getMarkerIcon = (type: string) => {
@@ -295,14 +338,27 @@ function MapContent() {
               alert('Please sign in to log a session');
               return;
             }
-            // TODO: Open session modal
-            console.log('Log session clicked');
+            if (userLocation) {
+              setSelectedLocation(userLocation);
+            }
+            setShowSessionModal(true);
           }}
           className="w-full bg-accentGold text-bgPrimary py-4 rounded-full font-bold text-lg shadow-lg hover:bg-opacity-90 transition-all"
         >
           Log Session
         </button>
       </div>
+
+      {/* Smoking Session Modal */}
+      <SmokingSessionModal
+        isOpen={showSessionModal}
+        onClose={() => {
+          setShowSessionModal(false);
+          setSelectedLocation(null);
+        }}
+        location={selectedLocation}
+        onCreateSession={handleCreateSession}
+      />
 
       {/* Loading overlay */}
       {loading && (

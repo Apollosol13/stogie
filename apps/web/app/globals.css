@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+/* Premium cigar lounge theme - matches mobile app */
+:root {
+  --background: #0F0F0F;
+  --foreground: #FFFFFF;
+  --surface: #1A1A1A;
+  --surface2: #242424;
+  --text-primary: #FFFFFF;
+  --text-secondary: #B0B0B0;
+  --text-tertiary: #6B7280;
+  --accent-gold: #D4B896;
+  --accent-green: #68D391;
+  --accent-red: #F56565;
+  --accent-blue: #60A5FA;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-bgPrimary: #0F0F0F;
+  --color-surface: #1A1A1A;
+  --color-surface2: #242424;
+  --color-textPrimary: #FFFFFF;
+  --color-textSecondary: #B0B0B0;
+  --color-textTertiary: #6B7280;
+  --color-accentGold: #D4B896;
+  --color-accentGreen: #68D391;
+  --color-accentRed: #F56565;
+  --color-accentBlue: #60A5FA;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
