@@ -65,7 +65,7 @@ const darkMapStyles = [
   {
     featureType: 'road',
     elementType: 'geometry.fill',
-    stylers: [{ color: '#2c2c2c' }],
+    stylers: [{ color: '#D4B896' }],
   },
   {
     featureType: 'road',
@@ -75,17 +75,17 @@ const darkMapStyles = [
   {
     featureType: 'road.arterial',
     elementType: 'geometry',
-    stylers: [{ color: '#373737' }],
+    stylers: [{ color: '#D4B896' }],
   },
   {
     featureType: 'road.highway',
     elementType: 'geometry',
-    stylers: [{ color: '#3c3c3c' }],
+    stylers: [{ color: '#D4B896' }],
   },
   {
     featureType: 'road.highway.controlled_access',
     elementType: 'geometry',
-    stylers: [{ color: '#4e4e4e' }],
+    stylers: [{ color: '#D4B896' }],
   },
   {
     featureType: 'road.local',
