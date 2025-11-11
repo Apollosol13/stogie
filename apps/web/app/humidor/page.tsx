@@ -40,7 +40,7 @@ function HumidorContent() {
   const loadHumidor = async () => {
     try {
       setLoading(true);
-      const data = await apiRequest('/api/humidor', { method: 'GET' }, jwt);
+      const data = await apiRequest('/api/humidor', { method: 'GET' }, jwt || undefined);
       console.log('[Humidor] Loaded data:', data);
       
       // Transform entries array to grouped object

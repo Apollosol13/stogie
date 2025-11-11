@@ -35,8 +35,8 @@ function CigarDetailContent() {
     try {
       setLoading(true);
       const [cigarData, reviewsData] = await Promise.all([
-        apiRequest(`/api/cigars?id=${params.id}`, { method: 'GET' }, jwt),
-        apiRequest(`/api/reviews/cigar/${params.id}`, { method: 'GET' }, jwt),
+        apiRequest(`/api/cigars?id=${params.id}`, { method: 'GET' }, jwt || undefined),
+        apiRequest(`/api/reviews/cigar/${params.id}`, { method: 'GET' }, jwt || undefined),
       ]);
 
       if (cigarData.success && cigarData.cigars && cigarData.cigars.length > 0) {

@@ -28,7 +28,7 @@ export default function PostDetailModal({ isOpen, onClose, postId, onDelete }: P
   const loadPost = async () => {
     try {
       setLoading(true);
-      const data = await apiRequest(`/api/posts/${postId}`, { method: 'GET' }, jwt);
+      const data = await apiRequest(`/api/posts/${postId}`, { method: 'GET' }, jwt || undefined);
       setPost(data.post);
     } catch (error) {
       console.error('Failed to load post:', error);
@@ -54,7 +54,7 @@ export default function PostDetailModal({ isOpen, onClose, postId, onDelete }: P
         like_count: wasLiked ? previousCount - 1 : previousCount + 1,
       });
 
-      await apiRequest(`/api/posts/${postId}/like`, { method: 'POST' }, jwt);
+      await apiRequest(`/api/posts/${postId}/like`, { method: 'POST' }, jwt || undefined);
     } catch (error: any) {
       // Revert on error
       setPost({
@@ -77,7 +77,7 @@ export default function PostDetailModal({ isOpen, onClose, postId, onDelete }: P
     }
 
     try {
-      await apiRequest(`/api/posts/${postId}`, { method: 'DELETE' }, jwt);
+      await apiRequest(`/api/posts/${postId}`, { method: 'DELETE' }, jwt || undefined);
       onDelete?.();
       onClose();
     } catch (error) {

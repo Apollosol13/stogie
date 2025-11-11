@@ -93,15 +93,15 @@ function ProfileContent() {
       
       // Fetch fresh user profile data from backend
       const [userProfileData, statsData, postsData] = await Promise.all([
-        apiRequest('/api/profiles/me', { method: 'GET' }, jwt).catch(err => {
+        apiRequest('/api/profiles/me', { method: 'GET' }, jwt || undefined).catch(err => {
           console.error('[Profile] Failed to fetch user profile:', err);
           return null;
         }),
-        apiRequest('/api/analytics', { method: 'GET' }, jwt).catch(err => {
+        apiRequest('/api/analytics', { method: 'GET' }, jwt || undefined).catch(err => {
           console.error('[Profile] Failed to fetch analytics:', err);
           return null;
         }),
-        apiRequest('/api/posts?user=me', { method: 'GET' }, jwt).catch(err => {
+        apiRequest('/api/posts?user=me', { method: 'GET' }, jwt || undefined).catch(err => {
           console.error('[Profile] Failed to fetch posts:', err);
           return { posts: [] };
         }),
@@ -121,16 +121,18 @@ function ProfileContent() {
         setProfileData(userProfileData);
         
         // Also update the auth store with fresh user data
-        setAuth({
-          jwt: jwt,
-          user: {
-            id: userProfileData.profile.id,
-            email: userProfileData.profile.email,
-            name: userProfileData.profile.full_name,
-            username: userProfileData.profile.username,
-            avatarUrl: userProfileData.profile.avatar_url,
-          },
-        });
+        if (jwt) {
+          setAuth({
+            jwt: jwt,
+            user: {
+              id: userProfileData.profile.id,
+              email: userProfileData.profile.email,
+              name: userProfileData.profile.full_name,
+              username: userProfileData.profile.username,
+              avatarUrl: userProfileData.profile.avatar_url,
+            },
+          });
+        }
       } else {
         console.error('[Profile] Failed to get profile data, clearing cached data');
         // If we can't get fresh profile data, don't show stale data

@@ -222,7 +222,7 @@ function MapContent() {
       await apiRequest('/api/smoking-sessions', {
         method: 'POST',
         body: JSON.stringify(sessionData),
-      }, jwt);
+      }, jwt || undefined);
 
       // Refresh from server to replace optimistic with real record
       loadMapData();

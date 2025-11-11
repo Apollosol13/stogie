@@ -40,9 +40,9 @@ function UserProfileContent() {
     try {
       setLoading(true);
       const [profileData, analyticsData, postsData] = await Promise.all([
-        apiRequest(`/api/profiles/${params.id}`, { method: 'GET' }, jwt),
-        apiRequest(`/api/analytics/${params.id}`, { method: 'GET' }, jwt),
-        apiRequest('/api/posts', { method: 'GET' }, jwt),
+        apiRequest(`/api/profiles/${params.id}`, { method: 'GET' }, jwt || undefined),
+        apiRequest(`/api/analytics/${params.id}`, { method: 'GET' }, jwt || undefined),
+        apiRequest('/api/posts', { method: 'GET' }, jwt || undefined),
       ]);
 
       setProfile(profileData.profile);
@@ -62,7 +62,7 @@ function UserProfileContent() {
     if (isOwnProfile) return;
     
     try {
-      const data = await apiRequest(`/api/follow/status/${params.id}`, { method: 'GET' }, jwt);
+      const data = await apiRequest(`/api/follow/status/${params.id}`, { method: 'GET' }, jwt || undefined);
       setIsFollowing(data.following);
     } catch (error) {
       console.error('Error checking follow status:', error);
@@ -72,7 +72,7 @@ function UserProfileContent() {
   const handleFollowToggle = async () => {
     try {
       setFollowLoading(true);
-      const data = await apiRequest(`/api/follow/${params.id}`, { method: 'POST' }, jwt);
+      const data = await apiRequest(`/api/follow/${params.id}`, { method: 'POST' }, jwt || undefined);
       
       setIsFollowing(data.following);
       
@@ -89,7 +89,7 @@ function UserProfileContent() {
 
       // Refresh analytics after a moment
       setTimeout(async () => {
-        const analyticsData = await apiRequest(`/api/analytics/${params.id}`, { method: 'GET' }, jwt);
+        const analyticsData = await apiRequest(`/api/analytics/${params.id}`, { method: 'GET' }, jwt || undefined);
         setAnalytics(analyticsData.analytics);
       }, 500);
     } catch (error) {

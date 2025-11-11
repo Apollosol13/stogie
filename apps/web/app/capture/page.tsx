@@ -49,7 +49,7 @@ function CaptureContent() {
           image_url: selectedImage,
           caption: caption.trim(),
         }),
-      }, jwt);
+      }, jwt || undefined);
 
       if (response.success) {
         router.push('/feed');

@@ -38,7 +38,7 @@ export default function UserSearchModal({ isOpen, onClose }: UserSearchModalProp
   const loadSuggestedUsers = async () => {
     setLoading(true);
     try {
-      const data = await apiRequest('/api/profiles/search', { method: 'GET' }, jwt);
+      const data = await apiRequest('/api/profiles/search', { method: 'GET' }, jwt || undefined);
       
       if (data.success) {
         setSearchResults(data.profiles || []);
@@ -75,7 +75,7 @@ export default function UserSearchModal({ isOpen, onClose }: UserSearchModalProp
       const data = await apiRequest(
         `/api/profiles/search?q=${encodeURIComponent(query.trim())}`,
         { method: 'GET' },
-        jwt
+        jwt || undefined
       );
       
       if (data.success) {

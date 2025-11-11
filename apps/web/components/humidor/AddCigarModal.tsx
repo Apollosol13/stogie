@@ -128,7 +128,7 @@ export default function AddCigarModal({ isOpen, onClose, onSuccess, defaultStatu
       const response = await apiRequest('/api/humidor', {
         method: 'POST',
         body: JSON.stringify(payload),
-      }, jwt);
+      }, jwt || undefined);
 
       console.log('[AddCigar] Response:', response);
 

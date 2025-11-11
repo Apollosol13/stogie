@@ -38,7 +38,7 @@ export default function useHumidor() {
 
     try {
       setLoading(true);
-      const data = await apiRequest('/api/humidor', { method: 'GET' }, jwt);
+      const data = await apiRequest('/api/humidor', { method: 'GET' }, jwt || undefined);
       
       // Transform entries array to grouped object
       if (data.entries) {

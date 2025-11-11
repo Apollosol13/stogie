@@ -42,7 +42,7 @@ export default function CommentsModal({ postId, isOpen, onClose }: CommentsModal
   const loadComments = async () => {
     try {
       setLoading(true);
-      const data = await apiRequest(`/api/posts/${postId}/comments`, { method: 'GET' }, jwt);
+      const data = await apiRequest(`/api/posts/${postId}/comments`, { method: 'GET' }, jwt || undefined);
       setComments(data.comments || []);
     } catch (error) {
       console.error('Failed to load comments:', error);
@@ -63,7 +63,7 @@ export default function CommentsModal({ postId, isOpen, onClose }: CommentsModal
           method: 'POST',
           body: JSON.stringify({ text: newComment.trim() }),
         },
-        jwt
+        jwt || undefined
       );
 
       // Reload comments to get full enriched data
@@ -87,7 +87,7 @@ export default function CommentsModal({ postId, isOpen, onClose }: CommentsModal
       await apiRequest(
         `/api/posts/${postId}/comments/${commentId}`,
         { method: 'DELETE' },
-        jwt
+        jwt || undefined
       );
     } catch (error) {
       console.error('Failed to delete comment:', error);

@@ -89,9 +89,9 @@ export async function signUp(data: SignUpData): Promise<AuthResponse> {
  * Make authenticated API request
  */
 export async function apiRequest(endpoint: string, options: RequestInit = {}, jwt?: string) {
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...options.headers,
+    ...(options.headers as Record<string, string>),
   };
 
   if (jwt) {

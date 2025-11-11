@@ -35,7 +35,7 @@ function FeedContent() {
     try {
       setLoading(true);
       const filter = activeTab === 'Following' ? '?filter=following' : '';
-      const data = await apiRequest(`/api/posts${filter}`, { method: 'GET' }, jwt);
+      const data = await apiRequest(`/api/posts${filter}`, { method: 'GET' }, jwt || undefined);
       setPosts(data.posts || []);
     } catch (error) {
       console.error('Failed to load feed:', error);
@@ -70,7 +70,7 @@ function FeedContent() {
           : p
       ));
 
-      const result = await apiRequest(`/api/posts/${postId}/like`, { method: 'POST' }, jwt);
+      const result = await apiRequest(`/api/posts/${postId}/like`, { method: 'POST' }, jwt || undefined);
       
       // Update with actual backend response to ensure sync
       setPosts(posts.map(p => 
@@ -113,7 +113,7 @@ function FeedContent() {
     }
 
     try {
-      await apiRequest(`/api/posts/${postId}`, { method: 'DELETE' }, jwt);
+      await apiRequest(`/api/posts/${postId}`, { method: 'DELETE' }, jwt || undefined);
       setPosts(posts.filter(post => post.id !== postId));
     } catch (error) {
       console.error('Failed to delete post:', error);

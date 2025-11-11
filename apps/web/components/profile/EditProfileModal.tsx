@@ -229,7 +229,8 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
       // Upload avatar first if a new one was selected
       if (selectedFile) {
         console.log('[EditProfile] ✅ Selected file found, uploading avatar...');
-        newAvatarUrl = await uploadAvatar();
+        const uploadedUrl = await uploadAvatar();
+        newAvatarUrl = uploadedUrl || undefined;
         console.log('[EditProfile] Avatar upload complete:', newAvatarUrl);
       } else {
         console.log('[EditProfile] ⚠️ No selectedFile - skipping avatar upload');
@@ -240,7 +241,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
       const response = await apiRequest('/api/profiles', {
         method: 'PUT',
         body: JSON.stringify(formData),
-      }, jwt);
+      }, jwt || undefined);
 
       console.log('[EditProfile] Profile updated successfully');
 
