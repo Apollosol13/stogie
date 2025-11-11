@@ -86,6 +86,53 @@ export async function signUp(data: SignUpData): Promise<AuthResponse> {
 }
 
 /**
+ * Verify email with OTP code
+ */
+export async function verifyEmail(data: { email: string; token: string }): Promise<AuthResponse> {
+  console.log('🔐 Verifying email:', data.email);
+  
+  const response = await fetch(`${API_BASE_URL}/api/auth/verify-email`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  const result = await response.json();
+  console.log('🔐 Verification response:', result);
+
+  if (!response.ok) {
+    throw new Error(result.error || 'Email verification failed');
+  }
+
+  return result;
+}
+
+/**
+ * Resend verification code
+ */
+export async function resendVerification(email: string): Promise<{ success: boolean; message: string }> {
+  console.log('📧 Resending verification code to:', email);
+  
+  const response = await fetch(`${API_BASE_URL}/api/auth/resend-verification`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.error || 'Failed to resend verification code');
+  }
+
+  return result;
+}
+
+/**
  * Make authenticated API request
  */
 export async function apiRequest(endpoint: string, options: RequestInit = {}, jwt?: string) {

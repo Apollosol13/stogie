@@ -26,16 +26,16 @@ router.post('/signup', async (req, res) => {
       });
     }
 
-    // Create user in Supabase Auth
+    // Create user in Supabase Auth (email verification required)
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email,
       password,
       user_metadata: { 
         full_name: fullName,
         username: username 
-      },
-      email_confirm: true, // Mark email as confirmed
-      email_confirmed_at: new Date().toISOString() // Set confirmation timestamp
+      }
+      // Don't set email_confirm or email_confirmed_at
+      // This will trigger Supabase to send verification email with OTP
     });
 
     if (authError) {
@@ -45,30 +45,68 @@ router.post('/signup', async (req, res) => {
       });
     }
 
-    // Immediately sign in using anon client to return a session/JWT
+    // Return success without session - user must verify email first
+    res.status(201).json({
+      success: true,
+      message: 'Account created. Please check your email for verification code.',
+      email: email,
+      userId: authData.user.id
+    });
+
+  } catch (error) {
+    logger.error('Signup error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create user'
+    });
+  }
+});
+
+// Verify email with OTP code
+router.post('/verify-email', async (req, res) => {
+  try {
+    const { email, token } = req.body;
+
+    if (!email || !token) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email and verification code are required'
+      });
+    }
+
+    // Create auth client
     const { createClient } = await import('@supabase/supabase-js');
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+    const authClient = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_ANON_KEY
+    );
 
-    if (!supabaseAnonKey) {
-      return res.status(500).json({ success: false, error: 'Authentication service not configured' });
-    }
+    // Verify the OTP
+    const { data, error } = await authClient.auth.verifyOtp({
+      email,
+      token,
+      type: 'email'
+    });
 
-    const authClient = createClient(supabaseUrl, supabaseAnonKey);
-    const { data, error } = await authClient.auth.signInWithPassword({ email, password });
     if (error) {
-      return res.status(500).json({ success: false, error: 'Auto sign-in failed' });
+      logger.error('Email verification error:', error);
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid or expired verification code'
+      });
     }
 
-    // Load profile (optional)
+    // Get user profile
     const { data: profile } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', data.user.id)
       .single();
 
-    // Return session + user just like /signin
-    res.status(201).json({
+    logger.info('Email verified successfully:', { userId: data.user.id, email: data.user.email });
+
+    // Return session just like sign-in
+    res.json({
       success: true,
       session: data.session,
       user: {
@@ -81,10 +119,57 @@ router.post('/signup', async (req, res) => {
     });
 
   } catch (error) {
-    logger.error('Signup error:', error);
+    logger.error('Email verification error:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to create user'
+      error: 'Failed to verify email'
+    });
+  }
+});
+
+// Resend verification code
+router.post('/resend-verification', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email is required'
+      });
+    }
+
+    const { createClient } = await import('@supabase/supabase-js');
+    const authClient = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_ANON_KEY
+    );
+
+    const { error } = await authClient.auth.resend({
+      type: 'signup',
+      email
+    });
+
+    if (error) {
+      logger.error('Resend verification error:', error);
+      return res.status(400).json({
+        success: false,
+        error: error.message
+      });
+    }
+
+    logger.info('Verification code resent:', { email });
+
+    res.json({
+      success: true,
+      message: 'Verification code sent to your email'
+    });
+
+  } catch (error) {
+    logger.error('Resend verification error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to resend verification code'
     });
   }
 });
