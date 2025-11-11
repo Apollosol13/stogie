@@ -85,7 +85,7 @@ router.post('/verify-email', async (req, res) => {
     const { data, error } = await authClient.auth.verifyOtp({
       email,
       token,
-      type: 'email'
+      type: 'signup'
     });
 
     if (error) {
